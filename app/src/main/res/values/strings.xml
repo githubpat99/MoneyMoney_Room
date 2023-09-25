@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">MoneyMoney</string>
+    <string name="back_button">Back</string>
+    <string name="landing_page">Home Screen</string>
+    <string name="list">Today Screen</string>
+    <string name="entry">Entry Screen</string>
+    <string name="details">Details Screen</string>
+    <string name="registration">Registration Screen</string>
+    <string name="budgetScreen">Budget Screen</string>
+    <string name="ok">OK</string>
+    <string name="budget">Budgetplanung</string>
+</resources>
