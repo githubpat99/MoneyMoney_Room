@@ -2,7 +2,6 @@ package com.example.moneymoney_room.ui.home
 
 import android.annotation.SuppressLint
 import android.os.Build
-import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -179,20 +178,6 @@ fun HomeScreen(
             }
 
             Row() {
-                DeleteAll(
-                    modifier = Modifier
-                        .padding(8.dp),
-                    active = switch,
-                    onClick = {
-                        val active = switch
-                        if (active) {
-                            coroutineScope.launch {
-                                viewModel.deleteItems()
-                            }
-                        }
-                    },
-                    text = "Delete all..."
-                )
                 ActionButton(
                     modifier = Modifier
                         .padding(top = 8.dp),
@@ -205,65 +190,7 @@ fun HomeScreen(
 
         }
     }
-
-    // URL input dialog
-
-    UrlInputDialog(
-        isVisible = isDialogVisible,
-        onDismiss = { isDialogVisible = false },
-        onUrlEntered = { enteredUrl ->
-            // Handle the entered URL here
-            // You can print it or perform any other action
-            println("Entered URL: $enteredUrl")
-            // Perform your import operation with the entered URL here
-            val startIndex = enteredUrl.indexOf("/d/") + 3
-            val endIndex = enteredUrl.indexOf("/view")
-            if (startIndex < 0 || endIndex < 0) {
-                Toast.makeText(
-                    context,
-                    "Import-Datei hat keine Leseberechtigung",
-                    Toast.LENGTH_LONG
-                ).show()
-            } else {
-                val urlId = enteredUrl.substring(startIndex, endIndex)
-
-                if (switch) {
-                    coroutineScope.launch {
-                        // viewModel.insertItems("patrickdata.csv", appContext)
-                        viewModel.insertItemsFromUrl(
-                            "https://drive.google.com/uc?export=download&id=$urlId"
-                        )
-                    }
-                }
-            }
-        },
-
-        )
 }
-
-// Add this function to launch the Google Drive file picker.
-/*
-fun pickFileFromGoogle() {
-    val query: Query = Query.Builder()
-        .addFilter(Filters.eq(SearchableField.MIME_TYPE, "text/csv")) // Filter by MIME type if needed
-        .build()
-
-    val driveClient = Drive.getDriveClient(context, googleSignInAccount)
-
-    driveClient.query(query)
-        .addOnSuccessListener { metadataBuffer ->
-            // Handle the list of files here and allow the user to select one.
-            for (metadata: Metadata in metadataBuffer) {
-                val title = metadata.title
-                // Display the file title to the user and allow selection.
-            }
-        }
-        .addOnFailureListener { exception ->
-            // Handle errors.
-        }
-}
-*/
-
 
 
 @Composable

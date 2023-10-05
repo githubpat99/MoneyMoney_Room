@@ -132,7 +132,7 @@ fun ListScreenBody(
             ) {
 
                 CustomStyledText(
-                    text = "1.1.2023: CHF 6'500.00",
+                    text = "Saldo am 1.1.2023: ${startSaldo}",
                     textAlign = TextAlign.Left,
                     fontWeight = FontWeight.Bold
                 )

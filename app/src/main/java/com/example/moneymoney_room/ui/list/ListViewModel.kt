@@ -15,17 +15,6 @@ import kotlinx.coroutines.flow.stateIn
 
 class ListViewModel(itemsRepository: ItemsRepository) : ViewModel() {
 
-//    val currentDateTime: java.util.Date = java.util.Date()
-//    val currentTimestamp: Long = currentDateTime.time
-//    val itemsToAdd = listOf(
-//        Item(1, currentTimestamp, "Haushalt", "Einkauf", 2, -250.00, 0.00, false),
-//        Item(2, currentTimestamp, "Miete", "Monatskosten", 2, -250.00, 0.00, false),
-//        Item(3, currentTimestamp, "Krankenkasse", "Prämie", 2, -250.00, 0.00, false),
-//    )
-//
-//    val listUiState = ListUiState(itemsToAdd.toMutableList())
-
-
     val listUiState: StateFlow<ListUiState> =
         itemsRepository.getAllItemsStream().map { ListUiState(it) }
             .stateIn(

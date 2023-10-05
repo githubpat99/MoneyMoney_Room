@@ -3,8 +3,11 @@ package com.example.moneymoney_room.ui.google
 import android.content.Context
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import com.example.moneymoney_room.MoneyMoneyApplication.Constants.startSaldo
 import com.example.moneymoney_room.R
 import com.example.moneymoney_room.data.Item
 import com.example.moneymoney_room.data.ItemsRepository
@@ -17,7 +20,6 @@ import com.google.api.client.json.jackson2.JacksonFactory
 import com.google.api.services.drive.Drive
 import com.google.api.services.drive.DriveScopes
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
 
@@ -30,8 +32,25 @@ class GooglePickerViewModel(
 ) : ViewModel() {
 
     lateinit var drive: Drive
-    var accountName = ""
+    var accountName: String = ""
+    var isImporting by mutableStateOf(false)
 
+    fun googleSignOut(context: Context): String {
+        var message = "Google sign Out - successful"
+        val googleSignInClient = getGoogleSignInClient(context) // Use the same context where you signed in
+        googleSignInClient.signOut()
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    // Sign-out was successful
+                    // You can perform additional actions or UI updates here
+                    accountName = "empty"
+                } else {
+                    // Handle sign-out failure
+                    message = "Google sign Out - not successful"
+                }
+            }
+        return message
+    }
     fun getDriveService(context: Context): Drive {
         accountName = ""
         val driveInstance =
@@ -56,30 +75,41 @@ class GooglePickerViewModel(
 
         return drive
     }
-
-    fun createGDriveFolder(folderName: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            // Define a Folder
-            val gFolder = com.google.api.services.drive.model.File()
-            // Set file name and MIME
-            gFolder.name = folderName
-            gFolder.mimeType = "application/vnd.google-apps.folder"
-
-            // You can also specify where to create the new Google folder
-            // passing a parent Folder Id
-            val parents: MutableList<String> = ArrayList(1)
-            parents.add("0B3OXozJR2eIJOUdJU25JaTh1SnM")
-            gFolder.parents = parents
-            drive.Files().create(gFolder).setFields("id").execute()
-        }
-    }
-
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
-    suspend fun downloadCsvFile(context: Context, fileId: String): String? {
+    suspend fun downloadCsvFile(context: Context, folderName: String, fileName: String): String? {
         val drive = getDriveService(context)
+        var message = "something went wrong - too bad..."
 
         return withContext(Dispatchers.IO) {
             try {
+                // Search for the folder by name
+                val folderQuery = drive.files().list()
+                    .setQ("name = '$folderName' and mimeType = 'application/vnd.google-apps.folder'")
+                val folderResult = folderQuery.execute()
+                val folders = folderResult.files
+
+                if (folders == null || folders.isEmpty()) {
+                    // The folder with the specified name was not found
+                    println("GooglePickerViewModel - downloadCsvFile - folderName = $folderName - not found")
+                    return@withContext null
+                }
+
+                val folderId = folders[0].id
+
+                // Now that you have the folder ID, you can search for the file by name
+                val fileQuery = drive.files().list()
+                    .setQ("name = '$fileName' and '$folderId' in parents")
+                val fileResult = fileQuery.execute()
+                val files = fileResult.files
+
+                if (files == null || files.isEmpty()) {
+                    // The file with the specified name was not found in the folder
+                    return@withContext null
+                }
+
+                val fileId = files[0].id
+
+                // Download the file content using the fileId
                 val outputStream = ByteArrayOutputStream()
                 val responseStream = drive.files().get(fileId)
                     .executeMediaAsInputStream()
@@ -93,12 +123,19 @@ class GooglePickerViewModel(
 
                 responseStream.close() // Close the response stream
 
+                // Convert the downloaded bytes to a String assuming UTF-8 encoding
                 val csvDataString = String(outputStream.toByteArray(), Charsets.UTF_8)
-                println("HomeViewModel - csvDataString = $csvDataString")
-
                 val csvReader = CsvReader()
                 val csvData = csvReader.readAll(csvDataString)
-                println("HomeViewModel - csvData = $csvData") // Print csvData
+
+                val parts = csvDataString.split(",")
+                val saldoValue = parts[9]
+                    .trim('"').replace("[^0-9.]".toRegex(), "")
+                val saldoDouble = saldoValue.toDoubleOrNull() ?: 0.0
+                startSaldo = saldoDouble
+
+                println("saldoValue = $saldoValue")
+                println("startSaldoDouble = $saldoDouble")
 
                 val itemList: List<Item> = ItemListGenerator().AccountFromUrl(csvData)
                 val it = itemList.iterator()
@@ -106,11 +143,10 @@ class GooglePickerViewModel(
                 // Transform ItemDetail to Item and add it to the Db - directly
                 while (it.hasNext() == true) {
                     itemsRepository.insertItem(it.next())
+                    message = "my Budget updated successfully..."
                 }
 
-                // Convert the downloaded bytes to a String assuming UTF-8 encoding
-                return@withContext csvDataString
-
+                return@withContext message
             } catch (e: Exception) {
                 e.printStackTrace()
                 return@withContext null

@@ -10,14 +10,15 @@ import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -115,10 +116,10 @@ fun GooglePickerScreenBody(
 ) {
     val coroutineScope = rememberCoroutineScope()
 
-    var fileId by remember { mutableStateOf("1sQxG5LIrdi2OeYIZSLQNaoz9JEWatO-M")}
-
+    var folderName by remember { mutableStateOf("Private") }
+    var fileName by remember { mutableStateOf("test.csv") }
     var fileContent by remember { mutableStateOf<String?>(null) }
-    var inputValue by remember { mutableStateOf("") }
+    var displayName by remember { mutableStateOf(viewModel.accountName) }
 
     val startForResult =
         rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
@@ -131,6 +132,11 @@ fun GooglePickerScreenBody(
                     /**
                      * handle [task] result
                      */
+                    displayName = task.result.displayName ?: ""
+
+                    println("GooglePickerScreen - startForResult - task = $displayName")
+                    viewModel.accountName = displayName
+
                 } else {
                     Toast.makeText(context, "Google Login Error!", Toast.LENGTH_LONG).show()
                 }
@@ -142,60 +148,77 @@ fun GooglePickerScreenBody(
             .fillMaxWidth()
             .padding(top = 80.dp),
     ) {
-        Button(
-            onClick = {
-                startForResult.launch(getGoogleSignInClient(context).signInIntent)
-            },
+
+        OutlinedTextField(
             modifier = Modifier
                 .padding(16.dp)
-                .fillMaxWidth()
-                .height(32.dp)
-        ) {
-            Text(text = "Sign in with Google")
-        }
-        TextField(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth()
-                .height(64.dp),
-            value = viewModel.accountName,
+                .fillMaxWidth(),
+            label = { Text("Google Account") },
+            value = displayName,
             onValueChange = {},
             readOnly = true
         )
-        TextField(
-            value = inputValue,
-            onValueChange = {
-                inputValue = it
-            },
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth()
-        )
-
-        Button(
-            onClick = { viewModel.createGDriveFolder(inputValue) },
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth()
-        ) {
-            Text(text = "Create GDrive Folder")
+        Row() {
+            Button(
+                enabled = (displayName == "" || displayName == "logged off"),
+                onClick = {
+                    startForResult.launch(getGoogleSignInClient(context).signInIntent)
+                },
+                modifier = Modifier
+                    .padding(16.dp)
+            ) {
+                Text(text = "Sign in ...")
+            }
+            Button(
+                enabled = (displayName != "logged off" && displayName != ""),
+                onClick = {
+                    viewModel.googleSignOut(context)
+                    displayName = "logged off"
+                },
+                modifier = Modifier
+                    .padding(16.dp)
+            ) {
+                Text(text = "Sign out ...")
+            }
         }
-        TextField(
-            value = fileId,
-            onValueChange = { fileId = it }
+        OutlinedTextField(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth(),
+            label = { Text("Google Folder") },
+            value = folderName,
+            onValueChange = { folderName = it },
+            readOnly = false
+        )
+        OutlinedTextField(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth(),
+            label = { Text("File Name") },
+            value = fileName,
+            onValueChange = { fileName = it },
+            readOnly = false
         )
 
         Button(
+            modifier = Modifier
+                .padding(16.dp),
+            enabled = folderName.isNotBlank() && fileName.isNotBlank() &&
+                    (displayName != "logged off" && displayName != ""),
             onClick = {
+                viewModel.isImporting = true
                 // Launch a coroutine to download the CSV file
                 coroutineScope.launch {
-                    val downloadedContent = viewModel.downloadCsvFile(context, fileId)
+                    val downloadedContent = viewModel.downloadCsvFile(context, folderName, fileName)
+                    viewModel.isImporting = false
 
                     if (downloadedContent != null) {
                         // Update the state with the downloaded content
                         fileContent = downloadedContent
+                        Toast.makeText(context, "Daten wurden erfolgreich importiert", Toast.LENGTH_LONG).show()
                     } else {
                         // Handle the case where download failed
+                        Toast.makeText(context, "Daten konnten leider nicht importiert werden", Toast.LENGTH_LONG).show()
                     }
                 }
             }
@@ -203,19 +226,14 @@ fun GooglePickerScreenBody(
             Text("Download CSV")
         }
 
-        // Display the downloaded CSV content
-        fileContent?.let {
-            Text(it)
+        if (viewModel.isImporting) {
+            LinearProgressIndicator(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(32.dp)
+            )
         }
-        TextField(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth()
-                .height(64.dp),
-            value = "not set yet",
-            onValueChange = {},
-            readOnly = true
-        )
+
     }
 }
 

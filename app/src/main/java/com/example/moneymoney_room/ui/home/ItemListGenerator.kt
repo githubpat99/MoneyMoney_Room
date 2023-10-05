@@ -160,9 +160,6 @@ class ItemListGenerator() {
         try {
             for (i in 1 until table.size) {
                 val row = table[i]
-
-                println("row 0 = $row[0]")
-
                 val id: Int = row[0].toInt()
                 val ts: Long = Utilities.getLongFromStringDate(row[1].trim())
                 var name = row[2].trim().toString()
