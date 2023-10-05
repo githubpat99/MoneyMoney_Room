@@ -1,6 +1,8 @@
 package com.example.moneymoney_room.ui.home
 
 import android.content.Context
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -9,7 +11,11 @@ import androidx.lifecycle.viewModelScope
 import com.example.moneymoney_room.data.Item
 import com.example.moneymoney_room.data.ItemsRepository
 import com.example.moneymoney_room.ui.entry.ItemDetails
+import com.github.doyaaaaaken.kotlincsv.client.CsvReader
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.net.URL
+
 
 /**
  * ViewModel to retrieve all items in the Room database.
@@ -47,6 +53,35 @@ class HomeViewModel(
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    suspend fun insertItemsFromUrl(csvUrl: String) {
+        viewModelScope.launch(Dispatchers.IO) { // Run the coroutine on the IO dispatcher
+            try {
+                val url = URL(csvUrl)
+                println("HomeViewModel - url = $url")
+
+                val csvInputStream = url.openStream()
+                val csvDataString = csvInputStream.bufferedReader().use { it.readText() } // Read the CSV data as a // string
+                println("HomeViewModel - csvDataString = $csvDataString")
+
+                val csvReader = CsvReader()
+                val csvData = csvReader.readAll(csvDataString)
+                println("HomeViewModel - csvData = $csvData") // Print csvData
+
+                val itemList: List<Item> = ItemListGenerator().AccountFromUrl(csvData)
+                val it = itemList.iterator()
+
+                // Transform ItemDetail to Item and add it to the Db - directly
+                while (it.hasNext() == true) {
+                    itemsRepository.insertItem(it.next())
+                }
+
+            } catch (e: Exception) {
+                // Handle exceptions here, e.g., log an error or show a message to the user
+                e.printStackTrace()
+            }
+        }
+    }
 }
 
 data class HomeUiState(

@@ -24,10 +24,12 @@ import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -49,6 +51,7 @@ import com.example.moneymoney_room.ui.AppViewModelProvider
 import com.example.moneymoney_room.ui.navigation.NavigationDestination
 import com.example.moneymoney_room.util.Utilities
 import com.example.moneymoney_room.util.Utilities.Companion.formatDoubleToString
+import kotlinx.coroutines.launch
 
 object ListDestination : NavigationDestination {
     override val route = "list"
@@ -160,20 +163,6 @@ fun ListScreenBody(
 
         )
     }
-
-//        // Footer
-//        Column(
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .padding(top = 32.dp, end = 16.dp)
-//                .align(Alignment.BottomCenter)
-//        ) {
-//            Text(
-//                text = "End: CHF ${saldoState.value}",
-//                modifier = Modifier.padding(8.dp)
-//            )
-//        }
-
 }
 
 
@@ -188,6 +177,20 @@ fun ShowOnlyRelevantElements(
 
     var totalAmountOnScreen: Double = 0.00
     val lazyListState = rememberLazyListState()
+    var scrollToIndex = 50 // Change this to the desired index
+
+    // Create a coroutine scope
+    val coroutineScope = rememberCoroutineScope()
+
+    val today = Utilities.getNowAsLong()
+
+
+//    val todayItemIndex = itemList.indexOfFirst { it.timestamp == today.toEpochDay() }
+//    if (todayItemIndex != -1) {
+//
+//    }
+
+    println("ListScreen - itemList = ${itemList.isEmpty()}")
 
     if (itemList.isEmpty()) {
         Button(
@@ -196,6 +199,13 @@ fun ShowOnlyRelevantElements(
             Text(text = "Add")
         }
     } else {
+        var todayItemIndex = itemList.indexOfFirst { it.timestamp > today }
+
+        if (todayItemIndex < 0)
+            todayItemIndex = 0
+
+        println("ListScreen - todayItemIndex = $todayItemIndex")
+
         LazyColumn(
             state = lazyListState
         ) {
@@ -209,6 +219,13 @@ fun ShowOnlyRelevantElements(
                 )
             }
 
+        }
+
+        LaunchedEffect(todayItemIndex) {
+            // Scroll to the desired index when the effect is launched
+            coroutineScope.launch {
+                lazyListState.scrollToItem(todayItemIndex)
+            }
         }
 
         println("ListScreen - LazyColumn - firstVisItemIndex = ${lazyListState.firstVisibleItemIndex}")

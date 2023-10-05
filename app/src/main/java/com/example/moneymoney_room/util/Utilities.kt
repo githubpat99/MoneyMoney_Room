@@ -7,6 +7,7 @@ import java.text.SimpleDateFormat
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.Date
 import java.util.Locale
 
@@ -22,6 +23,12 @@ class Utilities {
 
         fun getNowAsLong(): Long {
             return Date().time
+        }
+
+        fun getCurrentDateTimeAsString(): String {
+            val currentDateTime = LocalDateTime.now()
+            val formatter = DateTimeFormatter.ofPattern("dd.MM.yy")
+            return currentDateTime.format(formatter)
         }
 
         fun getTimestampAsDate(timestamp: Long?): String {

@@ -26,6 +26,11 @@ class ItemListGenerator() {
         return AccountFromCsv(fileName, appContext)
     }
 
+    fun generateItemDetailsFromUrl(csvData: List<List<String>>): List<Item> {
+
+        return AccountFromUrl(csvData)
+    }
+
     fun PatAccount(userId: String): List<Item> {
 
         val id = 0
@@ -125,15 +130,15 @@ class ItemListGenerator() {
                     val ts: Long = Utilities.getLongFromStringDate(columns[1].trim())
                     var name = columns[2].trim().toString()
                     if (name.length > 9)
-                        name = name.substring(0,9)
+                        name = name.substring(0, 9)
                     var beschreibung = columns[3].trim()
                     if (beschreibung.length > 20)
-                        beschreibung = beschreibung.substring(0,20)
+                        beschreibung = beschreibung.substring(0, 20)
                     val type = columns[4].toInt()
                     val amount = columns[5].toDouble()
                     val balance = columns[6].toDouble()
                     val debit: Boolean = columns[7].toBoolean()
-                    val item = Item(id,ts,name,beschreibung,type,amount,balance,debit)
+                    val item = Item(id, ts, name, beschreibung, type, amount, balance, debit)
 
                     itemList.add(item)
                 }
@@ -143,6 +148,48 @@ class ItemListGenerator() {
             // Handle file access or parsing errors
             e.printStackTrace()
             println(e.message)
+        }
+
+        return itemList
+    }
+
+    fun AccountFromUrl(table: List<List<String>>): List<Item> {
+
+        val itemList: MutableList<Item> = mutableListOf()
+
+        try {
+            for (i in 1 until table.size) {
+                val row = table[i]
+
+                println("row 0 = $row[0]")
+
+                val id: Int = row[0].toInt()
+                val ts: Long = Utilities.getLongFromStringDate(row[1].trim())
+                var name = row[2].trim().toString()
+                if (name.length > 9)
+                    name = name.substring(0, 9)
+                var beschreibung = row[3].trim()
+                if (beschreibung.length > 20)
+                    beschreibung = beschreibung.substring(0, 20)
+                val type = row[4].toInt()
+                var amount: Number = 0
+                var balance: Number = 0
+                if (row[5].isNotBlank()) {
+                    amount = row[5].replace(',','.').toDouble()
+                }
+                if (row[6].isNotBlank()) {
+                    balance = row[6].replace(',','.').toDouble()
+                }
+
+                val debit: Boolean = row[7].toBoolean()
+                val item = Item(id, ts, name, beschreibung, type, amount.toDouble(), balance.toDouble(), debit)
+
+                itemList.add(item)
+
+            }
+//
+        } catch (e: IOException) {
+            throw e
         }
 
         return itemList

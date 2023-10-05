@@ -7,6 +7,7 @@
     <string name="details">Details Screen</string>
     <string name="registration">Registration Screen</string>
     <string name="budgetScreen">Budget Screen</string>
+    <string name="googlePickerScreen">GDrive Selection</string>
     <string name="ok">OK</string>
     <string name="budget">Budgetplanung</string>
 </resources>

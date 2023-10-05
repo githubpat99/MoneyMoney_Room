@@ -34,6 +34,7 @@ import com.example.moneymoney_room.R
 import com.example.moneymoney_room.ui.AppViewModelProvider
 import com.example.moneymoney_room.ui.entry.ItemDetails
 import com.example.moneymoney_room.ui.navigation.NavigationDestination
+import com.example.moneymoney_room.util.Utilities
 import kotlinx.coroutines.launch
 
 object BudgetDestination : NavigationDestination {
@@ -52,6 +53,7 @@ fun BudgetScreen(
     navigateBack: () -> Unit,
     onNavigateUp: () -> Unit,
     navigateToList: () -> Unit,
+    navigateToBudget: () -> Unit,
     canNavigateBack: Boolean = true,
     modifier: Modifier = Modifier,
     viewModel: BudgetViewModel = viewModel(factory = AppViewModelProvider.Factory),
@@ -71,8 +73,7 @@ fun BudgetScreen(
         BudgetScreenBody(
             viewModel.budgetUiState,
             navigateBack,
-            onValueChange =
-            viewModel::updateUiState,
+            onValueChange = viewModel::updateUiState,
             onSaveClick = {
                 coroutineScope.launch {
 
@@ -83,7 +84,9 @@ fun BudgetScreen(
 //                    navigateToList()
 
                 }
-            }
+            },
+            navigateToList,
+            navigateToBudget
         )
     }
 
@@ -96,6 +99,8 @@ fun BudgetScreenBody(
     navigateBack: () -> Unit,
     onValueChange: (ItemDetails) -> Unit,
     onSaveClick: () -> Unit,
+    navigateToList: () -> Unit,
+    navigateToBudget: () -> Unit
 ) {
 
     var isEditing by remember { mutableStateOf(false) }
@@ -103,6 +108,8 @@ fun BudgetScreenBody(
     var budgetInfo by remember { mutableStateOf("tbd") }
     var infoStatic = ""
     var infoDynamic = ""
+    var jokerCard: Boolean by remember { mutableStateOf(false) }
+    val todayString = Utilities.getCurrentDateTimeAsString()
     val itemDetails = budgetUiState.itemDetails
 
     Column(
@@ -126,7 +133,9 @@ fun BudgetScreenBody(
                     color = colorResource(id = R.color.einnahme_Vorlage),
                     name = "Einkommen",
                     betrag = "6500.00",
-                    datum = "25.02.23",
+                    datum = todayString,
+                    jokerCard = false,
+
                     onClick = { clickedName, clickedBetrag, clickedDatum, selButton ->
                         // Handle the click here with the provided data
                         val updItemDetails = itemDetails.copy(
@@ -134,8 +143,15 @@ fun BudgetScreenBody(
                             amount = clickedBetrag.toDouble(),  //todo PIN: Regex...
                             //                        date = clickedDatum
                         )
+                        isEditing = true
+                        val info = updInfo(
+                            clickedName,
+                            clickedBetrag,
+                            selButton
+                        )
+                        budgetInfo = "$info 25.9.2023"
                         onValueChange(updItemDetails)
-                    },
+                    }
 
                     )
                 Spacer(modifier = Modifier.height(12.dp))
@@ -143,7 +159,9 @@ fun BudgetScreenBody(
                     color = colorResource(id = R.color.einnahme_Vorlage),
                     name = "Dividende",
                     betrag = "500.00",
-                    datum = "25.02.23",
+                    datum = todayString,
+                    jokerCard = false,
+
                     onClick = { clickedName, clickedBetrag, clickedDatum, selButton ->
                         // Handle the click here with the provided data
                         val updItemDetails = itemDetails.copy(
@@ -151,8 +169,16 @@ fun BudgetScreenBody(
                             amount = clickedBetrag.toDouble(),  //todo PIN: Regex...
                             //                        date = clickedDatum
                         )
+                        isEditing = true
+                        val info = updInfo(
+                            clickedName,
+                            clickedBetrag,
+                            selButton
+                        )
+                        budgetInfo = "$info 25.9.2023"
+
                         onValueChange(updItemDetails)
-                    },
+                    }
 
                     )
             }
@@ -167,7 +193,9 @@ fun BudgetScreenBody(
                     color = colorResource(id = R.color.ausgabe_Vorlage),
                     name = "Miete",
                     betrag = "-1500.00",
-                    datum = "26.02.23",
+                    datum = todayString,
+                    jokerCard = false,
+
                     onClick = { clickedName, clickedBetrag, clickedDatum, selButton ->
                         // Handle the click here with the provided data
                         val updItemDetails = itemDetails.copy(
@@ -175,16 +203,26 @@ fun BudgetScreenBody(
                             amount = clickedBetrag.toDouble(),  //todo PIN: Regex...
                             //                        date = clickedDatum
                         )
+                        isEditing = true
+                        val info = updInfo(
+                            clickedName,
+                            clickedBetrag,
+                            selButton
+                        )
+                        budgetInfo = "$info 25.9.2023"
+
                         onValueChange(updItemDetails)
-                    },
+                    }
 
                     )
                 Spacer(modifier = Modifier.height(12.dp))
                 BoxExample(
                     color = colorResource(id = R.color.ausgabe_Vorlage),
                     name = "Krankenkasse",
-                    betrag = "450.00",
-                    datum = "26.02.23",
+                    betrag = "-450.00",
+                    datum = todayString,
+                    jokerCard = false,
+
                     onClick = { clickedName, clickedBetrag, clickedDatum, selButton ->
                         // Handle the click here with the provided data
                         val updItemDetails = itemDetails.copy(
@@ -192,16 +230,26 @@ fun BudgetScreenBody(
                             amount = clickedBetrag.toDouble(),  //todo PIN: Regex...
                             //                        date = clickedDatum
                         )
+                        isEditing = true
+                        val info = updInfo(
+                            clickedName,
+                            clickedBetrag,
+                            selButton
+                        )
+                        budgetInfo = "$info 25.9.2023"
+
                         onValueChange(updItemDetails)
-                    },
+                    }
 
                     )
                 Spacer(modifier = Modifier.height(12.dp))
                 BoxExample(
                     color = colorResource(id = R.color.ausgabe_Vorlage),
                     name = "Handy",
-                    betrag = "50.00",
-                    datum = "27.02.23",
+                    betrag = "-50.00",
+                    datum = todayString,
+                    jokerCard = false,
+
                     onClick = { clickedName, clickedBetrag, clickedDatum, selButton ->
                         // Handle the click here with the provided data
                         val updItemDetails = itemDetails.copy(
@@ -209,16 +257,26 @@ fun BudgetScreenBody(
                             amount = clickedBetrag.toDouble(),  //todo PIN: Regex...
                             //                        date = clickedDatum
                         )
+                        isEditing = true
+                        val info = updInfo(
+                            clickedName,
+                            clickedBetrag,
+                            selButton
+                        )
+                        budgetInfo = "$info 25.9.2023"
+
                         onValueChange(updItemDetails)
-                    },
+                    }
 
                     )
                 Spacer(modifier = Modifier.height(12.dp))
                 BoxExample(
                     color = colorResource(id = R.color.ausgabe_Vorlage),
                     name = "Nebenkosten",
-                    betrag = "350.00",
-                    datum = "27.02.23",
+                    betrag = "-350.00",
+                    datum = todayString,
+                    jokerCard = false,
+
                     onClick = { clickedName, clickedBetrag, clickedDatum, selButton ->
                         // Handle the click here with the provided data
                         val updItemDetails = itemDetails.copy(
@@ -226,8 +284,16 @@ fun BudgetScreenBody(
                             amount = clickedBetrag.toDouble(),  //todo PIN: Regex...
                             //                        date = clickedDatum
                         )
+                        isEditing = true
+                        val info = updInfo(
+                            clickedName,
+                            clickedBetrag,
+                            selButton
+                        )
+                        budgetInfo = "$info 25.9.2023"
+
                         onValueChange(updItemDetails)
-                    },
+                    }
 
                     )
             }
@@ -240,8 +306,10 @@ fun BudgetScreenBody(
                 BoxExample(
                     color = colorResource(id = R.color.ausgabe_Vorlage),
                     name = "Haushalt",
-                    betrag = "850.00",
-                    datum = "27.02.23",
+                    betrag = "-850.00",
+                    datum = todayString,
+                    jokerCard = false,
+
                     onClick = { clickedName, clickedBetrag, clickedDatum, selButton ->
                         // Handle the click here with the provided data
                         val updItemDetails = itemDetails.copy(
@@ -249,16 +317,26 @@ fun BudgetScreenBody(
                             amount = clickedBetrag.toDouble(),  //todo PIN: Regex...
                             //                        date = clickedDatum
                         )
+                        isEditing = true
+                        val info = updInfo(
+                            clickedName,
+                            clickedBetrag,
+                            selButton
+                        )
+                        budgetInfo = "$info 25.9.2023"
+
                         onValueChange(updItemDetails)
-                    },
+                    }
 
                     )
                 Spacer(modifier = Modifier.height(12.dp))
                 BoxExample(
                     color = colorResource(id = R.color.ausgabe_Vorlage),
                     name = "Ausgang",
-                    betrag = "700.00",
-                    datum = "27.02.23",
+                    betrag = "-700.00",
+                    datum = todayString,
+                    jokerCard = false,
+
                     onClick = { clickedName, clickedBetrag, clickedDatum, selButton ->
                         // Handle the click here with the provided data
                         val updItemDetails = itemDetails.copy(
@@ -266,16 +344,26 @@ fun BudgetScreenBody(
                             amount = clickedBetrag.toDouble(),  //todo PIN: Regex...
                             //                        date = clickedDatum
                         )
+                        isEditing = true
+                        val info = updInfo(
+                            clickedName,
+                            clickedBetrag,
+                            selButton
+                        )
+                        budgetInfo = "$info 25.9.2023"
+
                         onValueChange(updItemDetails)
-                    },
+                    }
 
                     )
                 Spacer(modifier = Modifier.height(12.dp))
                 BoxExample(
                     color = colorResource(id = R.color.ausgabe_Vorlage),
                     name = "Kleider",
-                    betrag = "800.00",
-                    datum = "27.02.23",
+                    betrag = "-800.00",
+                    datum = todayString,
+                    jokerCard = false,
+
                     onClick = { clickedName, clickedBetrag, clickedDatum, selButton ->
                         // Handle the click here with the provided data
                         val updItemDetails = itemDetails.copy(
@@ -283,39 +371,44 @@ fun BudgetScreenBody(
                             amount = clickedBetrag.toDouble(),  //todo PIN: Regex...
                             //                        date = clickedDatum
                         )
+                        isEditing = true
+                        val info = updInfo(
+                            clickedName,
+                            clickedBetrag,
+                            selButton
+                        )
+                        budgetInfo = "$info 25.9.2023"
+
                         onValueChange(updItemDetails)
-                    },
+                    }
 
                     )
                 Spacer(modifier = Modifier.height(12.dp))
                 BoxExample(
-                    color = colorResource(id = R.color.ausgabe_Vorlage),
-                    name = "Diverses",
-                    betrag = "750",
-                    datum = "28.02.23",
+                    color = colorResource(id = R.color.purple_200),
+                    name = "Joker",
+                    betrag = "-750",
+                    datum = todayString,
+                    jokerCard = true,
 
-                    ) { clickedName, clickedBetrag, clickedDatum, selButton ->
-                    // Handle the click here with the provided data
-                    val updItemDetails = itemDetails.copy(
-                        name = clickedName,
-                        amount = clickedBetrag.toDouble(),  //todo PIN: Regex...
-                        //                        date = clickedDatum
-                    )
-                    isEditing = true
+                    onClick = { clickedName, clickedBetrag, clickedDatum, selButton ->
+                        // Handle the click here with the provided data
+                        val updItemDetails = itemDetails.copy(
+                            name = clickedName,
+                            amount = clickedBetrag.toDouble(),  //todo PIN: Regex...
+                            //                        date = clickedDatum
+                        )
+                        isEditing = true
+                        val info = updInfo(
+                            clickedName,
+                            clickedBetrag,
+                            selButton
+                        )
+                        budgetInfo = "$info 25.9.2023"
 
-                    infoStatic = "Name: $clickedName / Betrag: $clickedBetrag"
-                    when (selButton) {
-                        "mtl." -> infoDynamic = "monatlich, Start am: "
-                        "einmalig" -> infoDynamic = "einmalig, am: "
-                        else -> infoDynamic = "$selButton Monate, Start am: "
+                        onValueChange(updItemDetails)
                     }
-
-                    budgetInfo = "$infoStatic\n$infoDynamic 25.9.2023"
-
-                    onValueChange(updItemDetails)
-                }
-
-
+                )
             }
         }
 
@@ -341,7 +434,7 @@ fun BudgetScreenBody(
 
             Divider(
                 modifier = Modifier
-                    .padding(top = 32.dp),
+                    .padding(top = 8.dp),
                 color = Color.Gray, thickness = 1.dp
             )
 
@@ -355,6 +448,7 @@ fun BudgetScreenBody(
                     onClick = {
                         isEnabled = false
                         onSaveClick()
+                        navigateToBudget()
                     },
                     enabled = isEnabled,
                     modifier = Modifier
@@ -374,6 +468,24 @@ fun BudgetScreenBody(
 }
 
 
+private fun updInfo(
+    clickedName: String,
+    clickedBetrag: String,
+    selButton: String,
+): String {
+
+    var infoDynamic = ""
+
+    var infoStatic = "$clickedName\nCHF: $clickedBetrag"
+    when (selButton) {
+        "1 Mt." -> infoDynamic = "monatlich\nStart am: "
+        "keine" -> infoDynamic = "einmalig\nam: "
+        else -> infoDynamic = "Wiederholung nach $selButton\nStart am: "
+    }
+    return infoStatic + "\n" + infoDynamic
+}
+
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BoxExample(
@@ -381,6 +493,7 @@ fun BoxExample(
     name: String,
     betrag: String,
     datum: String,
+    jokerCard: Boolean,
     onClick: (String, String, String, String) -> Unit,
 
     ) {
@@ -447,20 +560,41 @@ fun BoxExample(
             text = {
                 Column {
                     // Inside the dialog, allow the user to edit values
-                    TextField(
-                        value = newName,
-                        onValueChange = { newName = it },
-                        label = { Text("Name") }
-                    )
+                    // Name may only be changed when "Joker"
+                    if (jokerCard) {
+                        TextField(
+                            value = newName,
+                            onValueChange = { newName = it },
+                            label = {
+                                Text("Name",
+                                    style = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                                )
+                            }
+                        )
+                    } else {
+                        Text(
+                            text = newName,
+                            style = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Bold),
+                            modifier = Modifier.padding(8.dp)
+                        )
+                    }
                     TextField(
                         value = newBetrag,
                         onValueChange = { newBetrag = it },
-                        label = { Text("Betrag") }
+                        label = {
+                            Text("Betrag",
+                                style = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                            )
+                        }
                     )
                     TextField(
                         value = newDatum,
                         onValueChange = { newDatum = it },
-                        label = { Text("Datum") }
+                        label = {
+                            Text("Datum",
+                                style = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                            )
+                        }
                     )
                     Row(
                         modifier = Modifier
@@ -468,7 +602,9 @@ fun BoxExample(
                             .align(alignment = Alignment.CenterHorizontally),
                         verticalAlignment = Alignment.Top
                     ) {
-                        Text(text = "Wiederholung")
+                        Text(text = "Wiederholung nach ...",
+                            style = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Bold),
+                            modifier = Modifier.padding(8.dp))
                     }
                     Row(
                         modifier = Modifier
@@ -478,29 +614,29 @@ fun BoxExample(
                     ) {
                         Button(
                             onClick = {
-                                selectedButton = "mtl."
+                                selectedButton = "1 Mt."
                             },
-                            enabled = selectedButton != "mtl."
+                            enabled = selectedButton != "1 Mt."
                         ) {
-                            Text(text = "mtl.")
+                            Text(text = "1 Mt.")
 
                         }
                         Button(
                             onClick = {
-                                selectedButton = "alle 2"
+                                selectedButton = "2 Mt."
                             },
-                            enabled = selectedButton != "alle 2"
+                            enabled = selectedButton != "2 Mt."
                         ) {
-                            Text(text = "alle 2")
+                            Text(text = "2 Mt.")
 
                         }
                         Button(
                             onClick = {
-                                selectedButton = "alle 3"
+                                selectedButton = "3 Mt."
                             },
-                            enabled = selectedButton != "alle 3"
+                            enabled = selectedButton != "3 Mt."
                         ) {
-                            Text(text = "alle 3")
+                            Text(text = "3 Mt.")
 
                         }
                     }
@@ -512,29 +648,29 @@ fun BoxExample(
                     ) {
                         Button(
                             onClick = {
-                                selectedButton = "alle 4"
+                                selectedButton = "4 Mt."
                             },
-                            enabled = selectedButton != "alle 4"
+                            enabled = selectedButton != "4 Mt."
                         ) {
-                            Text(text = "alle 4")
+                            Text(text = "4 Mt.")
 
                         }
                         Button(
                             onClick = {
-                                selectedButton = "alle 6"
+                                selectedButton = "6 Mt."
                             },
-                            enabled = selectedButton != "alle 6"
+                            enabled = selectedButton != "6 Mt."
                         ) {
-                            Text(text = "alle 6")
+                            Text(text = "6 Mt.")
 
                         }
                         Button(
                             onClick = {
-                                selectedButton = "einmalig"
+                                selectedButton = "keine"
                             },
-                            enabled = selectedButton != "einmalig"
+                            enabled = selectedButton != "keine"
                         ) {
-                            Text(text = "einmalig")
+                            Text(text = "keine")
 
                         }
                     }

@@ -1,5 +1,7 @@
 package com.example.moneymoney_room.ui.navigation
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
@@ -13,6 +15,8 @@ import com.example.moneymoney_room.ui.details.DetailsDestination
 import com.example.moneymoney_room.ui.details.DetailsScreen
 import com.example.moneymoney_room.ui.entry.EntryDestination
 import com.example.moneymoney_room.ui.entry.EntryScreen
+import com.example.moneymoney_room.ui.google.GoogleDestination
+import com.example.moneymoney_room.ui.google.GooglePickerScreen
 import com.example.moneymoney_room.ui.home.HomeDestination
 import com.example.moneymoney_room.ui.home.HomeScreen
 import com.example.moneymoney_room.ui.list.ListDestination
@@ -20,6 +24,7 @@ import com.example.moneymoney_room.ui.list.ListScreen
 import com.example.moneymoney_room.ui.registration.RegistrationDestination
 import com.example.moneymoney_room.ui.registration.RegistrationScreen
 
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
 fun MoneyMoneyNavHost(
     navController: NavHostController,
@@ -34,7 +39,8 @@ fun MoneyMoneyNavHost(
             HomeScreen(
                 navigateToList = { navController.navigate(ListDestination.route) },
                 navigateToRegistration = { navController.navigate(RegistrationDestination.route)},
-                navigateToBudget = { navController.navigate(BudgetDestination.route)}
+                navigateToBudget = { navController.navigate(BudgetDestination.route)},
+                navigateToGooglePicker = { navController.navigate(GoogleDestination.route)}
             )
         }
         composable(route = ListDestination.route) {
@@ -74,8 +80,17 @@ fun MoneyMoneyNavHost(
         composable(route = BudgetDestination.route) {
             BudgetScreen(
                 navigateBack = { navController.popBackStack() },
-                onNavigateUp = { navController.navigateUp() },
-                navigateToList = { navController.navigate( ListDestination.route)}
+                onNavigateUp = { navController.navigate( HomeDestination.route)},
+                navigateToList = { navController.navigate( ListDestination.route)},
+                navigateToBudget = { navController.navigate(BudgetDestination.route)}
+            )
+        }
+        composable(route = GoogleDestination.route) {
+            GooglePickerScreen(
+                navigateBack = { navController.popBackStack() },
+                onNavigateUp = { navController.navigate( HomeDestination.route)},
+                navigateToList = { navController.navigate( ListDestination.route)},
+                navigateToBudget = { navController.navigate(BudgetDestination.route)}
             )
         }
     }

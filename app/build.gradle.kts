@@ -47,6 +47,8 @@ android {
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += "/META-INF/DEPENDENCIES"
+
         }
     }
 }
@@ -68,11 +70,37 @@ dependencies {
     //Room
     implementation("androidx.room:room-runtime:${rootProject.extra["room_version"]}")
     implementation("androidx.constraintlayout:constraintlayout-compose:1.0.1")
+    implementation("com.google.android.gms:play-services-auth:20.7.0")
     testImplementation("junit:junit:4.12")
     testImplementation("junit:junit:4.12")
     testImplementation("junit:junit:4.12")
     ksp("androidx.room:room-compiler:${rootProject.extra["room_version"]}")
     implementation("androidx.room:room-ktx:${rootProject.extra["room_version"]}")
+    
+    //iO
+
+    //Csv Parser
+    implementation("io.github.rybalkinsd:kohttp:0.12.0") // khttp for HTTP requests
+    implementation("com.github.doyaaaaaken:kotlin-csv:1.9.2")
+
+    //Google Sign-In
+    implementation("com.google.android.gms:play-services-auth:20.7.0")
+    implementation("com.google.android.gms:play-services-drive:17.0.0")
+
+    // Guava
+    implementation("com.google.guava:guava:24.1-jre")
+// Guava fix
+    implementation("com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava")
+
+//Drive
+    implementation("com.google.api-client:google-api-client-android:1.23.0") {
+        exclude(group = "org.apache.httpcomponents", module = "guava-jdk5")
+    }
+    implementation("com.google.apis:google-api-services-drive:v3-rev136-1.25.0") {
+        exclude(group = "org.apache.httpcomponents", module = "guava-jdk5")
+    }
+
+
 
     // Testing
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
