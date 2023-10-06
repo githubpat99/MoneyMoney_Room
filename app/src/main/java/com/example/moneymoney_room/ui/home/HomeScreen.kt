@@ -65,9 +65,7 @@ fun HomeScreen(
     val coroutineScope = rememberCoroutineScope()
     val appContext = LocalContext.current.applicationContext
     var isDialogVisible by remember { mutableStateOf(false) }
-    var enteredUrl by remember { mutableStateOf("") }
     var switch: Boolean = false
-    val context = LocalContext.current
 
     Box(
         modifier = Modifier

@@ -8,27 +8,27 @@ import androidx.room.RoomDatabase
 /**
  * Database class with a singleton Instance object.
  */
-@Database(entities = [Item::class], version = 1, exportSchema = false)
+@Database(entities = [Item::class, Configuration::class], version = 2, exportSchema = false)
 abstract class MoneyMoneyDatabase : RoomDatabase() {
 
     abstract fun itemDao(): ItemDao
+    abstract fun configurationDao(): ConfigurationDao
 
     companion object {
         @Volatile
-        private var Instance: MoneyMoneyDatabase? = null
+        private var instance: MoneyMoneyDatabase? = null
 
         fun getDatabase(context: Context): MoneyMoneyDatabase {
-            // if the Instance is not null, return it, otherwise create a new database instance.
-            return Instance ?: synchronized(this) {
-                Room.databaseBuilder(context, MoneyMoneyDatabase::class.java, "item_database")
-                    /**
-                     * Setting this option in your app's database builder means that Room
-                     * permanently deletes all data from the tables in your database when it
-                     * attempts to perform a migration with no defined migration path.
-                     */
+            return instance ?: synchronized(this) {
+                val newInstance = Room.databaseBuilder(
+                    context.applicationContext,
+                    MoneyMoneyDatabase::class.java,
+                    "money_money_database"
+                )
                     .fallbackToDestructiveMigration()
                     .build()
-                    .also { Instance = it }
+                instance = newInstance
+                newInstance
             }
         }
     }

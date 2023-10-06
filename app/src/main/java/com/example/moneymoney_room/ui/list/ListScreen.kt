@@ -35,7 +35,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -43,7 +42,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.moneymoney_room.MoneyMoneyApplication.Constants.startSaldo
 import com.example.moneymoney_room.MoneyMoneyTopAppBar
 import com.example.moneymoney_room.R
 import com.example.moneymoney_room.data.Item
@@ -52,6 +50,8 @@ import com.example.moneymoney_room.ui.navigation.NavigationDestination
 import com.example.moneymoney_room.util.Utilities
 import com.example.moneymoney_room.util.Utilities.Companion.formatDoubleToString
 import kotlinx.coroutines.launch
+import java.text.NumberFormat
+import java.util.Locale
 
 object ListDestination : NavigationDestination {
     override val route = "list"
@@ -75,26 +75,38 @@ fun ListScreen(
 ) {
 
     val listUiState by viewModel.listUiState.collectAsState()
+    val configuationState = viewModel.configuration.collectAsState(initial = null)
+    var userName: String = "Bitte Budget erstellen"
+    var startSaldo: Double = 0.0
+
+    val configurationValue = configuationState.value
+
+
+    if (configurationValue != null) {
+        startSaldo = configurationValue.startSaldo
+        userName = configurationValue.userName
+        // Use the configuration values in your Composable
+    } else {
+        // Handle the case where configuration is not set yet
+    }
 
     Scaffold(
         modifier = modifier,
         topBar = {
             MoneyMoneyTopAppBar(
-                title = stringResource(id = R.string.list),
+                title = userName,
                 canNavigateBack = true,
                 navigateUp = onNavigateUp
             )
         }
     ) { innerPadding ->
-
         ListScreenBody(
             listUiState,
             onItemClick = navigateToDetail,
             navigateToEntry,
-
-            )
+            startSaldo
+        )
     }
-
 }
 
 @Composable
@@ -102,66 +114,89 @@ fun ListScreenBody(
     listUiState: ListUiState,
     onItemClick: (Int) -> Unit,
     navigateToEntry: () -> Unit,
+    startSaldo: Double,
 
     ) {
 
     var saldoState = remember { mutableStateOf(startSaldo) }
-    val customTextStyle = LocalTextStyle.current.copy(
-        fontSize = 16.sp,
-        color = Color.Black,
-        textAlign = TextAlign.Center
-        // Add any other desired style properties here
-    )
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-    ) {
-        // Header
-        val saldoTxt = formatDoubleToString(saldoState.value)
-
+    if (listUiState.list.isEmpty()) {
+        // Noch kein Budget vorhanden
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color.LightGray)
+                .background(colorResource(id = R.color.primary_background))
                 .padding(top = 64.dp),
 
-        ) {
-            Row(modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
             ) {
+            Text(
+                text = "Bitte zuerst ein Budget erstellen oder downloaden",
+                color = Color.White,
+                fontSize = 20.sp, // Customize the font size
+                textAlign = TextAlign.Center, // Center-align the text
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp) // Add padding around the text
+            )
+        }
+    } else {
 
-                CustomStyledText(
-                    text = "Saldo am 1.1.2023: ${startSaldo}",
-                    textAlign = TextAlign.Left,
-                    fontWeight = FontWeight.Bold
-                )
 
-                CustomStyledText(
-                    text = saldoTxt,
-                    textAlign = TextAlign.End,
-                    fontWeight = FontWeight.Normal
-                )
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+        ) {
+            // Header
+            val saldoTxt = formatDoubleToString(saldoState.value)
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color.LightGray)
+                    .padding(top = 64.dp),
+
+                ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    val formattedStartSaldo: String =
+                        NumberFormat.getCurrencyInstance(Locale("de", "CH")).format(startSaldo)
+
+
+                    CustomStyledText(
+                        text = "1.1.2023: $formattedStartSaldo",
+                        textAlign = TextAlign.Left,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    CustomStyledText(
+                        text = saldoTxt,
+                        textAlign = TextAlign.End,
+                        fontWeight = FontWeight.Normal
+                    )
+                }
             }
         }
-    }
 
-    // Body (Main content)
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .fillMaxHeight()
-            .padding(top = 120.dp, bottom = 24.dp)
-    ) {
-        ShowOnlyRelevantElements(
-            listUiState.list,
-            onItemClick = { onItemClick(it.id) },
-            navigateToEntry,
-            onSaldoChange = { newSaldo ->
-                saldoState.value = newSaldo
-            }
+        // Body (Main content)
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight()
+                .padding(top = 120.dp, bottom = 24.dp)
+        ) {
+            ShowOnlyRelevantElements(
+                listUiState.list,
+                startSaldo,
+                onItemClick = { onItemClick(it.id) },
+                navigateToEntry,
+                onSaldoChange = { newSaldo ->
+                    saldoState.value = newSaldo
+                }
 
-        )
+            )
+        }
     }
 }
 
@@ -169,28 +204,19 @@ fun ListScreenBody(
 @Composable
 fun ShowOnlyRelevantElements(
     itemList: List<Item>,
+    startSaldo: Double,
     onItemClick: (Item) -> Unit,
     navigateToEntry: () -> Unit,
     onSaldoChange: (Double) -> Unit,
 
     ) {
 
-    var totalAmountOnScreen: Double = 0.00
     val lazyListState = rememberLazyListState()
-    var scrollToIndex = 50 // Change this to the desired index
 
     // Create a coroutine scope
     val coroutineScope = rememberCoroutineScope()
 
     val today = Utilities.getNowAsLong()
-
-
-//    val todayItemIndex = itemList.indexOfFirst { it.timestamp == today.toEpochDay() }
-//    if (todayItemIndex != -1) {
-//
-//    }
-
-    println("ListScreen - itemList = ${itemList.isEmpty()}")
 
     if (itemList.isEmpty()) {
         Button(
@@ -204,19 +230,19 @@ fun ShowOnlyRelevantElements(
         if (todayItemIndex < 0)
             todayItemIndex = 0
 
-        println("ListScreen - todayItemIndex = $todayItemIndex")
-
         LazyColumn(
             state = lazyListState
         ) {
 
             items(items = itemList) {
 
-                ItemCard(
-                    item = it,
-                    modifier = Modifier
-                        .clickable { onItemClick(it) }
-                )
+                if (it.amount != 0.00) {
+                    ItemCard(
+                        item = it,
+                        modifier = Modifier
+                            .clickable { onItemClick(it) }
+                    )
+                }
             }
 
         }

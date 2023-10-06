@@ -14,6 +14,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -55,15 +58,15 @@ fun RegistrationScreen(
         }
     ) {
         RegistrationScreenBody(
-            viewModel.registrationUiState,
+            viewModel.registrationUiState.value,
             navigateBack,
             onValueChange = viewModel::updateUiState,
             onSaveClick = {
                 coroutineScope.launch {
-//                    viewModel.saveItem()
+                    viewModel.updateConfiguration(it)
                     navigateBack()
                 }
-            }
+            },
         )
     }
 }
@@ -73,11 +76,10 @@ fun RegistrationScreenBody(
     registrationUiState: RegistrationUiState,
     navigateBack: () -> Unit,
     onValueChange: (RegistrationUiState) -> Unit,
-    onSaveClick: () -> Unit,
+    onSaveClick: (RegistrationUiState) -> Unit
 ) {
 
     val registrationUiState = registrationUiState
-    var enableRegisterButton: Boolean = false
 
     Column(
         modifier = Modifier
@@ -86,11 +88,11 @@ fun RegistrationScreenBody(
 
 
         OutlinedTextField(
-            value = registrationUiState.userId,
+            value = registrationUiState.userName,
             onValueChange = {
                 onValueChange(
                     registrationUiState.copy(
-                        userId = it
+                        userName = it
                     )
                 )
             },
@@ -110,8 +112,8 @@ fun RegistrationScreenBody(
                 )
             },
             label = { Text(text = "Passwort") },
-            visualTransformation = VisualTransformation.None,
-            keyboardOptions = KeyboardOptions.Default,
+            visualTransformation = PasswordVisualTransformation(),
+            keyboardOptions = KeyboardOptions(KeyboardCapitalization.None, true, KeyboardType.Password),
             keyboardActions = KeyboardActions(onDone = {}),
             maxLines = 1
         )
@@ -130,17 +132,32 @@ fun RegistrationScreenBody(
             keyboardActions = KeyboardActions(onDone = {}),
             maxLines = 1
         )
-        if (registrationUiState.userId.isEmpty()
-            or registrationUiState.password.isEmpty()
-            or registrationUiState.email.isEmpty()
-            ) {
-            enableRegisterButton = false
-        } else enableRegisterButton = true
+        OutlinedTextField(
+            value = registrationUiState.startSaldo.toString(),
+            onValueChange = {
+                onValueChange(
+                    registrationUiState.copy(
+                        startSaldo = it.toDouble()
+                    )
+                )
+            },
+            label = { Text(text = "Start Saldo") },
+            visualTransformation = VisualTransformation.None,
+            keyboardOptions = KeyboardOptions(KeyboardCapitalization.None, true, KeyboardType.Number),
+            keyboardActions = KeyboardActions(onDone = {}),
+            maxLines = 1
+        )
+
+        val enableRegisterButton = registrationUiState.userName.isNotEmpty() &&
+                registrationUiState.password.isNotEmpty() &&
+                registrationUiState.email.isNotEmpty()
 
         Button(
             modifier = Modifier
                 .padding(top=16.dp),
-            onClick = onSaveClick,
+            onClick = {
+                onSaveClick(registrationUiState)
+                      },
             enabled = enableRegisterButton
         ) {
             Text(text = "Register")

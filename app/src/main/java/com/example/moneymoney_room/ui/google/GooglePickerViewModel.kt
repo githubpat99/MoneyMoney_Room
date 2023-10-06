@@ -7,10 +7,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import com.example.moneymoney_room.MoneyMoneyApplication.Constants.startSaldo
+import androidx.lifecycle.viewModelScope
+import com.example.moneymoney_room.MoneyMoneyApplication
 import com.example.moneymoney_room.R
+import com.example.moneymoney_room.data.Configuration
 import com.example.moneymoney_room.data.Item
 import com.example.moneymoney_room.data.ItemsRepository
+import com.example.moneymoney_room.data.MoneyMoneyDatabase
 import com.example.moneymoney_room.ui.home.ItemListGenerator
 import com.github.doyaaaaaken.kotlincsv.client.CsvReader
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -20,6 +23,7 @@ import com.google.api.client.json.jackson2.JacksonFactory
 import com.google.api.services.drive.Drive
 import com.google.api.services.drive.DriveScopes
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
 
@@ -28,16 +32,24 @@ import java.io.ByteArrayOutputStream
  * ViewModel to retrieve all items in the Room database.
  */
 class GooglePickerViewModel(
-    private val itemsRepository: ItemsRepository,
+    private val itemsRepository: ItemsRepository, application: MoneyMoneyApplication
 ) : ViewModel() {
 
     lateinit var drive: Drive
     var accountName: String = ""
     var isImporting by mutableStateOf(false)
 
+    var saldoDouble: Double = 0.0
+    var userName = ""
+    var password = ""
+    var email = ""
+    val context: Context? = application.applicationContext
+
+
     fun googleSignOut(context: Context): String {
         var message = "Google sign Out - successful"
-        val googleSignInClient = getGoogleSignInClient(context) // Use the same context where you signed in
+        val googleSignInClient =
+            getGoogleSignInClient(context) // Use the same context where you signed in
         googleSignInClient.signOut()
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
@@ -51,6 +63,7 @@ class GooglePickerViewModel(
             }
         return message
     }
+
     fun getDriveService(context: Context): Drive {
         accountName = ""
         val driveInstance =
@@ -75,10 +88,13 @@ class GooglePickerViewModel(
 
         return drive
     }
+
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     suspend fun downloadCsvFile(context: Context, folderName: String, fileName: String): String? {
         val drive = getDriveService(context)
         var message = "something went wrong - too bad..."
+
+        println("GooglePickerViewModel - 00")
 
         return withContext(Dispatchers.IO) {
             try {
@@ -131,26 +147,46 @@ class GooglePickerViewModel(
                 val parts = csvDataString.split(",")
                 val saldoValue = parts[9]
                     .trim('"').replace("[^0-9.]".toRegex(), "")
-                val saldoDouble = saldoValue.toDoubleOrNull() ?: 0.0
-                startSaldo = saldoDouble
-
-                println("saldoValue = $saldoValue")
-                println("startSaldoDouble = $saldoDouble")
+                saldoDouble = saldoValue.toDoubleOrNull() ?: 0.0
+                userName = parts[0].replace(Regex("[\n\r\\s]+"),"")
 
                 val itemList: List<Item> = ItemListGenerator().AccountFromUrl(csvData)
                 val it = itemList.iterator()
 
+                message = "my Budget updated successfully..."
+
                 // Transform ItemDetail to Item and add it to the Db - directly
                 while (it.hasNext() == true) {
                     itemsRepository.insertItem(it.next())
-                    message = "my Budget updated successfully..."
                 }
+
+                // additionally update Configuration based on Csv Info
+
+                updateConfiguration(saldoDouble, userName, password, email, context)
 
                 return@withContext message
             } catch (e: Exception) {
                 e.printStackTrace()
                 return@withContext null
             }
+        }
+    }
+
+    private fun updateConfiguration(
+        startSaldo: Double,
+        userName: String,
+        password: String,
+        email: String,
+        context: Context,
+    ) {
+
+        val moneyMoneyDatabase = MoneyMoneyDatabase.getDatabase(context)
+
+        val updConfig = Configuration(startSaldo = startSaldo, userName = userName, password = password, email = email)
+        viewModelScope.launch {
+
+            moneyMoneyDatabase.configurationDao().insert(updConfig)
+
         }
     }
 

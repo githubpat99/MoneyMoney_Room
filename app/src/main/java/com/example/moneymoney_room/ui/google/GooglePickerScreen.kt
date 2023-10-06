@@ -206,10 +206,14 @@ fun GooglePickerScreenBody(
             enabled = folderName.isNotBlank() && fileName.isNotBlank() &&
                     (displayName != "logged off" && displayName != ""),
             onClick = {
+
+                // Progress Indicator on
                 viewModel.isImporting = true
                 // Launch a coroutine to download the CSV file
                 coroutineScope.launch {
                     val downloadedContent = viewModel.downloadCsvFile(context, folderName, fileName)
+
+                    // Progress Indicator off
                     viewModel.isImporting = false
 
                     if (downloadedContent != null) {

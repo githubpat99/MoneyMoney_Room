@@ -38,7 +38,8 @@ object AppViewModelProvider {
         // Initializer for ItemDetailsViewModel
         initializer {
             ListViewModel(
-                moneymoneyApplication().container.itemsRepository
+                moneymoneyApplication().container.itemsRepository,
+                moneymoneyApplication()
             )
         }
 
@@ -51,7 +52,7 @@ object AppViewModelProvider {
 
         // Initializer for RegistrationViewModel
         initializer {
-            RegistrationViewModel()
+            RegistrationViewModel(moneymoneyApplication())
         }
 
         // Initializer for BudgetViewModel
@@ -64,7 +65,8 @@ object AppViewModelProvider {
         // Initializer for GooglePickerViewModel
         initializer {
             GooglePickerViewModel(
-                moneymoneyApplication().container.itemsRepository
+                moneymoneyApplication().container.itemsRepository,
+                moneymoneyApplication()
             )
         }
     }
