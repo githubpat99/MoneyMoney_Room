@@ -3,6 +3,7 @@ package com.example.moneymoney_room.ui.home
 import android.content.Context
 import com.example.moneymoney_room.data.Item
 import com.example.moneymoney_room.util.Utilities
+import org.json.JSONArray
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader
@@ -105,6 +106,121 @@ class ItemListGenerator() {
         return itemList
     }
 
+    fun AccountFromDataString(csvData: String): List<Item> {
+
+        val lines = csvData.split("\n")
+        val itemList: MutableList<Item> = mutableListOf()
+
+        println("ItemListGenerator - lines: ${lines.size}")
+
+        try {
+
+            // Start the loop from index 1 to skip the first line
+            for (i in 1 until lines.size) {
+                val line = lines[i]
+                val columns = line!!.split(",") // Assuming CSV columns are separated by a comma
+
+                if (columns.size >= 7) {
+
+//              Id, Timestamp, Name, Beschreibung, Typ, Amount, Balance, Debit
+
+                    val id: Int = columns[0].toInt()
+                    val ts: Long = Utilities.getLongFromStringDate(columns[1].trim())
+                    var name = columns[2].trim().toString()
+                    if (name.length > 9)
+                        name = name.substring(0, 9)
+                    var beschreibung = columns[3].trim()
+                    if (beschreibung.length > 20)
+                        beschreibung = beschreibung.substring(0, 20)
+                    val type = columns[4].toInt()
+                    val amountString = columns[5].trim()
+                    val amount = if (amountString.isNotEmpty()) amountString.toDouble() else 0.0
+                    val balance = columns[6].toDouble()
+                    val debit: Boolean = columns[7].toBoolean()
+                    val item = Item(id, ts, name, beschreibung, type, amount, balance, debit)
+
+                    itemList.add(item)
+                }
+            }
+        } catch (e: IOException) {
+            // Handle file access or parsing errors
+            e.printStackTrace()
+            println(e.message)
+        }
+
+        println("ItemListGenerator - itemList: ${itemList.size}")
+
+        return itemList
+    }
+
+    fun AccountFromJson(jsonArray: JSONArray): List<Item> {
+
+        var itemList: MutableList<Item> = mutableListOf()
+
+        var i = 0
+
+        while (i < jsonArray.length()-1) {
+            i++
+
+            var nnId: Int = 0
+            var nnTs: Long = 0
+            var nnName = ""
+            var nnBeschreibung = ""
+            var nnType: Int = 0
+            var nnAmount: Double = 0.0
+            var nnBalance: Double = 0.0
+            var nnDebit: Boolean = true
+
+            val obj = jsonArray.getJSONArray(i)
+            val id: Int? = obj.get(0) as? Int
+            if (id != null) {
+                nnId = id!!
+            }
+            val ts: String = obj.get(1).toString()
+            if (ts != null) {
+                nnTs = Utilities.getLongFromStringDate(ts)
+            }
+            val name: String? = obj.get(2) as? String
+            if (name != null) {
+                nnName = name!!
+            }
+            val beschreibung: String? = obj.get(3) as? String
+            if (beschreibung != null) {
+                nnBeschreibung = beschreibung!!
+            }
+            val type: Int? = obj.get(4) as? Int
+            if (type != null) {
+                nnType = type!!
+            }
+            val amount: Double? = try {
+                obj.get(5).toString().replace(",", ".").toDouble()
+            } catch (e: NumberFormatException) {
+                null
+            }
+            if (amount != null) {
+                nnAmount = amount!!
+            }
+            val balance: Double? = try {
+                obj.get(5).toString().replace(",", ".").toDouble()
+            } catch (e: NumberFormatException) {
+                null
+            }
+            if (balance != null) {
+                nnBalance = balance!!
+            }
+
+            val debit: Boolean? = obj.get(7) as? Boolean
+            if (debit != null) {
+                nnDebit = debit!!
+            }
+            val item =
+                Item(nnId, nnTs, nnName, nnBeschreibung, nnType, nnAmount, nnBalance, nnDebit)
+
+            itemList.add(item)
+        }
+        return itemList
+    }
+
     fun AccountFromCsv(fileName: String, appContext: Context): List<Item> {
 
         val itemList: MutableList<Item> = mutableListOf()
@@ -172,14 +288,23 @@ class ItemListGenerator() {
                 var amount: Number = 0
                 var balance: Number = 0
                 if (row[5].isNotBlank()) {
-                    amount = row[5].replace(',','.').toDouble()
+                    amount = row[5].replace(',', '.').toDouble()
                 }
                 if (row[6].isNotBlank()) {
-                    balance = row[6].replace(',','.').toDouble()
+                    balance = row[6].replace(',', '.').toDouble()
                 }
 
                 val debit: Boolean = row[7].toBoolean()
-                val item = Item(id, ts, name, beschreibung, type, amount.toDouble(), balance.toDouble(), debit)
+                val item = Item(
+                    id,
+                    ts,
+                    name,
+                    beschreibung,
+                    type,
+                    amount.toDouble(),
+                    balance.toDouble(),
+                    debit
+                )
 
                 itemList.add(item)
 

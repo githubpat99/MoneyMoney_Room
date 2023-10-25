@@ -1,6 +1,10 @@
 package com.example.moneymoney_room.ui.list
 
 import android.annotation.SuppressLint
+import android.content.ActivityNotFoundException
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -17,10 +21,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.BasicText
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -33,12 +37,17 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -46,12 +55,23 @@ import com.example.moneymoney_room.MoneyMoneyTopAppBar
 import com.example.moneymoney_room.R
 import com.example.moneymoney_room.data.Item
 import com.example.moneymoney_room.ui.AppViewModelProvider
+import com.example.moneymoney_room.ui.CreateBudgetScreen
 import com.example.moneymoney_room.ui.navigation.NavigationDestination
 import com.example.moneymoney_room.util.Utilities
-import com.example.moneymoney_room.util.Utilities.Companion.formatDoubleToString
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONObject
+import java.net.MalformedURLException
+import java.net.URL
 import java.text.NumberFormat
 import java.util.Locale
+import java.util.concurrent.TimeUnit
 
 object ListDestination : NavigationDestination {
     override val route = "list"
@@ -74,7 +94,6 @@ fun ListScreen(
     viewModel: ListViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
 
-    val listUiState by viewModel.listUiState.collectAsState()
     val configuationState = viewModel.configuration.collectAsState(initial = null)
     var userName: String = "Bitte Budget erstellen"
     var startSaldo: Double = 0.0
@@ -101,7 +120,7 @@ fun ListScreen(
         }
     ) { innerPadding ->
         ListScreenBody(
-            listUiState,
+            viewModel,
             onItemClick = navigateToDetail,
             navigateToEntry,
             startSaldo
@@ -111,7 +130,7 @@ fun ListScreen(
 
 @Composable
 fun ListScreenBody(
-    listUiState: ListUiState,
+    viewModel: ListViewModel,
     onItemClick: (Int) -> Unit,
     navigateToEntry: () -> Unit,
     startSaldo: Double,
@@ -119,35 +138,24 @@ fun ListScreenBody(
     ) {
 
     var saldoState = remember { mutableStateOf(startSaldo) }
+    val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
+    val listUiState: ListUiState by viewModel.listUiState.collectAsState()
 
     if (listUiState.list.isEmpty()) {
         // Noch kein Budget vorhanden
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(colorResource(id = R.color.primary_background))
-                .padding(top = 64.dp),
 
-            ) {
-            Text(
-                text = "Bitte zuerst ein Budget erstellen oder downloaden",
-                color = Color.White,
-                fontSize = 20.sp, // Customize the font size
-                textAlign = TextAlign.Center, // Center-align the text
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp) // Add padding around the text
-            )
-        }
+        CreateBudgetScreen(viewModel, context, coroutineScope)
     } else {
 
+        val endSaldo = calculateEndSaldo(listUiState.list, startSaldo)
 
         Box(
             modifier = Modifier
                 .fillMaxSize()
         ) {
             // Header
-            val saldoTxt = formatDoubleToString(saldoState.value)
+            val saldoTxt = Utilities.formatDoubleToString(saldoState.value)
 
             Column(
                 modifier = Modifier
@@ -156,22 +164,73 @@ fun ListScreenBody(
                     .padding(top = 64.dp),
 
                 ) {
+
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    val formattedStartSaldo: String =
+                    val formattedSaldo: String =
                         NumberFormat.getCurrencyInstance(Locale("de", "CH")).format(startSaldo)
 
 
                     CustomStyledText(
-                        text = "1.1.2023: $formattedStartSaldo",
+                        text = "Start 1.1.2023",
                         textAlign = TextAlign.Left,
                         fontWeight = FontWeight.Bold
                     )
 
                     CustomStyledText(
-                        text = saldoTxt,
+                        text = "$formattedSaldo",
+                        textAlign = TextAlign.End,
+                        fontWeight = FontWeight.Normal
+                    )
+                }
+
+                var background = Color.Green
+                if (endSaldo < startSaldo) {
+                    background = Color.Red
+                }
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(background),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    val formattedSaldo: String =
+                        NumberFormat.getCurrencyInstance(Locale("de", "CH")).format(endSaldo)
+
+
+                    CustomStyledText(
+                        text = "End   31.12.2023",
+                        textAlign = TextAlign.Left,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    CustomStyledText(
+                        text = "$formattedSaldo",
+                        textAlign = TextAlign.End,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    val formattedSaldo: String =
+                        NumberFormat.getCurrencyInstance(Locale("de", "CH"))
+                            .format(saldoState.value)
+
+
+                    CustomStyledText(
+                        text = "Now",
+                        textAlign = TextAlign.Left,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    CustomStyledText(
+                        text = "$formattedSaldo",
                         textAlign = TextAlign.End,
                         fontWeight = FontWeight.Normal
                     )
@@ -184,8 +243,9 @@ fun ListScreenBody(
             modifier = Modifier
                 .fillMaxWidth()
                 .fillMaxHeight()
-                .padding(top = 120.dp, bottom = 24.dp)
+                .padding(top = 180.dp, bottom = 24.dp)
         ) {
+
             ShowOnlyRelevantElements(
                 listUiState.list,
                 startSaldo,
@@ -200,6 +260,17 @@ fun ListScreenBody(
     }
 }
 
+
+fun calculateEndSaldo(list: List<Item>, startSaldo: Double): Double {
+    var saldo = startSaldo
+    for (item in list) {
+
+        println("Saldo = $saldo")
+
+        saldo += item.amount
+    }
+    return saldo
+}
 
 @Composable
 fun ShowOnlyRelevantElements(
@@ -218,55 +289,44 @@ fun ShowOnlyRelevantElements(
 
     val today = Utilities.getNowAsLong()
 
-    if (itemList.isEmpty()) {
-        Button(
-            onClick = navigateToEntry
-        ) {
-            Text(text = "Add")
-        }
-    } else {
-        var todayItemIndex = itemList.indexOfFirst { it.timestamp > today }
+    var todayItemIndex = itemList.indexOfFirst { it.timestamp > today }
 
-        if (todayItemIndex < 0)
-            todayItemIndex = 0
+    if (todayItemIndex < 0)
+        todayItemIndex = 0
 
-        LazyColumn(
-            state = lazyListState
-        ) {
+    LazyColumn(
+        state = lazyListState
+    ) {
 
-            items(items = itemList) {
+        items(items = itemList) {
 
-                if (it.amount != 0.00) {
-                    ItemCard(
-                        item = it,
-                        modifier = Modifier
-                            .clickable { onItemClick(it) }
-                    )
-                }
-            }
-
-        }
-
-        LaunchedEffect(todayItemIndex) {
-            // Scroll to the desired index when the effect is launched
-            coroutineScope.launch {
-                lazyListState.scrollToItem(todayItemIndex)
+            if (it.amount != 0.00) {
+                ItemCard(
+                    item = it,
+                    modifier = Modifier
+                        .clickable { onItemClick(it) }
+                )
             }
         }
-
-        println("ListScreen - LazyColumn - firstVisItemIndex = ${lazyListState.firstVisibleItemIndex}")
-        val idx = lazyListState.firstVisibleItemIndex
-        var i = 0
-        var newSaldo = startSaldo
-        while (i < idx) {
-            println("ListScreen - LazyColumn - Items to firstVisItemIndex - Amount = ${itemList[i].amount}")
-            newSaldo = newSaldo + itemList[i].amount
-            i++
-        }
-
-        println("ListScreen - LazyColumn - new Saldo = $newSaldo")
-        onSaldoChange(newSaldo)
     }
+
+    LaunchedEffect(todayItemIndex) {
+        // Scroll to the desired index when the effect is launched
+        coroutineScope.launch {
+            lazyListState.scrollToItem(todayItemIndex)
+        }
+    }
+
+    println("ListScreen - LazyColumn - firstVisItemIndex = ${lazyListState.firstVisibleItemIndex}")
+    val idx = lazyListState.firstVisibleItemIndex + 1
+    var i = 0
+    var newSaldo = startSaldo
+    while (i < idx) {
+        newSaldo = newSaldo + itemList[i].amount
+        i++
+    }
+
+    onSaldoChange(newSaldo)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -355,4 +415,145 @@ fun CustomStyledText(
         style = customTextStyle,
         modifier = modifier.padding(8.dp)
     )
+}
+
+@Composable
+fun GoogleSheetsLink(
+    modifier: Modifier = Modifier,
+    text: String,
+    viewModel: ListViewModel,
+    context: Context,
+) {
+    val coroutineScope = rememberCoroutineScope()
+    val text = text
+
+    Text(
+        text = buildAnnotatedString {
+            withStyle(style = SpanStyle(textDecoration = TextDecoration.None)) {
+                append(text)
+            }
+            appendLine()
+            append("(Klicken, Bearbeiten, Importieren)") // Additional instructions
+        },
+        style = MaterialTheme.typography.headlineLarge,
+        color = Color.White, // Color for the link text
+        textAlign = TextAlign.Center, // Center-align the text
+        fontSize = 16.sp, // Adjust the font size as needed
+        modifier = modifier
+            .clickable {
+                // Handle the link click action here
+                /*
+                Old Version with Browser Call
+
+                val url =
+                    "https://docs.google.com/spreadsheets/d/112hN7on-j8OzBzLya96zxl7wkS3GJ6C4bkIJ94Ja8R0/edit#gid=672646673"
+                openUrlInBrowser(context, url)
+                */
+
+                // New Version with direct Call via - Square’s meticulous HTTP client for Java and Kotlin
+                callGoogleAppsScriptFunction(coroutineScope, viewModel, context)
+            }
+            .fillMaxWidth()
+    )
+}
+
+private fun openUrlInBrowser(context: Context, url: String) {
+    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+
+    println("ListScreen - openUrlInBrowser - context: $context}")
+    try {
+        context.startActivity(intent)
+    } catch (e: ActivityNotFoundException) {
+        // Handle the case where a suitable activity to open the URL is not found.
+    }
+}
+
+
+fun callGoogleAppsScriptFunction(
+    coroutineScope: CoroutineScope,
+    viewModel: ListViewModel,
+    context: Context,
+) {
+
+    val scriptUrl = viewModel.googleAppsScriptUrl
+    val json = """
+        {
+            "function": "copySheetWithFunctionAndOpen",
+            "parameters": ["CSV_Data", "New-Budget 2023"]
+        }
+    """
+
+    val client = OkHttpClient.Builder()
+        .connectTimeout(30, TimeUnit.SECONDS)
+        .readTimeout(30, TimeUnit.SECONDS)
+        .writeTimeout(30, TimeUnit.SECONDS)
+        .build()
+    val requestBody = json.toRequestBody("application/json".toMediaType())
+    val request = Request.Builder()
+        .url(scriptUrl)
+        .post(requestBody)
+        .build()
+
+    viewModel.isRunning = true
+    println("ListScreen - isRunning: ${viewModel.isRunning}")
+    var i = 1
+
+    coroutineScope.launch {
+        try {
+
+            val response = withContext(Dispatchers.IO) {
+                client.newCall(request).execute()
+            }
+
+            if (!response.isSuccessful) {
+                // Handle error response
+                println("ListScreen - Request failed with code: ${response.code}")
+                // Handle the error state in your app
+                return@launch
+            }
+            // Check if the response body is null
+            if (response.body == null) {
+                println("ListScreen - Response body is null")
+                return@launch
+            }
+
+            val responseBody = response.body?.string()
+            println("ListScreen - responseBody: $responseBody")
+
+            val url = responseBody?.let { extractUrlFromGoogleResponse(it) }
+
+            if (isValidUrl(url)) {
+                if (url != null) {
+
+                    println("ListScreen - responseBody: $url")
+                    viewModel.saveSpreadsheetId(url)
+                    openUrlInBrowser(context, url)
+                }
+            }
+        } catch (e: Exception) {
+            // Handle the exception
+            println("ListScreen - Error: ${e.message}")
+            // Handle the error state in your app
+        } finally {
+            viewModel.isRunning = false
+            println("ListScreen - isRunning: ${viewModel.isRunning}")
+        }
+    }
+}
+
+fun isValidUrl(url: String?): Boolean {
+    try {
+        URL(url)
+        return true
+    } catch (e: MalformedURLException) {
+        return false
+    }
+}
+
+fun extractUrlFromGoogleResponse(googleResponse: String): String {
+    // Parse the Google response JSON
+    val json = JSONObject(googleResponse)
+
+    // Extract the URL value associated with the "url" key
+    return json.getString("url")
 }

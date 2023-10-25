@@ -9,6 +9,8 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.example.moneymoney_room.ui.MonthlyDetails.MonthlyDetailDestination
+import com.example.moneymoney_room.ui.MonthlyDetails.MonthlyDetailsScreen
 import com.example.moneymoney_room.ui.budget.BudgetDestination
 import com.example.moneymoney_room.ui.budget.BudgetScreen
 import com.example.moneymoney_room.ui.details.DetailsDestination
@@ -21,6 +23,8 @@ import com.example.moneymoney_room.ui.home.HomeDestination
 import com.example.moneymoney_room.ui.home.HomeScreen
 import com.example.moneymoney_room.ui.list.ListDestination
 import com.example.moneymoney_room.ui.list.ListScreen
+import com.example.moneymoney_room.ui.monthly.MonthlyDestination
+import com.example.moneymoney_room.ui.monthly.MonthlyScreen
 import com.example.moneymoney_room.ui.registration.RegistrationDestination
 import com.example.moneymoney_room.ui.registration.RegistrationScreen
 
@@ -39,12 +43,53 @@ fun MoneyMoneyNavHost(
             HomeScreen(
                 navigateToList = { navController.navigate(ListDestination.route) },
                 navigateToRegistration = { navController.navigate(RegistrationDestination.route)},
+                navigateToMonthly = { navController.navigate(MonthlyDestination.route) },
                 navigateToBudget = { navController.navigate(BudgetDestination.route)},
                 navigateToGooglePicker = { navController.navigate(GoogleDestination.route)}
             )
         }
         composable(route = ListDestination.route) {
+
+            println("MoneyMoneyNavHost - navigateToDetail = ${DetailsDestination.route}/${it}")
+
             ListScreen(
+                navigateBack = { navController.popBackStack() },
+                onNavigateUp = { navController.navigateUp() },
+                navigateToDetail = {
+
+                    println("MoneyMoneyNavHost - navigateToDetail = ${DetailsDestination.route}/${it}")
+
+                    navController.navigate("${DetailsDestination.route}/${it}")
+                },
+                navigateToEntry = { navController.navigate(EntryDestination.route) }
+            )
+        }
+        composable(route = MonthlyDestination.route) {
+
+            println("MoneyMoneyNavHost - navigateToMonthlyDetail = ${MonthlyDetailDestination.route}/${it}")
+
+            MonthlyScreen(
+                navigateBack = { navController.popBackStack() },
+                onNavigateUp = { navController.navigateUp() },
+                navigateToMonthlyDetail = {
+
+                    println("MoneyMoneyNavHost - navigateToMonthlyDetail = ${MonthlyDetailDestination.route}/${it}")
+
+                    navController.navigate("${MonthlyDetailDestination.route}/${it}")
+                },
+                navigateToEntry = { navController.navigate(EntryDestination.route) }
+            )
+        }
+        composable(
+            route = MonthlyDetailDestination.routeWithArgs,
+            arguments = listOf(navArgument(MonthlyDetailDestination.itemIdArg) {
+                type = NavType.IntType
+            })
+        ){
+
+            println("MoneyMoneyNavHost - navigateToDetail = ${DetailsDestination.route}/${it}")
+
+            MonthlyDetailsScreen(
                 navigateBack = { navController.popBackStack() },
                 onNavigateUp = { navController.navigateUp() },
                 navigateToDetail = {

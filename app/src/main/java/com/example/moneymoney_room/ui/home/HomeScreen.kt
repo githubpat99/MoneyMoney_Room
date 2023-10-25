@@ -57,6 +57,7 @@ object HomeDestination : NavigationDestination {
 fun HomeScreen(
     navigateToList: () -> Unit,
     navigateToRegistration: () -> Unit,
+    navigateToMonthly: () -> Unit,
     navigateToBudget: () -> Unit,
     navigateToGooglePicker: () -> Unit,
     viewModel: HomeViewModel = viewModel(factory = AppViewModelProvider.Factory),
@@ -136,17 +137,12 @@ fun HomeScreen(
                     },
                     text = "Import Test"
                 )
-                LoaderButton(
+                ActionButton(
                     modifier = Modifier
                         .padding(top = 8.dp),
                     active = switch,
-                    onClick = {
-                        val active = switch
-                        if (active) {
-                            isDialogVisible = true
-                        }
-                    },
-                    text = "Import myBudget"
+                    navigateToMonthly,
+                    text = "Monatsübersicht"
                 )
             }
 

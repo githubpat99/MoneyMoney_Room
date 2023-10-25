@@ -42,6 +42,12 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.Scope
 import com.google.android.gms.tasks.Task
 import com.google.api.services.drive.DriveScopes
+import io.ktor.client.HttpClient
+import io.ktor.client.request.get
+import io.ktor.client.statement.HttpResponse
+import io.ktor.client.statement.bodyAsText
+import io.ktor.http.isSuccess
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 
@@ -115,6 +121,9 @@ fun GooglePickerScreenBody(
     viewModel: GooglePickerViewModel,
 ) {
     val coroutineScope = rememberCoroutineScope()
+
+    // Here's the HttpClient declaration now
+    val client = remember { HttpClient() }
 
     var folderName by remember { mutableStateOf("Private") }
     var fileName by remember { mutableStateOf("test.csv") }
@@ -199,36 +208,93 @@ fun GooglePickerScreenBody(
             onValueChange = { fileName = it },
             readOnly = false
         )
+        Row() {
+            Button(
+                modifier = Modifier
+                    .padding(16.dp),
+                enabled = folderName.isNotBlank() && fileName.isNotBlank() &&
+                        (displayName != "logged off" && displayName != ""),
+                onClick = {
 
-        Button(
-            modifier = Modifier
-                .padding(16.dp),
-            enabled = folderName.isNotBlank() && fileName.isNotBlank() &&
-                    (displayName != "logged off" && displayName != ""),
-            onClick = {
+                    // Progress Indicator on
+                    viewModel.isImporting = true
+                    // Launch a coroutine to download the CSV file
+                    coroutineScope.launch {
+                        val downloadedContent =
+                            viewModel.downloadCsvFile(context, folderName, fileName)
 
-                // Progress Indicator on
-                viewModel.isImporting = true
-                // Launch a coroutine to download the CSV file
-                coroutineScope.launch {
-                    val downloadedContent = viewModel.downloadCsvFile(context, folderName, fileName)
+                        // Progress Indicator off
+                        viewModel.isImporting = false
 
-                    // Progress Indicator off
-                    viewModel.isImporting = false
-
-                    if (downloadedContent != null) {
-                        // Update the state with the downloaded content
-                        fileContent = downloadedContent
-                        Toast.makeText(context, "Daten wurden erfolgreich importiert", Toast.LENGTH_LONG).show()
-                    } else {
-                        // Handle the case where download failed
-                        Toast.makeText(context, "Daten konnten leider nicht importiert werden", Toast.LENGTH_LONG).show()
+                        if (downloadedContent != null) {
+                            // Update the state with the downloaded content
+                            fileContent = downloadedContent
+                            Toast.makeText(
+                                context,
+                                "Daten wurden erfolgreich importiert",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        } else {
+                            // Handle the case where download failed
+                            Toast.makeText(
+                                context,
+                                "Daten konnten leider nicht importiert werden",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
                     }
                 }
+            ) {
+                Text("Download CSV")
             }
-        ) {
-            Text("Download CSV")
+
+            val webAppUrl =
+                "https://script.google.com/macros/s/AKfycbyT4p6C_YvUSKLnnDhGcR7Bq-yQB8XIZjnEwawURRCVp5_q-SFFcoiEfS1FYOrENKPq/exec"
+
+            val myUrl =
+                "$webAppUrl?action=exportCSV"
+
+            Button(
+                onClick = {
+                    coroutineScope.launch {
+                        try {
+                            val response = client.get(myUrl)
+                            if (response.status.isSuccess()) {
+                                val responseBody =
+                                    response.bodyAsText() // Read the response as text
+
+//                                println("CSV Data: $responseBody")
+
+                                // Now responseBody contains your CSV data as a string
+                                // You can parse and process it as needed
+
+                                // For example, you can split the CSV data into lines
+                                val message = viewModel.processCsvData(responseBody)
+                                Toast.makeText(
+                                    context,
+                                    message,
+                                    Toast.LENGTH_LONG
+                                ).show()
+
+
+                            }
+                        } catch (e: Exception) {
+                            // Handle any errors
+                            println("error = ${e.localizedMessage}")
+                            Toast.makeText(
+                                context,
+                                "Error calling Apps Script: ${e.localizedMessage}",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
+                    }
+                },
+                modifier = Modifier.padding(16.dp)
+            ) {
+                Text("Call Apps Script")
+            }
         }
+
 
         if (viewModel.isImporting) {
             LinearProgressIndicator(
@@ -240,6 +306,50 @@ fun GooglePickerScreenBody(
 
     }
 }
+
+@Composable
+fun callAppsScriptWebApp(client: HttpClient, coroutineScope: CoroutineScope) {
+
+    val context = LocalContext.current
+
+    val scriptUrl =
+        "https://script.google.com/macros/s/your_web_app_id/exec" // Replace with your Web App URL
+
+    Button(
+        onClick = {
+            coroutineScope.launch {
+                try {
+                    val response: HttpResponse = client.get("$scriptUrl/exec")
+
+                    if (response.status.isSuccess()) {
+                        val responseBody = response.bodyAsText()
+                        // Handle the response as needed
+                        println("Response from Apps Script: $responseBody")
+                    } else {
+                        // Handle non-successful response
+                        Toast.makeText(
+                            context,
+                            "Error calling Apps Script: ${response.status.description}",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+                } catch (e: Exception) {
+                    // Handle any errors
+                    Toast.makeText(
+                        context,
+                        "Error calling Apps Script: ${e.localizedMessage}",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            }
+        }
+    ) {
+        Text("Execute Apps Script")
+    }
+}
+
+
+
 
 
 

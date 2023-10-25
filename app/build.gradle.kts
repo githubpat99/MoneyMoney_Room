@@ -51,6 +51,7 @@ android {
 
         }
     }
+
 }
 
 dependencies {
@@ -76,7 +77,7 @@ dependencies {
     testImplementation("junit:junit:4.12")
     ksp("androidx.room:room-compiler:${rootProject.extra["room_version"]}")
     implementation("androidx.room:room-ktx:${rootProject.extra["room_version"]}")
-    
+
     //iO
 
     //Csv Parser
@@ -99,6 +100,20 @@ dependencies {
     implementation("com.google.apis:google-api-services-drive:v3-rev136-1.25.0") {
         exclude(group = "org.apache.httpcomponents", module = "guava-jdk5")
     }
+// Ktor HTTP Client
+    implementation("io.ktor:ktor-client-android:2.3.4")
+
+// Ktor Client Core
+    implementation("io.ktor:ktor-client-core:2.3.4")
+
+// Square’s meticulous HTTP client for Java and Kotlin
+    implementation("com.squareup.okhttp3:okhttp:5.0.0-alpha.11")
+
+    // kotlinx-coroutines-android
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+
+
+
 
 
 

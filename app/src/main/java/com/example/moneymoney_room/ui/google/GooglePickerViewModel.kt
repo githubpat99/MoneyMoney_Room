@@ -94,8 +94,6 @@ class GooglePickerViewModel(
         val drive = getDriveService(context)
         var message = "something went wrong - too bad..."
 
-        println("GooglePickerViewModel - 00")
-
         return withContext(Dispatchers.IO) {
             try {
                 // Search for the folder by name
@@ -162,7 +160,7 @@ class GooglePickerViewModel(
 
                 // additionally update Configuration based on Csv Info
 
-                updateConfiguration(saldoDouble, userName, password, email, context)
+                updateConfiguration(saldoDouble, userName, password, email)
 
                 return@withContext message
             } catch (e: Exception) {
@@ -172,20 +170,65 @@ class GooglePickerViewModel(
         }
     }
 
+    suspend fun processCsvData(csvData: String): String {
+        val lines = csvData.split("\n")
+        var message = "something went wrong - too bad..."
+
+        if (lines.isNotEmpty()) {
+            val firstLine = lines[0]
+
+            println("GooglePickerViewModel - firstLine = $firstLine")
+
+            val columns = firstLine.split(",")
+
+            println("GooglePickerViewModel - columns = ${columns.size}")
+
+            if (columns.size >= 10) {
+                val title = columns[0].replace(Regex("[\n\r\\s]+"), "")
+                val year = columns[1].replace(Regex("[\n\r\\s]+"), "")
+                val userName = "$title - $year"
+                val saldoValue = columns[9].trim('"').replace("[^0-9.]".toRegex(), "")
+                val saldoDouble = saldoValue.toDoubleOrNull() ?: 0.0
+
+                updateConfiguration(saldoDouble, userName, password, email)
+
+                println("GooglePickerViewModel - updateConfiguration = $saldoDouble - $userName")
+            }
+        }
+
+        val itemList: List<Item> = ItemListGenerator().AccountFromDataString(csvData)
+        val it = itemList.iterator()
+
+        println("GooglePickerViewModel - items = ${itemList.size}")
+
+        message = "my Budget updated successfully..."
+
+        // Transform ItemDetail to Item and add it to the Db - directly
+        while (it.hasNext() == true) {
+            itemsRepository.insertItem(it.next())
+        }
+
+        return message
+    }
+
     private fun updateConfiguration(
         startSaldo: Double,
         userName: String,
         password: String,
         email: String,
-        context: Context,
+
     ) {
 
-        val moneyMoneyDatabase = MoneyMoneyDatabase.getDatabase(context)
+        val moneyMoneyDatabase = context?.let { MoneyMoneyDatabase.getDatabase(it) }
 
         val updConfig = Configuration(startSaldo = startSaldo, userName = userName, password = password, email = email)
         viewModelScope.launch {
 
-            moneyMoneyDatabase.configurationDao().insert(updConfig)
+            println("GooglePickerViewModel - updateConfiguration = $saldoDouble, $userName, $password, $email")
+
+            if (moneyMoneyDatabase != null) {
+                moneyMoneyDatabase.configurationDao().insert(updConfig)
+            }
 
         }
     }
