@@ -1,5 +1,7 @@
 package com.example.moneymoney_room
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -16,6 +18,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.moneymoney_room.R.string
 import com.example.moneymoney_room.ui.navigation.MoneyMoneyNavHost
 
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
 fun MoneyMoneyApp(navController: NavHostController = rememberNavController()) {
     MoneyMoneyNavHost(navController = navController)

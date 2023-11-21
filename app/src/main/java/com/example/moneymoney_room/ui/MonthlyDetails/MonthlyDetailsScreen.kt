@@ -20,11 +20,11 @@ import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -36,14 +36,20 @@ import com.example.moneymoney_room.data.Item
 import com.example.moneymoney_room.ui.AppViewModelProvider
 import com.example.moneymoney_room.ui.list.ItemCard
 import com.example.moneymoney_room.ui.navigation.NavigationDestination
+import com.example.moneymoney_room.util.Utilities
 import java.text.NumberFormat
 import java.util.Locale
 
 object MonthlyDetailDestination : NavigationDestination {
+    const val Month = "month"
+    const val Year = "year"
+    const val EndSaldo = "endSaldo"
+    const val MonthlyTotal = "monthlyTotal"
     override val route = "monthlyDetail"
     override val titleRes = R.string.app_name
-    const val itemIdArg = "itemId"
-    val routeWithArgs = "$route/{$itemIdArg}"   //todo PIN: itemIdArg always in {}
+
+    val routeWithArgs =
+        "$route/{$Month}/{$Year}/{$EndSaldo}/{$MonthlyTotal}"  //todo PIN: itemIdArg always in {}
 }
 
 /**
@@ -55,6 +61,10 @@ object MonthlyDetailDestination : NavigationDestination {
 fun MonthlyDetailsScreen(
     navigateBack: () -> Unit,
     onNavigateUp: () -> Unit,
+    month: String,
+    year: String,
+    endSaldo: Double,
+    monthlyTotal: Double,
     navigateToDetail: (Int) -> Unit,
     navigateToEntry: () -> Unit,
     canNavigateBack: Boolean = true,
@@ -64,42 +74,58 @@ fun MonthlyDetailsScreen(
 
     val configurationState = viewModel.configuration.collectAsState(initial = null)
     var startSaldo = 0.0
+    val monthTxt = Utilities.MonthUtils.getMonthName(viewModel.month.toString())
 
     if (configurationState.value != null) {
         startSaldo = configurationState.value!!.startSaldo
     }
 
+    // Where did the User come from
+
+    val monthlyDetailsUiState = viewModel.monthlyDetailsUiState.collectAsState().value
+
+    var monthlyTotal = viewModel.monthlyTotal
+    val monthlyCalc = monthlyDetailsUiState.list.sumOf { it.amount }
+
+    val endSaldo = viewModel.endSaldo - monthlyTotal + monthlyCalc
+
+    println("MonthlyDetailsScreen - monthlyTotal = $monthlyTotal")
+    println("MonthlyDetailsScreen - monthlyCalc = $monthlyCalc")
+
+
     Scaffold(
         modifier = modifier,
         topBar = {
             MoneyMoneyTopAppBar(
-                title = "Monatsdetail",
+                title = "$monthTxt",
                 canNavigateBack = true,
                 navigateUp = onNavigateUp
             )
         }
     ) { innerPadding ->
         ListScreenBody(
-            viewModel,
+            monthlyUiState = monthlyDetailsUiState,
             onItemClick = navigateToDetail,
             navigateToEntry,
-            startSaldo
+            startSaldo,
+            endSaldo,
+            monthlyCalc
         )
     }
 }
 
 @Composable
 fun ListScreenBody(
-    viewModel: MonthlyDetailsViewModel,
+    monthlyUiState: MonthlyDetailsUiState,
     onItemClick: (Int) -> Unit,
     navigateToEntry: () -> Unit,
     startSaldo: Double,
+    endSaldo: Double,
+    monthlyTotal: Double
 
     ) {
 
     var saldoState = remember { mutableStateOf(startSaldo) }
-    val monthlyUiState: MonthlyDetailsUiState by viewModel.monthlyUiState.collectAsState()
-    val endSaldo = calculateEndSaldo(monthlyUiState.list, startSaldo)
 
     Box(
         modifier = Modifier
@@ -170,8 +196,14 @@ fun ListScreenBody(
             ) {
                 val formattedSaldo: String =
                     NumberFormat.getCurrencyInstance(Locale("de", "CH"))
-                        .format(endSaldo - startSaldo)
+                        .format(monthlyTotal)
 
+
+                var color = colorResource(id = R.color.dark_blue)
+
+                if (monthlyTotal < 0) {
+                    color = colorResource(id = R.color.dark_red)
+                }
 
                 CustomStyledText(
                     text = "Saldo",
@@ -182,7 +214,8 @@ fun ListScreenBody(
                 CustomStyledText(
                     text = "$formattedSaldo",
                     textAlign = TextAlign.End,
-                    fontWeight = FontWeight.Normal
+                    fontWeight = FontWeight.Normal,
+                    color = color
                 )
             }
         }
@@ -255,12 +288,13 @@ fun CustomStyledText(
     textAlign: TextAlign,
     fontWeight: FontWeight,
     modifier: Modifier = Modifier,
+    color: Color = Color.Black,
 ) {
     // Define a custom TextStyle with the provided textAlign
     val customTextStyle = LocalTextStyle.current.copy(
         fontSize = 16.sp,
         fontWeight = fontWeight,
-        color = Color.Black,
+        color = color,
         textAlign = textAlign,
         // Add any other desired style properties here
     )

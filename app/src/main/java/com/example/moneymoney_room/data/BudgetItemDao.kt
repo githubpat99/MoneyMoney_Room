@@ -12,31 +12,32 @@ import kotlinx.coroutines.flow.Flow
  * Database access object to access the Inventory database
  */
 @Dao
-interface ItemDao {
+interface BudgetItemDao {
 
-    @Query("SELECT * from items ORDER BY timestamp ASC")
-    fun getAllItems(): Flow<List<Item>>
+    @Query("SELECT * from budgetItems ORDER BY timestamp ASC")
+    fun getAllItems(): Flow<List<BudgetItem>>
 
-    @Query("SELECT * from items " +
-            "WHERE strftime('%Y', datetime(timestamp / 1000, 'unixepoch')) = :year " +
+    @Query("SELECT * FROM budgetItems " +
+            "WHERE strftime('%Y', datetime(timestamp, 'unixepoch')) = :year " +
             "ORDER BY timestamp ASC")
-    fun getAllItemsForYear(year: String): Flow<List<Item>>
+    fun getItemsForYear(year: String): Flow<List<BudgetItem>>
 
-    @Query("SELECT * from items WHERE id = :id")
-    fun getItem(id: Int): Flow<Item>
+
+    @Query("SELECT * from budgetItems WHERE id = :id")
+    fun getItem(id: Int): Flow<BudgetItem>
 
     // Specify the conflict strategy as IGNORE, when the user tries to add an
     // existing Item into the database Room ignores the conflict.
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(item: Item)
+    suspend fun insert(budgetItem: BudgetItem)
 
     @Update
-    suspend fun update(item: Item)
+    suspend fun update(budgetItem: BudgetItem)
 
     @Delete
-    suspend fun delete(item: Item)
+    suspend fun delete(budgetItem: BudgetItem)
 
     // Bulk Insert for a specific Account
-    @Query("DELETE from items")
-    suspend fun deleteAllItems()
+    @Query("DELETE from budgetItems")
+    suspend fun deleteAllBudgetItems()
 }

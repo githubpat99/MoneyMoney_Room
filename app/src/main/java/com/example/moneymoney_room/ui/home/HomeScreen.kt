@@ -5,15 +5,18 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Divider
@@ -22,24 +25,29 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.moneymoney_room.R
 import com.example.moneymoney_room.ui.AppViewModelProvider
 import com.example.moneymoney_room.ui.navigation.NavigationDestination
+import com.example.moneymoney_room.ui.overview.BudgetBox
+import com.example.moneymoney_room.ui.overview.LiveDataBox
+import com.example.moneymoney_room.util.Utilities
 import kotlinx.coroutines.launch
+import java.time.LocalDateTime
+import java.time.ZoneOffset
 
 
 object HomeDestination : NavigationDestination {
@@ -55,9 +63,9 @@ object HomeDestination : NavigationDestination {
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun HomeScreen(
-    navigateToList: () -> Unit,
+    navigateToBudgetForm: (String, String) -> Unit,
     navigateToRegistration: () -> Unit,
-    navigateToMonthly: () -> Unit,
+    navigateToMonthly: (String) -> Unit,
     navigateToBudget: () -> Unit,
     navigateToGooglePicker: () -> Unit,
     viewModel: HomeViewModel = viewModel(factory = AppViewModelProvider.Factory),
@@ -65,8 +73,8 @@ fun HomeScreen(
 
     val coroutineScope = rememberCoroutineScope()
     val appContext = LocalContext.current.applicationContext
-    var isDialogVisible by remember { mutableStateOf(false) }
     var switch: Boolean = false
+    var patPrivate: Boolean = false
 
     Box(
         modifier = Modifier
@@ -84,7 +92,7 @@ fun HomeScreen(
 
         Column(
             modifier = Modifier
-                .padding(24.dp, 160.dp, 0.dp, 24.dp)
+                .padding(12.dp, 160.dp, 0.dp, 24.dp)
         ) {
             LoginCard(
                 homeUiState = viewModel.homeUiState,
@@ -95,59 +103,39 @@ fun HomeScreen(
 
             if (viewModel.homeUiState.password.isNotBlank()) {
                 switch = true
-            }
-
-            Row(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                ActionButton(
-                    modifier = Modifier
-                        .padding(top = 16.dp, end = 8.dp),
-                    active = switch,
-                    navigateToList,
-                    text = "My Budget"
-                )
-                ActionButton(
-                    modifier = Modifier
-                        .padding(top = 16.dp),
-                    active = switch,
-                    navigateToBudget,
-                    text = "New Budget"
-                )
+                if (viewModel.homeUiState.password == "Passwort ") {
+                    patPrivate = true
+                }
             }
 
             Divider(
                 modifier = Modifier
-                    .padding(top = 140.dp),
+                    .padding(top = 12.dp),
+                color = Color.Gray, thickness = 1.dp
+            )
+
+            HorizontalScrollableOverview(
+                {
+                    println("HomeScreen - navigateToBudgetForm it: $it")
+
+                    navigateToBudgetForm(it,"0") },
+                { navigateToMonthly(it) },
+                viewModel)
+
+            Divider(
+                modifier = Modifier
+                    .padding(top = 4.dp),
                 color = Color.Gray, thickness = 1.dp
             )
 
             Row() {
-                LoaderButton(
+                ActionButton(
                     modifier = Modifier
                         .padding(8.dp),
                     active = switch,
-                    onClick = {
-                        val active = switch
-                        if (active) {
-                            coroutineScope.launch {
-                                viewModel.insertItems("data.csv", appContext)
-                            }
-                        }
-                    },
-                    text = "Import Test"
+                    navigateToRegistration,
+                    text = "Registration"
                 )
-                ActionButton(
-                    modifier = Modifier
-                        .padding(top = 8.dp),
-                    active = switch,
-                    navigateToMonthly,
-                    text = "Monatsübersicht"
-                )
-            }
-
-
-            Row() {
                 DeleteAll(
                     modifier = Modifier
                         .padding(8.dp),
@@ -160,24 +148,7 @@ fun HomeScreen(
                             }
                         }
                     },
-                    text = "Delete all..."
-                )
-                ActionButton(
-                    modifier = Modifier
-                        .padding(top = 8.dp),
-                    active = switch,
-                    navigateToGooglePicker,
-                    text = "Pick from GDrive"
-                )
-            }
-
-            Row() {
-                ActionButton(
-                    modifier = Modifier
-                        .padding(top = 8.dp),
-                    active = switch,
-                    navigateToRegistration,
-                    text = "Registration"
+                    text = "Live löschen"
                 )
             }
 
@@ -197,31 +168,6 @@ fun ActionButton(
     Button(
         modifier = modifier,
         onClick = navigateToList,
-        enabled = active,
-        colors = ButtonDefaults.buttonColors(
-            contentColor = Color.LightGray,
-            disabledContentColor = Color.Gray
-        )
-    ) {
-        Text(text = text)
-
-    }
-}
-
-@Composable
-fun LoaderButton(
-    modifier: Modifier,
-    active: Boolean,
-    onClick: () -> Unit,
-    text: String,
-) {
-    Button(
-        modifier = modifier,
-        onClick = {
-            if (active) {
-                onClick()
-            }
-        },
         enabled = active,
         colors = ButtonDefaults.buttonColors(
             contentColor = Color.LightGray,
@@ -294,56 +240,75 @@ fun LoginCard(
 }
 
 @Composable
-fun UrlInputDialog(
-    isVisible: Boolean,
-    onDismiss: () -> Unit,
-    onUrlEntered: (String) -> Unit,
+fun HorizontalScrollableOverview(
+    navigateToBudget: (String) -> Unit,
+    navigateToMonthly: (String) -> Unit,
+    viewModel: HomeViewModel,
+) {
+    // Replace this list with your actual content
+    val myBudgets = viewModel.overviewUiState.value
 
+
+    val configItemsState = viewModel.configItems.collectAsState(initial = emptyList())
+
+    val years = mutableListOf<String>()
+    var i = 0
+
+    configItemsState.value.forEach {
+        val appStart = it?.approxStartSaldo ?: 0.0
+        years.add(it?.budgetYear.toString() ?: "offen")
+    }
+
+    val nowTs = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
+    val nowString = Utilities.getStringDateFromTimestamp(nowTs)
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .horizontalScroll(rememberScrollState())
+            .background(colorResource(id = R.color.light_gray))
     ) {
+        configItemsState.value.forEach { item ->
+            Box(
+                modifier = Modifier
+                    .padding(horizontal = 0.dp)
+                    .width(200.dp)
+                    .height(320.dp)
+                    .background(color = colorResource(id = R.color.primary_background))
+            ) {
 
-    val urlState = remember { mutableStateOf("") }
+                val budgetDate = Utilities.getStringDateFromTimestamp(item?.ts ?: 0)
 
-    if (isVisible) {
-        AlertDialog(
-            onDismissRequest = {
-                // Dismiss the dialog when the user taps outside of it
-                onDismiss()
-            },
-            title = {
-                Text(text = "Enter URL")
-            },
-            text = {
-                OutlinedTextField(
-                    value = urlState.value,
-                    onValueChange = { text ->
-                        // Update the text value as the user types
-                        urlState.value = text
-                    },
-                    label = { Text("URL") }
-                )
-            },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        // Call the callback function with the entered URL
-                        onUrlEntered(urlState.value)
-                        onDismiss()
-                    }
+                Column(
+                    modifier = Modifier
+                        .padding(8.dp) // Add padding for better spacing
                 ) {
-                    Text("OK")
-                }
-            },
-            dismissButton = {
-                Button(
-                    onClick = {
-                        // Dismiss the dialog without taking any action
-                        onDismiss()
-                    }
-                ) {
-                    Text("Cancel")
+                    Text(
+                        text = item?.budgetYear.toString() ?: "open",
+                        style = TextStyle(
+                            color = colorResource(id = R.color.white),
+                            fontWeight = FontWeight.Bold,
+                        ),
+                        fontSize = 24.sp
+                    )
+                    BudgetBox(
+                        { navigateToBudget(it) },
+                        item?.budgetYear.toString(),
+                        item?.approxStartSaldo ?: 0.0,
+                        item?.approxEndSaldo ?: 0.0,
+                        budgetDate,
+                        item?.status ?: 0
+                    )
+                    LiveDataBox(
+                        { navigateToMonthly(it) },
+                        item?.budgetYear.toString(),
+                        item?.startSaldo ?: 0.0,
+                        item?.endSaldo ?: 0.0,
+                        nowString
+                    )
                 }
             }
-        )
+        }
     }
 }
 

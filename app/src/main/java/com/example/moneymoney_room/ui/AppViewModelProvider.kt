@@ -9,12 +9,15 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.moneymoney_room.MoneyMoneyApplication
 import com.example.moneymoney_room.ui.MonthlyDetails.MonthlyDetailsViewModel
 import com.example.moneymoney_room.ui.budget.BudgetViewModel
+import com.example.moneymoney_room.ui.budgetDetails.BudgetDetailsViewModel
+import com.example.moneymoney_room.ui.budgetForm.BudgetFormViewModel
 import com.example.moneymoney_room.ui.details.DetailsViewModel
 import com.example.moneymoney_room.ui.entry.EntryViewModel
 import com.example.moneymoney_room.ui.google.GooglePickerViewModel
 import com.example.moneymoney_room.ui.home.HomeViewModel
 import com.example.moneymoney_room.ui.list.ListViewModel
 import com.example.moneymoney_room.ui.monthly.MonthlyViewModel
+import com.example.moneymoney_room.ui.overview.OverviewViewModel
 import com.example.moneymoney_room.ui.registration.RegistrationViewModel
 
 /**
@@ -39,6 +42,14 @@ object AppViewModelProvider {
 
         // Initializer for ItemDetailsViewModel
         initializer {
+            BudgetDetailsViewModel(
+                this.createSavedStateHandle(),
+                moneymoneyApplication().container.budgetItemsRepository
+            )
+        }
+
+        // Initializer for ItemDetailsViewModel
+        initializer {
             ListViewModel(
                 moneymoneyApplication().container.itemsRepository,
                 moneymoneyApplication()
@@ -49,7 +60,8 @@ object AppViewModelProvider {
         initializer {
             MonthlyViewModel(
                 moneymoneyApplication().container.itemsRepository,
-                moneymoneyApplication()
+                moneymoneyApplication(),
+                this.createSavedStateHandle()
             )
         }
 
@@ -65,13 +77,29 @@ object AppViewModelProvider {
         // Initializer for HomeViewModel
         initializer {
             HomeViewModel(
-                moneymoneyApplication().container.itemsRepository
+                moneymoneyApplication().container.itemsRepository,
+                moneymoneyApplication()
             )
         }
 
         // Initializer for RegistrationViewModel
         initializer {
             RegistrationViewModel(moneymoneyApplication())
+        }
+
+        // Initializer for OverviewViewModel
+        initializer {
+            OverviewViewModel(moneymoneyApplication())
+        }
+
+        // Initializer for BudgetFormViewModel
+        initializer {
+            BudgetFormViewModel(
+                moneymoneyApplication().container.configurationRepository,
+                moneymoneyApplication().container.budgetItemsRepository,
+                moneymoneyApplication(),
+                this.createSavedStateHandle()
+            )
         }
 
         // Initializer for BudgetViewModel

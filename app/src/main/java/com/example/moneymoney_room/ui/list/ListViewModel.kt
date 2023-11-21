@@ -24,6 +24,8 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
 import java.io.IOException
+import java.time.LocalDateTime
+import java.time.ZoneOffset
 
 /**
  * ViewModel to retrieve all items in the Room database.
@@ -74,26 +76,25 @@ class ListViewModel(itemsRepository: ItemsRepository, application: MoneyMoneyApp
             val firstRowArray = valuesArray.getJSONArray(0)
 
             println("ListViewModel - firstRowArray = $firstRowArray")
-            println("ListViewModel - jsonObject = ${jsonObject}")
+//            println("ListViewModel - jsonObject = ${jsonObject}")
 
             // Process the title row differently
-            val title = firstRowArray.getString(1)
+            val budgetYear = 2023
             val saldoDouble = firstRowArray.getString(3)
                 .replace(".", "")
                 .replace(",", ".")
                 .toDouble()
             val password = ""
             val email = ""
-            updateConfiguration(saldoDouble, "$title", password, email)
+            val approxStartSaldo = 0.0
+            val approxEndSaldo = 0.0
+            val ts = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
 
-            println("ListViewModel - updateConfiguration")
-
+            updateConfiguration(ts, saldoDouble, 0.0, budgetYear, password, email, approxStartSaldo, approxEndSaldo)
 
             // and now the rest
             val itemList: List<Item> = ItemListGenerator().AccountFromJson(valuesArray)
             val it = itemList.iterator()
-
-            println("ListViewModel - ItemListGenerator().AccountFromJson(valuesArray)")
 
             message = "my Budget updated successfully..."
 
@@ -108,20 +109,28 @@ class ListViewModel(itemsRepository: ItemsRepository, application: MoneyMoneyApp
     }
 
     private fun updateConfiguration(
+        ts: Long,
         startSaldo: Double,
-        userName: String,
+        endSaldo: Double,
+        budgetYear: Int,
         password: String,
         email: String,
+        approxStartSaldo: Double,
+        approxEndSaldo: Double
 
         ) {
 
         val moneyMoneyDatabase = context?.let { MoneyMoneyDatabase.getDatabase(it) }
 
         val updConfig = Configuration(
+            ts = ts,
             startSaldo = startSaldo,
-            userName = userName,
+            endSaldo = endSaldo,
+            budgetYear = budgetYear,
             password = password,
-            email = email
+            email = email,
+            approxStartSaldo = approxStartSaldo,
+            approxEndSaldo = approxEndSaldo
         )
         viewModelScope.launch {
 
@@ -136,15 +145,12 @@ class ListViewModel(itemsRepository: ItemsRepository, application: MoneyMoneyApp
         val endIdx = url.indexOf("/edit")
 
         spreadSheetId = url.substring(startIdx, endIdx)
-        println("ListViewModel - saveSpreadsheetId = $spreadSheetId")
 
     }
 
     fun deleteGoogleSpreadsheet() {
         val webAppUrl = googleAppsScriptUrl
         val client = OkHttpClient()
-
-        println("ListViewModel - webAppUrl = $webAppUrl")
 
         val request = Request.Builder()
             .url(webAppUrl)
@@ -167,17 +173,6 @@ class ListViewModel(itemsRepository: ItemsRepository, application: MoneyMoneyApp
                 }
             }
         })
-    }
-}
-
-fun extractErrorMessage(htmlResponse: String): String {
-    val startIndex = htmlResponse.indexOf("Exception: ") + "Exception".length
-    val endIndex = htmlResponse.indexOf(". ", startIndex)
-
-    if (startIndex != -1 && endIndex != -1) {
-        return htmlResponse.substring(startIndex, endIndex + 1)
-    } else {
-        return "Error message not found"
     }
 }
 

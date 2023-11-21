@@ -1,20 +1,21 @@
 package com.example.moneymoney_room.ui.home
 
-import android.content.Context
-import android.os.Build
-import androidx.annotation.RequiresApi
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.moneymoney_room.data.Item
+import com.example.moneymoney_room.MoneyMoneyApplication
+import com.example.moneymoney_room.data.Configuration
 import com.example.moneymoney_room.data.ItemsRepository
-import com.example.moneymoney_room.ui.entry.ItemDetails
-import com.github.doyaaaaaken.kotlincsv.client.CsvReader
-import kotlinx.coroutines.Dispatchers
+import com.example.moneymoney_room.data.MoneyMoneyDatabase
+import com.example.moneymoney_room.ui.overview.OverviewUiState
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import java.net.URL
+import java.time.LocalDateTime
+import java.time.ZoneOffset
 
 
 /**
@@ -22,9 +23,42 @@ import java.net.URL
  */
 class HomeViewModel(
     private val itemsRepository: ItemsRepository,
+    application: MoneyMoneyApplication
 ) : ViewModel() {
+
+    val context = application.applicationContext
+
+    private val moneyMoneyDatabase = MoneyMoneyDatabase.getDatabase(application)
+
+    val configItems: Flow<List<Configuration?>> =
+        moneyMoneyDatabase.configurationDao().getConfigurations()
+
+    val configuration: Flow<Configuration?> =
+        moneyMoneyDatabase.configurationDao().getConfiguration()
     var homeUiState by mutableStateOf(HomeUiState())
         private set
+
+    // Initialize overviewUiState with values from configuration
+    var overviewUiState: MutableState<OverviewUiState> = mutableStateOf(
+        OverviewUiState()
+    )
+
+    init {
+        viewModelScope.launch {
+            val configurationValue = configuration.first() // Wait for the first value
+            overviewUiState.value = OverviewUiState(
+                status = configurationValue?.status ?: 0,
+                ts = configurationValue?.ts ?: LocalDateTime.now().toEpochSecond(ZoneOffset.UTC),
+                startSaldo = configurationValue?.startSaldo ?: 0.0,
+                budgetYear = configurationValue?.budgetYear ?: 0,
+                password = configurationValue?.password ?: "",
+                email = configurationValue?.email ?: "",
+                approxStartSaldo = configurationValue?.approxStartSaldo ?: 0.0,
+                approxEndSaldo = configurationValue?.approxEndSaldo ?: 0.0
+            )
+        }
+    }
+
 
     fun chgUserInfo(paramHomeUiState: HomeUiState) {
         homeUiState =
@@ -34,73 +68,10 @@ class HomeViewModel(
     suspend fun deleteItems() {
         itemsRepository.deleteAllItems()
     }
-
-    suspend fun insertItems(user: String, appContext: Context) {
-        viewModelScope.launch {
-
-            // Bulk Insert of Items for specific Account
-
-            // Get Data from Csv-File as a List of Details
-            val fileName = user
-
-            val itemList: List<Item> = ItemListGenerator().generateItemDetailsList(fileName, appContext)
-            val it = itemList.iterator()
-
-            // Transform ItemDetail to Item and add it to the Db - directly
-            while (it.hasNext() == true) {
-                itemsRepository.insertItem(it.next())
-            }
-        }
-    }
-
-    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
-    suspend fun insertItemsFromUrl(csvUrl: String) {
-        viewModelScope.launch(Dispatchers.IO) { // Run the coroutine on the IO dispatcher
-            try {
-                val url = URL(csvUrl)
-                println("HomeViewModel - url = $url")
-
-                val csvInputStream = url.openStream()
-                val csvDataString = csvInputStream.bufferedReader().use { it.readText() } // Read the CSV data as a // string
-                println("HomeViewModel - csvDataString = $csvDataString")
-
-                val csvReader = CsvReader()
-                val csvData = csvReader.readAll(csvDataString)
-                println("HomeViewModel - csvData = $csvData") // Print csvData
-
-                val itemList: List<Item> = ItemListGenerator().AccountFromUrl(csvData)
-                val it = itemList.iterator()
-
-                // Transform ItemDetail to Item and add it to the Db - directly
-                while (it.hasNext() == true) {
-                    itemsRepository.insertItem(it.next())
-                }
-
-            } catch (e: Exception) {
-                // Handle exceptions here, e.g., log an error or show a message to the user
-                e.printStackTrace()
-            }
-        }
-    }
 }
 
 data class HomeUiState(
-    val userId: String = "patrick",
-    val password: String = "Password",
+    val userId: String = "Demoversion",
+    val password: String = "Passwort",
 )
 
-/**
- * Extension function to convert [ItemDetails] to [Item]. If the value of [ItemDetails.price] is
- * not a valid [Double], then the price will be set to 0.0. Similarly if the value of
- * [ItemDetails.quantity] is not a valid [Int], then the quantity will be set to 0
- */
-fun ItemDetails.toItem(): Item = Item(
-    id = id,
-    timestamp = timestamp,
-    name = name,
-    description = description,
-    type = type,
-    amount = amount,
-    balance = 0.0,
-    debit = false
-)

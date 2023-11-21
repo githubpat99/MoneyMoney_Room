@@ -5,6 +5,8 @@ import kotlinx.coroutines.flow.Flow
 class OfflineItemsRepository(private val itemDao: ItemDao) : ItemsRepository {
     override fun getAllItemsStream(): Flow<List<Item>> = itemDao.getAllItems()
 
+    override fun getAllItemsStreamForYear(year: String): Flow<List<Item>> = itemDao.getAllItemsForYear(year)
+
     override fun getItemStream(id: Int): Flow<Item?> = itemDao.getItem(id)
 
     override suspend fun insertItem(item: Item) = itemDao.insert(item)

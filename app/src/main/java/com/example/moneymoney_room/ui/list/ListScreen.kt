@@ -103,7 +103,7 @@ fun ListScreen(
 
     if (configurationValue != null) {
         startSaldo = configurationValue.startSaldo
-        userName = configurationValue.userName
+        userName = configurationValue.budgetYear.toString()
         // Use the configuration values in your Composable
     } else {
         // Handle the case where configuration is not set yet

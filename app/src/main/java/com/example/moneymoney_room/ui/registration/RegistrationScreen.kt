@@ -1,17 +1,29 @@
 package com.example.moneymoney_room.ui.registration
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -71,97 +83,177 @@ fun RegistrationScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegistrationScreenBody(
     registrationUiState: RegistrationUiState,
     navigateBack: () -> Unit,
     onValueChange: (RegistrationUiState) -> Unit,
-    onSaveClick: (RegistrationUiState) -> Unit
+    onSaveClick: (RegistrationUiState) -> Unit,
 ) {
 
     val registrationUiState = registrationUiState
 
-    Column(
+    var expanded by remember { mutableStateOf(false) }
+    var gender by remember { mutableStateOf("") }
+
+    val dropdownItems = listOf<String>("xxx", "yyy")
+
+    println("pin ------------- test  1")
+
+    Box(
         modifier = Modifier
-            .padding(top = 128.dp, start = 32.dp)
+            .fillMaxSize()
+            .padding(top = 128.dp)
     ) {
-
-
-        OutlinedTextField(
-            value = registrationUiState.userName,
-            onValueChange = {
-                onValueChange(
-                    registrationUiState.copy(
-                        userName = it
-                    )
-                )
-            },
-            label = { Text(text = "Benutzer") },
-            visualTransformation = VisualTransformation.None,
-            keyboardOptions = KeyboardOptions.Default,
-            keyboardActions = KeyboardActions(onDone = {}),
-            maxLines = 1
-        )
-        OutlinedTextField(
-            value = registrationUiState.password,
-            onValueChange = {
-                onValueChange(
-                    registrationUiState.copy(
-                        password = it
-                    )
-                )
-            },
-            label = { Text(text = "Passwort") },
-            visualTransformation = PasswordVisualTransformation(),
-            keyboardOptions = KeyboardOptions(KeyboardCapitalization.None, true, KeyboardType.Password),
-            keyboardActions = KeyboardActions(onDone = {}),
-            maxLines = 1
-        )
-        OutlinedTextField(
-            value = registrationUiState.email,
-            onValueChange = {
-                onValueChange(
-                    registrationUiState.copy(
-                        email = it
-                    )
-                )
-            },
-            label = { Text(text = "E-Mail") },
-            visualTransformation = VisualTransformation.None,
-            keyboardOptions = KeyboardOptions.Default,
-            keyboardActions = KeyboardActions(onDone = {}),
-            maxLines = 1
-        )
-        OutlinedTextField(
-            value = registrationUiState.startSaldo.toString(),
-            onValueChange = {
-                onValueChange(
-                    registrationUiState.copy(
-                        startSaldo = it.toDouble()
-                    )
-                )
-            },
-            label = { Text(text = "Start Saldo") },
-            visualTransformation = VisualTransformation.None,
-            keyboardOptions = KeyboardOptions(KeyboardCapitalization.None, true, KeyboardType.Number),
-            keyboardActions = KeyboardActions(onDone = {}),
-            maxLines = 1
-        )
-
-        val enableRegisterButton = registrationUiState.userName.isNotEmpty() &&
-                registrationUiState.password.isNotEmpty() &&
-                registrationUiState.email.isNotEmpty()
-
-        Button(
-            modifier = Modifier
-                .padding(top=16.dp),
-            onClick = {
-                onSaveClick(registrationUiState)
-                      },
-            enabled = enableRegisterButton
+        ExposedDropdownMenuBox(
+            expanded = expanded,
+            onExpandedChange = { expanded = it }
         ) {
-            Text(text = "Register")
+
+            TextField(
+                value = gender,
+                onValueChange = {},
+                readOnly = true,
+                trailingIcon = {
+                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+                },
+                colors = ExposedDropdownMenuDefaults.textFieldColors(),
+                modifier = Modifier.menuAnchor()
+            )
+
+            ExposedDropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
+                DropdownMenuItem(
+                    text = {
+                        Text(text = "2023")
+                    },
+                    onClick = {
+                        gender = "2023"
+                        expanded = false
+                    }
+                )
+                DropdownMenuItem(
+                    text = {
+                        Text(text = "2024")
+                    },
+                    onClick = {
+                        gender = "2024"
+                        expanded = false
+                    }
+                )
+                DropdownMenuItem(
+                    text = {
+                        Text(text = "2025")
+                    },
+                    onClick = {
+                        gender = "2025"
+                        expanded = false
+                    }
+                )
+
+            }
         }
 
+
+
+        Column(
+            modifier = Modifier
+                .padding(top = 128.dp, start = 32.dp)
+        ) {
+
+            OutlinedTextField(
+                value = registrationUiState.password,
+                onValueChange = {
+                    onValueChange(
+                        registrationUiState.copy(
+                            password = it
+                        )
+                    )
+                },
+                label = { Text(text = "Passwort") },
+                visualTransformation = PasswordVisualTransformation(),
+                keyboardOptions = KeyboardOptions(
+                    KeyboardCapitalization.None,
+                    true,
+                    KeyboardType.Password
+                ),
+                keyboardActions = KeyboardActions(onDone = {}),
+                maxLines = 1
+            )
+            OutlinedTextField(
+                value = registrationUiState.email,
+                onValueChange = {
+                    onValueChange(
+                        registrationUiState.copy(
+                            email = it
+                        )
+                    )
+                },
+                label = { Text(text = "E-Mail") },
+                visualTransformation = VisualTransformation.None,
+                keyboardOptions = KeyboardOptions.Default,
+                keyboardActions = KeyboardActions(onDone = {}),
+                maxLines = 1
+            )
+            OutlinedTextField(
+                value = registrationUiState.startSaldo.toString(),
+                onValueChange = {
+                    onValueChange(
+                        registrationUiState.copy(
+                            startSaldo = it.toDouble()
+                        )
+                    )
+                },
+                label = { Text(text = "Start Saldo") },
+                visualTransformation = VisualTransformation.None,
+                keyboardOptions = KeyboardOptions(
+                    KeyboardCapitalization.None,
+                    true,
+                    KeyboardType.Number
+                ),
+                keyboardActions = KeyboardActions(onDone = {}),
+                maxLines = 1
+            )
+
+            val enableRegisterButton = true
+
+            Button(
+                modifier = Modifier
+                    .padding(top = 16.dp),
+                onClick = {
+                    onSaveClick(registrationUiState)
+                },
+                enabled = enableRegisterButton
+            ) {
+                Text(text = "Register")
+            }
+
+        }
+    }
+}
+
+@Composable
+fun MyDropdownMenu(dropdownItems: List<String>) {
+    var expanded by remember { mutableStateOf(false) }
+    var selectedIndex by remember { mutableStateOf(0) }
+
+    DropdownMenu(
+        expanded = expanded,
+        onDismissRequest = { expanded = false },
+        modifier = Modifier
+            .fillMaxWidth()
+    ) {
+        dropdownItems.forEachIndexed { index, item ->
+            DropdownMenuItem(
+                text = { Text(text = item) },
+                onClick = {
+                    selectedIndex = index
+                    expanded = false
+                }
+            )
+        }
     }
 }
