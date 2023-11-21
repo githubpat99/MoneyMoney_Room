@@ -120,4 +120,11 @@ dependencies {
     // Testing
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
+    androidTestImplementation("androidx.test:core:1.5.0")
+    androidTestImplementation("androidx.test:core-ktx:1.5.0")
+
+    testImplementation("io.mockk:mockk:1.12.0") // Check for the latest version on MockK's website
+    androidTestImplementation("io.mockk:mockk-android:1.12.0") // For Android instrumentation tests
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.5.1")
+    debugImplementation("androidx.compose.ui:ui-test-manifest:1.5.1")
 }

@@ -8,11 +8,12 @@ import androidx.room.RoomDatabase
 /**
  * Database class with a singleton Instance object.
  */
-@Database(entities = [Item::class, Configuration::class], version = 2, exportSchema = false)
+@Database(entities = [Item::class, Configuration::class, BudgetItem::class], version = 5, exportSchema = false)
 abstract class MoneyMoneyDatabase : RoomDatabase() {
 
     abstract fun itemDao(): ItemDao
     abstract fun configurationDao(): ConfigurationDao
+    abstract fun budgetItemDao(): BudgetItemDao
 
     companion object {
         @Volatile

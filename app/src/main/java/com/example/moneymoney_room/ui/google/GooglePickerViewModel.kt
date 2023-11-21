@@ -26,6 +26,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
+import java.time.LocalDateTime
+import java.time.ZoneOffset
 
 
 /**
@@ -160,7 +162,11 @@ class GooglePickerViewModel(
 
                 // additionally update Configuration based on Csv Info
 
-                updateConfiguration(saldoDouble, userName, password, email)
+                val approxStartSaldo = 0.0
+                val approxEndSaldo = 0.0
+                val ts = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
+
+                updateConfiguration(ts, saldoDouble, userName, password, email, approxStartSaldo, approxEndSaldo)
 
                 return@withContext message
             } catch (e: Exception) {
@@ -189,8 +195,11 @@ class GooglePickerViewModel(
                 val userName = "$title - $year"
                 val saldoValue = columns[9].trim('"').replace("[^0-9.]".toRegex(), "")
                 val saldoDouble = saldoValue.toDoubleOrNull() ?: 0.0
+                val approxStartSaldo = 0.0
+                val approxEndSaldo = 0.0
+                val ts = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
 
-                updateConfiguration(saldoDouble, userName, password, email)
+                updateConfiguration(ts, saldoDouble, userName, password, email, approxStartSaldo, approxEndSaldo)
 
                 println("GooglePickerViewModel - updateConfiguration = $saldoDouble - $userName")
             }
@@ -212,16 +221,21 @@ class GooglePickerViewModel(
     }
 
     private fun updateConfiguration(
+        ts: Long,
         startSaldo: Double,
         userName: String,
         password: String,
         email: String,
+        approxStartSaldo: Double,
+        approxEndSaldo: Double
 
     ) {
 
         val moneyMoneyDatabase = context?.let { MoneyMoneyDatabase.getDatabase(it) }
 
-        val updConfig = Configuration(startSaldo = startSaldo, userName = userName, password = password, email = email)
+        val updConfig = Configuration(
+            ts = ts, startSaldo = startSaldo, userName = userName, password = password, email = email,
+            approxStartSaldo = approxStartSaldo, approxEndSaldo = approxEndSaldo)
         viewModelScope.launch {
 
             println("GooglePickerViewModel - updateConfiguration = $saldoDouble, $userName, $password, $email")

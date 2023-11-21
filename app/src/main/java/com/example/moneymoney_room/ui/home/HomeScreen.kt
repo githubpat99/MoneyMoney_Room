@@ -22,11 +22,9 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -55,7 +53,7 @@ object HomeDestination : NavigationDestination {
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun HomeScreen(
-    navigateToList: () -> Unit,
+    navigateToBudgetForm: (Int) -> Unit,
     navigateToRegistration: () -> Unit,
     navigateToMonthly: () -> Unit,
     navigateToBudget: () -> Unit,
@@ -65,8 +63,8 @@ fun HomeScreen(
 
     val coroutineScope = rememberCoroutineScope()
     val appContext = LocalContext.current.applicationContext
-    var isDialogVisible by remember { mutableStateOf(false) }
     var switch: Boolean = false
+    var patPrivate: Boolean = false
 
     Box(
         modifier = Modifier
@@ -95,6 +93,9 @@ fun HomeScreen(
 
             if (viewModel.homeUiState.password.isNotBlank()) {
                 switch = true
+                if (viewModel.homeUiState.password == "Passwort ") {
+                    patPrivate = true
+                }
             }
 
             Row(
@@ -104,47 +105,47 @@ fun HomeScreen(
                     modifier = Modifier
                         .padding(top = 16.dp, end = 8.dp),
                     active = switch,
-                    navigateToList,
-                    text = "My Budget"
+                    navigateToMonthly,
+                    text = "Mein Budget"
                 )
-                ActionButton(
-                    modifier = Modifier
-                        .padding(top = 16.dp),
-                    active = switch,
-                    navigateToBudget,
-                    text = "New Budget"
-                )
+//                ActionButton(
+//                    modifier = Modifier
+//                        .padding(top = 16.dp),
+//                    active = switch,
+//                    navigateToBudget,
+//                    text = "New Budget"
+//                )
             }
 
             Divider(
                 modifier = Modifier
-                    .padding(top = 140.dp),
+                    .padding(top = 200.dp),
                 color = Color.Gray, thickness = 1.dp
             )
 
-            Row() {
-                LoaderButton(
-                    modifier = Modifier
-                        .padding(8.dp),
-                    active = switch,
-                    onClick = {
-                        val active = switch
-                        if (active) {
-                            coroutineScope.launch {
-                                viewModel.insertItems("data.csv", appContext)
-                            }
-                        }
-                    },
-                    text = "Import Test"
-                )
-                ActionButton(
-                    modifier = Modifier
-                        .padding(top = 8.dp),
-                    active = switch,
-                    navigateToMonthly,
-                    text = "Monatsübersicht"
-                )
-            }
+//            Row() {
+//                LoaderButton(
+//                    modifier = Modifier
+//                        .padding(8.dp),
+//                    active = switch,
+//                    onClick = {
+//                        val active = switch
+//                        if (active) {
+//                            coroutineScope.launch {
+//                                viewModel.insertItems("data.csv", appContext)
+//                            }
+//                        }
+//                    },
+//                    text = "Import Test"
+//                )
+//                ActionButton(
+//                    modifier = Modifier
+//                        .padding(top = 8.dp),
+//                    active = switch,
+//                    navigateToMonthly,
+//                    text = "Monatsübersicht"
+//                )
+//            }
 
 
             Row() {
@@ -160,24 +161,31 @@ fun HomeScreen(
                             }
                         }
                     },
-                    text = "Delete all..."
+                    text = "Budget löschen"
                 )
                 ActionButton(
                     modifier = Modifier
-                        .padding(top = 8.dp),
-                    active = switch,
+                        .padding(8.dp),
+                    active = patPrivate,
                     navigateToGooglePicker,
-                    text = "Pick from GDrive"
+                    text = "GDrive pick"
                 )
             }
 
             Row() {
                 ActionButton(
                     modifier = Modifier
-                        .padding(top = 8.dp),
+                        .padding(8.dp),
                     active = switch,
                     navigateToRegistration,
                     text = "Registration"
+                )
+                ActionButton(
+                    modifier = Modifier
+                        .padding(8.dp),
+                    active = switch,
+                    { navigateToBudgetForm(0) },
+                    text = "Budgetformular"
                 )
             }
 

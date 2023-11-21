@@ -35,6 +35,7 @@ class MonthlyViewModel(itemsRepository: ItemsRepository, application: MoneyMoney
                 initialValue = MonthlyUiState()
             )
 
+
     companion object {
         private const val TIMEOUT_MILLIS = 5_000L
 
@@ -44,3 +45,4 @@ class MonthlyViewModel(itemsRepository: ItemsRepository, application: MoneyMoney
 data class MonthlyUiState(
     val list: List<Item> = listOf(),
 )
+

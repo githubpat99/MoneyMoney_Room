@@ -8,7 +8,6 @@ import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -23,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
@@ -68,17 +68,12 @@ fun CreateBudgetScreen(
                 .padding(16.dp) // Add padding around the text
         )
 
-        Spacer(
-            modifier =
-            Modifier
-                .padding(16.dp)
-                .background(Color.Gray)
-        )
+
 
         GoogleSheetsLink(
             modifier = Modifier
                 .background(Color.Gray)
-                .height(150.dp),
+                .height(100.dp),
             "Erstelle Deine Budget-Tabelle",
             viewModel,
             context
@@ -134,7 +129,17 @@ fun CreateBudgetScreen(
                 .align(alignment = Alignment.CenterHorizontally),
             enabled = !spreadsheetId.isEmpty()
         ) {
-            Text("Budget jetzt importieren!")
+            if (spreadsheetId.isEmpty()) {
+                Text(
+                    "Budget danach importieren!",
+                    style = TextStyle(color = colorResource(id = R.color.light_gray))
+                )
+            } else {
+                Text(
+                    "Budget JETZT importieren!",
+                    style = TextStyle(color = colorResource(id = R.color.white))
+                )
+            }
         }
 
         if (viewModel.isImporting || viewModel.isRunning) {
@@ -154,7 +159,8 @@ fun GoogleSheetsLink(
     modifier: Modifier = Modifier,
     text: String,
     viewModel: ListViewModel,
-    context: Context) {
+    context: Context,
+) {
     val coroutineScope = rememberCoroutineScope()
     val text = text
 
@@ -164,7 +170,7 @@ fun GoogleSheetsLink(
                 append(text)
             }
             appendLine()
-            append("(Klicken, Bearbeiten, Importieren)") // Additional instructions
+            append("HIER klicken und bearbeiten") // Additional instructions
         },
         style = MaterialTheme.typography.headlineLarge,
         color = Color.White, // Color for the link text
@@ -172,19 +178,12 @@ fun GoogleSheetsLink(
         fontSize = 16.sp, // Adjust the font size as needed
         modifier = modifier
             .clickable {
-                // Handle the link click action here
-                /*
-                Old Version with Browser Call
-
-                val url =
-                    "https://docs.google.com/spreadsheets/d/112hN7on-j8OzBzLya96zxl7wkS3GJ6C4bkIJ94Ja8R0/edit#gid=672646673"
-                openUrlInBrowser(context, url)
-                */
 
                 // New Version with direct Call via - Square’s meticulous HTTP client for Java and Kotlin
                 callGoogleAppsScriptFunction(coroutineScope, viewModel, context)
             }
             .fillMaxWidth()
+            .padding(top = 16.dp)
     )
 }
 
@@ -203,7 +202,7 @@ private fun openUrlInBrowser(context: Context, url: String) {
 fun callGoogleAppsScriptFunction(
     coroutineScope: CoroutineScope,
     viewModel: ListViewModel,
-    context: Context
+    context: Context,
 ) {
 
     val scriptUrl = viewModel.googleAppsScriptUrl
@@ -258,7 +257,15 @@ fun callGoogleAppsScriptFunction(
 
                     println("ListScreen - responseBody: $url")
                     viewModel.saveSpreadsheetId(url)
-                    openUrlInBrowser(context, url)
+
+                    // Removing Gridlines in GoogleSheets
+                    val modifiedUrl = if (url.contains("?")) {
+                        "$url&rm=minimal"
+                    } else {
+                        "$url?rm=minimal"
+                    }
+
+                    openUrlInBrowser(context, modifiedUrl)
                 }
             }
         } catch (e: Exception) {

@@ -9,6 +9,8 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.moneymoney_room.MoneyMoneyApplication
 import com.example.moneymoney_room.ui.MonthlyDetails.MonthlyDetailsViewModel
 import com.example.moneymoney_room.ui.budget.BudgetViewModel
+import com.example.moneymoney_room.ui.budgetDetails.BudgetDetailsViewModel
+import com.example.moneymoney_room.ui.budgetForm.BudgetFormViewModel
 import com.example.moneymoney_room.ui.details.DetailsViewModel
 import com.example.moneymoney_room.ui.entry.EntryViewModel
 import com.example.moneymoney_room.ui.google.GooglePickerViewModel
@@ -34,6 +36,14 @@ object AppViewModelProvider {
             DetailsViewModel(
                 this.createSavedStateHandle(),
                 moneymoneyApplication().container.itemsRepository
+            )
+        }
+
+        // Initializer for ItemDetailsViewModel
+        initializer {
+            BudgetDetailsViewModel(
+                this.createSavedStateHandle(),
+                moneymoneyApplication().container.budgetItemsRepository
             )
         }
 
@@ -72,6 +82,16 @@ object AppViewModelProvider {
         // Initializer for RegistrationViewModel
         initializer {
             RegistrationViewModel(moneymoneyApplication())
+        }
+
+        // Initializer for BudgetFormViewModel
+        initializer {
+            BudgetFormViewModel(
+                moneymoneyApplication().container.configurationRepository,
+                moneymoneyApplication().container.budgetItemsRepository,
+                moneymoneyApplication(),
+                this.createSavedStateHandle()
+            )
         }
 
         // Initializer for BudgetViewModel
