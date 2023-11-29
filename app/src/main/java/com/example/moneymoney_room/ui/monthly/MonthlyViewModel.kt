@@ -21,7 +21,7 @@ import kotlinx.coroutines.flow.stateIn
  */
 
 class MonthlyViewModel(
-    itemsRepository: ItemsRepository,
+    val itemsRepository: ItemsRepository,
     application: MoneyMoneyApplication,
     savedStateHandle: SavedStateHandle
 ) :ViewModel() {
@@ -32,8 +32,7 @@ class MonthlyViewModel(
     val configuration: Flow<Configuration?> =
         moneyMoneyDatabase.configurationDao().getConfigurationForYear(year)
 
-    val itemsRepository = itemsRepository
-    val context: Context? = application.applicationContext
+    val context: Context = application.applicationContext
 
     val monthlyUiState: StateFlow<MonthlyUiState> =
         itemsRepository.getAllItemsStreamForYear(year).map { MonthlyUiState(it) }
@@ -42,6 +41,7 @@ class MonthlyViewModel(
                 started = SharingStarted.WhileSubscribed(TIMEOUT_MILLIS),
                 initialValue = MonthlyUiState()
             )
+
 
     companion object {
         private const val TIMEOUT_MILLIS = 5_000L
