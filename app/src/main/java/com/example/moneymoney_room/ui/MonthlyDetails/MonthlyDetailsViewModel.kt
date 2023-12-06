@@ -5,14 +5,17 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.moneymoney_room.MoneyMoneyApplication
 import com.example.moneymoney_room.data.Configuration
+import com.example.moneymoney_room.data.ConfigurationRepository
 import com.example.moneymoney_room.data.Item
 import com.example.moneymoney_room.data.ItemsRepository
 import com.example.moneymoney_room.data.MoneyMoneyDatabase
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import java.util.Calendar
 import java.util.TimeZone
 
@@ -23,6 +26,7 @@ import java.util.TimeZone
 class MonthlyDetailsViewModel(
     savedStateHandle: SavedStateHandle,
     itemsRepository: ItemsRepository,
+    val configurationRepository: ConfigurationRepository,
     application: MoneyMoneyApplication
 ) :
     ViewModel() {
@@ -43,21 +47,12 @@ class MonthlyDetailsViewModel(
     val monthlyTotal: Double = value4.toString().toDouble()
 
     val yearAndMonth = "$year$month".toInt()
+    val yearString = "$year"
 
     val timestamps = getFirstAndLastTimestamp(yearAndMonth)
     val firstTimestamp = timestamps.first
     val lastTimestamp = timestamps.second
 
-    init {
-        println("MonthlyDetailsViewModel - year = $year")
-        println("MonthlyDetailsViewModel yearAndMonth: $yearAndMonth")
-        println("MonthlyDetailsViewModel value3: $value3")
-        println("MonthlyDetailsViewModel - monthlyTotal: $monthlyTotal")
-        println("MonthlyDetailsViewModel endSaldo: $endSaldo")
-    }
-
-    // todo PIN:
-    // save only Items of Specific Month (monthId) in monthlyUiState
     val monthlyDetailsUiState: StateFlow<MonthlyDetailsUiState> =
         itemsRepository.getAllItemsStream()
             .map { items ->
@@ -73,9 +68,20 @@ class MonthlyDetailsViewModel(
                 initialValue = MonthlyDetailsUiState()
             )
 
+    init {
+
+        viewModelScope.launch(Dispatchers.IO) {
+            configurationRepository.updateConfigurationEndSaldoForYear(yearString, endSaldo)
+
+        }
+    }
+
     companion object {
         private const val TIMEOUT_MILLIS = 5_000L
+    }
 
+    suspend fun saveItem(item: Item) {
+        itemsRepository.insertItem(item)
     }
 }
 

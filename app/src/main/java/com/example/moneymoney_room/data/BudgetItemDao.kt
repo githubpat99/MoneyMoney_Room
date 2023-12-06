@@ -22,6 +22,12 @@ interface BudgetItemDao {
             "ORDER BY timestamp ASC")
     fun getItemsForYear(year: String): Flow<List<BudgetItem>>
 
+    @Query("SELECT * FROM budgetItems " +
+            "WHERE strftime('%Y', datetime(timestamp + :timeZoneOffsetInSeconds, 'unixepoch')) = :year " +
+            "ORDER BY timestamp ASC, id DESC")
+    fun getBudgetItemsForYear(year: String, timeZoneOffsetInSeconds: Long): Flow<List<BudgetItem>>
+
+
 
     @Query("SELECT * from budgetItems WHERE id = :id")
     fun getItem(id: Int): Flow<BudgetItem>

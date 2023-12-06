@@ -1,6 +1,7 @@
 package com.example.moneymoney_room.ui.MonthlyDetails
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -11,20 +12,27 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.BasicText
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -37,8 +45,8 @@ import com.example.moneymoney_room.ui.AppViewModelProvider
 import com.example.moneymoney_room.ui.list.ItemCard
 import com.example.moneymoney_room.ui.navigation.NavigationDestination
 import com.example.moneymoney_room.util.Utilities
-import java.text.NumberFormat
-import java.util.Locale
+import kotlinx.coroutines.launch
+import java.text.DecimalFormat
 
 object MonthlyDetailDestination : NavigationDestination {
     const val Month = "month"
@@ -72,6 +80,7 @@ fun MonthlyDetailsScreen(
     viewModel: MonthlyDetailsViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
 
+    val coroutineScope = rememberCoroutineScope()
     val configurationState = viewModel.configuration.collectAsState(initial = null)
     var startSaldo = 0.0
     val monthTxt = Utilities.MonthUtils.getMonthName(viewModel.month.toString())
@@ -80,18 +89,16 @@ fun MonthlyDetailsScreen(
         startSaldo = configurationState.value!!.startSaldo
     }
 
-    // Where did the User come from
-
     val monthlyDetailsUiState = viewModel.monthlyDetailsUiState.collectAsState().value
-
     var monthlyTotal = viewModel.monthlyTotal
-    val monthlyCalc = monthlyDetailsUiState.list.sumOf { it.amount }
+    var monthlyCalc = 0.0
+    var endSaldo = 0.0
 
-    val endSaldo = viewModel.endSaldo - monthlyTotal + monthlyCalc
-
-    println("MonthlyDetailsScreen - monthlyTotal = $monthlyTotal")
-    println("MonthlyDetailsScreen - monthlyCalc = $monthlyCalc")
-
+    // only Calculate endSaldo when UiState Information is ready
+    if (monthlyDetailsUiState.list.isEmpty() == false) {
+        monthlyCalc = monthlyDetailsUiState.list.sumOf { it.amount }    // actual Month Total
+        endSaldo = viewModel.endSaldo - monthlyTotal + monthlyCalc
+    }
 
     Scaffold(
         modifier = modifier,
@@ -109,7 +116,8 @@ fun MonthlyDetailsScreen(
             navigateToEntry,
             startSaldo,
             endSaldo,
-            monthlyCalc
+            monthlyCalc,
+            viewModel
         )
     }
 }
@@ -121,50 +129,88 @@ fun ListScreenBody(
     navigateToEntry: () -> Unit,
     startSaldo: Double,
     endSaldo: Double,
-    monthlyTotal: Double
+    monthlyTotal: Double,
+    viewModel: MonthlyDetailsViewModel,
 
     ) {
-
+    val coroutineScope = rememberCoroutineScope()
     var saldoState = remember { mutableStateOf(startSaldo) }
+    val decimalFormat = DecimalFormat("#,##0.00")
+
+    val yearAndMonthString = viewModel.yearAndMonth.toString()
+    val yearString = yearAndMonthString.substring(0,4)
+    val yearInt = yearString.toInt()
 
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .background(color = colorResource(id = R.color.light_blue))
     ) {
 
         // Header
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color.LightGray)
                 .padding(top = 64.dp),
 
             ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+//                        .background(colorResource(id = R.color.semi_gray))
+            ) {
 
+                com.example.moneymoney_room.ui.monthly.CustomStyledText(
+                    text = "",
+                    textAlign = TextAlign.Left,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier
+                        .weight(1f)
+                        .background(color = colorResource(id = R.color.white)),
+                )
+                com.example.moneymoney_room.ui.monthly.CustomStyledText(
+                    text = "",
+                    textAlign = TextAlign.Center,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier
+                        .weight(1f)
+                        .background(color = colorResource(id = R.color.white)),
+                )
+
+                com.example.moneymoney_room.ui.monthly.CustomStyledText(
+                    text = "Live",
+                    textAlign = TextAlign.Center,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.weight(1f),
+                    color = colorResource(id = R.color.white)
+                )
+            }
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                val formattedSaldo: String =
-                    NumberFormat.getCurrencyInstance(Locale("de", "CH")).format(startSaldo)
+
+                val formattedSaldo: String = decimalFormat.format(startSaldo)
 
 
                 CustomStyledText(
-                    text = "Start 1.1.2023",
+                    text = "01.01.$yearString",
                     textAlign = TextAlign.Left,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Normal,
+                    color = colorResource(id = R.color.white)
                 )
 
                 CustomStyledText(
                     text = "$formattedSaldo",
                     textAlign = TextAlign.End,
-                    fontWeight = FontWeight.Normal
+                    fontWeight = FontWeight.Normal,
+                    color = colorResource(id = R.color.white)
                 )
             }
 
-            var background = Color.Green
+            var background = colorResource(id = R.color.green)
             if (endSaldo < startSaldo) {
-                background = Color.Red
+                background = colorResource(id = R.color.dark_red)
             }
 
             Row(
@@ -173,20 +219,21 @@ fun ListScreenBody(
                     .background(background),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                val formattedSaldo: String =
-                    NumberFormat.getCurrencyInstance(Locale("de", "CH")).format(endSaldo)
+                val formattedSaldo: String = decimalFormat.format(endSaldo)
 
 
                 CustomStyledText(
-                    text = "End   31.12.2023",
+                    text = "31.12.$yearString",
                     textAlign = TextAlign.Left,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    color = colorResource(id = R.color.white)
                 )
 
                 CustomStyledText(
                     text = "$formattedSaldo",
                     textAlign = TextAlign.End,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    color = colorResource(id = R.color.white)
                 )
             }
             Row(
@@ -194,51 +241,79 @@ fun ListScreenBody(
                     .fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                val formattedSaldo: String =
-                    NumberFormat.getCurrencyInstance(Locale("de", "CH"))
-                        .format(monthlyTotal)
-
-
-                var color = colorResource(id = R.color.dark_blue)
-
-                if (monthlyTotal < 0) {
-                    color = colorResource(id = R.color.dark_red)
-                }
+                val formattedSaldo: String = decimalFormat.format(monthlyTotal)
 
                 CustomStyledText(
                     text = "Saldo",
                     textAlign = TextAlign.Left,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Normal,
+                    color = colorResource(id = R.color.white)
                 )
 
                 CustomStyledText(
                     text = "$formattedSaldo",
                     textAlign = TextAlign.End,
                     fontWeight = FontWeight.Normal,
-                    color = color
+                    color = colorResource(id = R.color.white)
                 )
             }
         }
-    }
 
-    // Body (Main content)
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .fillMaxHeight()
-            .padding(top = 180.dp, bottom = 24.dp)
-    ) {
 
-        ShowOnlyRelevantElements(
-            monthlyUiState.list,
-            startSaldo,
-            onItemClick = { onItemClick(it.id) },
-            navigateToEntry,
-            onSaldoChange = { newSaldo ->
-                saldoState.value = newSaldo
+        // Body (Main content)
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight()
+                .padding(top = 190.dp, bottom = 24.dp)
+        ) {
+            ShowOnlyRelevantElements(
+                monthlyUiState.list,
+                startSaldo,
+                onItemClick = { onItemClick(it.id) },
+                navigateToEntry,
+                onSaldoChange = { newSaldo ->
+                    saldoState.value = newSaldo
+                }
+            )
+        }
+        Column (
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.BottomStart)
+        ){
+
+
+            var yearInt = 0
+            var monthInt = 0
+
+            Button(
+                modifier = Modifier
+                    .padding(4.dp),
+                onClick = {
+                    val ts = viewModel.firstTimestamp
+                    val item: Item =
+                        Item(0, ts, "Neu", "", 12, 0.0, 0.0, false)
+
+                    coroutineScope.launch {
+                        viewModel.saveItem(item)
+                    }
+                },
+                enabled = true,
+                colors = ButtonDefaults.buttonColors(
+                    contentColor = colorResource(id = R.color.white),
+                    containerColor = colorResource(id = R.color.light_blue)
+                ),
+                border = BorderStroke(1.dp, colorResource(id = R.color.white))
+            ) {
+
+                Icon(
+                    painterResource(id = R.drawable.add_24), // Use your custom "+" icon
+                    contentDescription = null, // Provide a content description if needed
+                    modifier = Modifier.size(24.dp)
+                )
             }
-
-        )
+        }
     }
 }
 
@@ -266,19 +341,14 @@ fun ShowOnlyRelevantElements(
     LazyColumn(
         state = lazyListState
     ) {
-
-        println("MonthlyDetailsScreen - ShowOnlyRelevantElements - items = $itemList")
-
         items(items = itemList) {
-
-            if (it.amount != 0.00) {
-                ItemCard(
-                    item = it,
-                    modifier = Modifier
-                        .clickable { onItemClick(it) }
-                )
-            }
+            ItemCard(
+                item = it,
+                modifier = Modifier
+                    .clickable { onItemClick(it) }
+            )
         }
+
     }
 }
 
@@ -303,6 +373,6 @@ fun CustomStyledText(
     BasicText(
         text = text,
         style = customTextStyle,
-        modifier = modifier.padding(8.dp)
+        modifier = modifier.padding(4.dp),
     )
 }

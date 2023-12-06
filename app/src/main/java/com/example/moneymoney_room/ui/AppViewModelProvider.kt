@@ -36,7 +36,8 @@ object AppViewModelProvider {
         initializer {
             DetailsViewModel(
                 this.createSavedStateHandle(),
-                moneymoneyApplication().container.itemsRepository
+                moneymoneyApplication().container.itemsRepository,
+                moneymoneyApplication().container.configurationRepository
             )
         }
 
@@ -60,6 +61,8 @@ object AppViewModelProvider {
         initializer {
             MonthlyViewModel(
                 moneymoneyApplication().container.itemsRepository,
+                moneymoneyApplication().container.configurationRepository,
+                moneymoneyApplication().container.budgetItemsRepository,
                 moneymoneyApplication(),
                 this.createSavedStateHandle()
             )
@@ -70,6 +73,7 @@ object AppViewModelProvider {
             MonthlyDetailsViewModel(
                 this.createSavedStateHandle(),
                 moneymoneyApplication().container.itemsRepository,
+                moneymoneyApplication().container.configurationRepository,
                 moneymoneyApplication()
             )
         }
@@ -97,6 +101,7 @@ object AppViewModelProvider {
             BudgetFormViewModel(
                 moneymoneyApplication().container.configurationRepository,
                 moneymoneyApplication().container.budgetItemsRepository,
+                moneymoneyApplication().container.itemsRepository,
                 moneymoneyApplication(),
                 this.createSavedStateHandle()
             )

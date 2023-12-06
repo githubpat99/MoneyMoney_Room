@@ -254,7 +254,7 @@ class ItemListGenerator() {
                     val amount = columns[5].toDouble()
                     val balance = columns[6].toDouble()
                     val debit: Boolean = columns[7].toBoolean()
-                    val item = Item(id, ts, name, beschreibung, type, amount, balance, debit)
+                    val item = Item(id, ts, beschreibung, name, type, amount, balance, debit)
 
                     itemList.add(item)
                 }

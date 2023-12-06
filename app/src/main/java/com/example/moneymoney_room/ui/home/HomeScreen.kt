@@ -272,7 +272,7 @@ fun HorizontalScrollableOverview(
             Box(
                 modifier = Modifier
                     .padding(horizontal = 0.dp)
-                    .width(200.dp)
+                    .width(220.dp)
                     .height(320.dp)
                     .background(color = colorResource(id = R.color.primary_background))
             ) {

@@ -1,5 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.MoneyMoney_Room" parent="android:Theme.Material.Light.NoActionBar" />
+    <style name="Theme.MoneyMoney_Room" parent="android:Theme.Material.Light.NoActionBar"></style>
+
+    <style name="DialogTheme" parent="android:Theme.Material.Light.Dialog">
+        <!-- Overall background color -->
+        <item name="android:background">@color/light_blue</item>
+
+        <!-- Action link text color -->
+        <item name="android:textColorPrimary">@color/white</item>
+
+        <!-- Menu item text color -->
+        <item name="android:textColor">@color/white</item>
+
+        <!-- Other attributes you might try for specific elements -->
+        <!-- For example, for date marker color, if available -->
+        <!-- <item name="android:someSpecificAttributeForDateMarkerColor">@color/dateMarkerColor</item> -->
+    </style>
+
+
 </resources>

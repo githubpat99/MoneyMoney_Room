@@ -95,7 +95,7 @@ class Utilities {
             val localDateTime = Instant.ofEpochMilli(timestamp * 1000)
                 .atZone(ZoneId.of("CET"))
                 .toLocalDateTime()
-            val formatter = DateTimeFormatter.ofPattern("dd.MM.yy")
+            val formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
             return localDateTime.format(formatter)
         }
 

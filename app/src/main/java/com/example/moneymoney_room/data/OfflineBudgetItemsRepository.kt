@@ -4,6 +4,8 @@ import kotlinx.coroutines.flow.Flow
 
 class OfflineBudgetItemsRepository(private val budgetItemDao: BudgetItemDao) : BudgetItemsRepository {
     override fun getAllBudgetItemsStream(): Flow<List<BudgetItem>> = budgetItemDao.getAllItems()
+    override fun getAllBudgetItemsStreamForYear(year: String, timeZoneOffsetInSeconds: Long): Flow<List<BudgetItem>> =
+        budgetItemDao.getBudgetItemsForYear(year, timeZoneOffsetInSeconds)
 
     override fun getBudgetItemStream(id: Int): Flow<BudgetItem?> = budgetItemDao.getItem(id)
 

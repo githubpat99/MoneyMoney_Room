@@ -2,6 +2,7 @@ package com.example.moneymoney_room.ui.overview
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -35,7 +36,7 @@ fun BudgetBox (
 
 
     val (startDate, endDate) = getFormattedStartAndEndDatesForYear(budgetYear)
-    val decimalFormat = DecimalFormat("#,###.##")
+    val decimalFormat = DecimalFormat("#,##0.00")
     val approxStartText = decimalFormat.format(approxStart)
     val approxEndText = decimalFormat.format(approxEnd)
 
@@ -75,33 +76,65 @@ fun BudgetBox (
                 )
             }
             Row(
-                modifier = Modifier
-                    .fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                // Left-aligned text
                 Text(
-                    text = "$startDate - $approxStartText",
+                    text = "$startDate",
+                    style = TextStyle(
+                        color = colorResource(id = R.color.white),
+                        fontWeight = FontWeight.Normal,
+                        textAlign = TextAlign.Left
+                    ),
+                    fontSize = 14.sp,
+                    modifier = Modifier.weight(1f) // Adjust weight as needed
+                )
+
+                // Right-aligned text
+                Text(
+                    text = approxStartText,
                     style = TextStyle(
                         color = colorResource(id = R.color.white),
                         fontWeight = FontWeight.Normal,
                         textAlign = TextAlign.Right
                     ),
                     fontSize = 14.sp,
-                    modifier = Modifier.weight(1f), // Aligns text to the right
+                    modifier = Modifier.weight(1f) // Adjust weight as needed
                 )
             }
-            Row(verticalAlignment = Alignment.CenterVertically) {
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Left-aligned text
                 Text(
-                    text = "$endDate - $approxEndText",
+                    text = "$endDate",
+                    style = TextStyle(
+                        color = colorResource(id = R.color.white),
+                        fontWeight = FontWeight.Normal,
+                        textAlign = TextAlign.Left
+                    ),
+                    fontSize = 14.sp,
+                    modifier = Modifier.weight(1f) // Adjust weight as needed
+                )
+
+                // Right-aligned text
+                Text(
+                    text = approxEndText,
                     style = TextStyle(
                         color = colorResource(id = R.color.white),
                         fontWeight = FontWeight.Normal,
                         textAlign = TextAlign.Right
                     ),
                     fontSize = 14.sp,
-                    modifier = Modifier.weight(1f), // Aligns text to the right
+                    modifier = Modifier.weight(1f) // Adjust weight as needed
                 )
             }
+
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
@@ -109,7 +142,7 @@ fun BudgetBox (
                     .padding(top = 8.dp)
             ) {
                 Text(
-                    text = "       Erstellt am $budgetDatum",
+                    text = "Erstellt am $budgetDatum",
                     style = TextStyle(
                         color = colorResource(id = R.color.white),
                         fontWeight = FontWeight.Normal,

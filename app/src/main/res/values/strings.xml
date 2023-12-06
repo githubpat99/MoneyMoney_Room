@@ -10,7 +10,7 @@
     <string name="overview">Meine Budgets</string>
     <string name="budgetScreen">Budget Screen</string>
     <string name="googlePickerScreen">GDrive Selection</string>
-    <string name="budgetFormScreen">Budget Form Screen</string>
+    <string name="budgetFormScreen">Budget</string>
     <string name="ok">OK</string>
     <string name="budget">Budgetplanung</string>
 </resources>

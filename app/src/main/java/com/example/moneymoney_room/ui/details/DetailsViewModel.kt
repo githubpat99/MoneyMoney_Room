@@ -6,19 +6,23 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.moneymoney_room.data.Configuration
+import com.example.moneymoney_room.data.ConfigurationRepository
 import com.example.moneymoney_room.data.Item
 import com.example.moneymoney_room.data.ItemsRepository
 import com.example.moneymoney_room.ui.entry.ItemDetails
 import com.example.moneymoney_room.ui.entry.ItemUiState
 import com.example.moneymoney_room.ui.entry.toItem
 import com.example.moneymoney_room.ui.entry.toItemUiState
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 class DetailsViewModel(
     savedStateHandle: SavedStateHandle,
-    private val itemsRepository: ItemsRepository,
+    val itemsRepository: ItemsRepository,
+    private val configurationRepository: ConfigurationRepository
 ) : ViewModel() {
 
     /**
@@ -29,21 +33,19 @@ class DetailsViewModel(
 
     private val itemId: Int = checkNotNull(savedStateHandle[DetailsDestination.itemIdArg])
 
+    var configUiState by mutableStateOf(Configuration())
+        private set
+
     init {
         viewModelScope.launch {
             itemUiState = itemsRepository.getItemStream(itemId)
                 .filterNotNull()
                 .first()
                 .toItemUiState(true)
-        }
-    }
 
-    /**
-     * Update the item in the [ItemsRepository]'s data source
-     */
-    suspend fun updateItem() {
-        if (validateInput(itemUiState.itemDetails)) {
-            itemsRepository.updateItem(itemUiState.itemDetails.toItem())
+            configUiState = configurationRepository.getConfiguration()
+                .filterNotNull()
+                .first()
         }
     }
 
@@ -58,11 +60,14 @@ class DetailsViewModel(
 
     private fun validateInput(uiState: ItemDetails = itemUiState.itemDetails): Boolean {
         return with(uiState) {
-            name.isNotBlank() && description.isNotBlank()
+            description.isNotBlank()
         }
     }
 
     suspend fun saveItem() {
+
+        println("DetailsScreen - saveItem()")
+
         if (validateInput()) {
             itemsRepository.insertItem(itemUiState.itemDetails.toItem())
         }
@@ -70,6 +75,20 @@ class DetailsViewModel(
 
     suspend fun deleteItem() {
         itemsRepository.deleteItem(itemUiState.itemDetails.toItem())
+    }
+
+    suspend fun updateEndSaldoForYear(year: String, endSaldo: Double) {
+
+        println("DetailsScreen - updateEndSaldoForYear()")
+
+        // Inside your ViewModel function
+        viewModelScope.launch(Dispatchers.IO) {
+            configurationRepository.updateConfigurationEndSaldoForYear(year, endSaldo)
+        }
+
+        println("DetailsScreen - updateEndSaldoForYear2nd()")
+
+
     }
 
     companion object {

@@ -88,7 +88,7 @@ fun EntryScreen(
             onSaveClick = {
                 coroutineScope.launch {
                     viewModel.saveItem()
-                    navigateToList()
+                    navigateBack()
                 }
             }
         )

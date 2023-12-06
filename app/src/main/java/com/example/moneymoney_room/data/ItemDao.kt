@@ -39,4 +39,7 @@ interface ItemDao {
     // Bulk Insert for a specific Account
     @Query("DELETE from items")
     suspend fun deleteAllItems()
+
+    @Query("DELETE from items WHERE strftime('%Y', datetime(timestamp / 1000, 'unixepoch')) = :year ")
+    suspend fun deleteAllItemsForYear(year: String)
 }

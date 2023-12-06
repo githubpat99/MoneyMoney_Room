@@ -10,6 +10,10 @@ interface BudgetItemsRepository {
      * Retrieve all the items from the the given data source.
      */
     fun getAllBudgetItemsStream(): Flow<List<BudgetItem>>
+    /**
+     * Retrieve all the items from the the given year.
+     */
+    fun getAllBudgetItemsStreamForYear(year: String, timeZoneOffsetInSeconds: Long): Flow<List<BudgetItem>>
 
     /**
      * Retrieve an item from the given data source that matches with the [id].

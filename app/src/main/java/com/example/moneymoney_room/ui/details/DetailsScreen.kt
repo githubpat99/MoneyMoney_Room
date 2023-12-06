@@ -49,6 +49,7 @@ import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.util.Calendar
 
 object DetailsDestination : NavigationDestination {
     override val route = "details"
@@ -71,6 +72,8 @@ fun DetailsScreen(
     viewModel: DetailsViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
     val coroutineScope = rememberCoroutineScope()
+    val itemDetails2 = viewModel.itemUiState.itemDetails
+    val oldA = itemDetails2.amount
 
     Scaffold(
         modifier = modifier,
@@ -92,6 +95,7 @@ fun DetailsScreen(
                 coroutineScope.launch {
                     viewModel.saveItem()
                     navigateBack()
+
                 }
             },
             onDeleteClick = {
@@ -114,7 +118,7 @@ fun DetailScreenBody(
     onSaveClick: () -> Unit,
     onDeleteClick: () -> Unit,
 ) {
-
+    val context = LocalContext.current
     val itemDetails = itemUiState.itemDetails
     var myLocalDateTime = Utilities.getDateFromTimestamp(itemDetails.timestamp)
 
@@ -129,13 +133,39 @@ fun DetailScreenBody(
     var myDateString = localDateTime.format(formatter)
     var mDate by remember { mutableStateOf(myDateString) }
 
+    val calendar = Calendar.getInstance()
+    val minYear = myYear
+    val minMonth = myMonth // Month numbering starts from 0 (January is 0)
+    val minDay = 1
+
+    val maxYear = myYear
+    val maxMonth = myMonth // Month numbering starts from 0 (December is 11)
+    var maxDay = 31
+    when (myMonth) {
+        1 -> maxDay = 28
+        3 -> maxDay = 30
+        5 -> maxDay = 30
+        8 -> maxDay = 30
+        10 -> maxDay = 30
+    }
+
     val myDatePickerDialog = DatePickerDialog(
-        LocalContext.current,
+        context,
+        R.style.DialogTheme,
         { _: DatePicker, myYear: Int, myMonth: Int, myDay: Int ->
             mDate = "$myDay.${myMonth + 1}.$myYear"
             itemDetails.timestamp = Utilities.getLongFromStringDate(mDate)
         }, myYear, myMonth, myDay
     )
+    // Set minimum date
+    calendar.set(minYear, minMonth, minDay)
+    val minDateInMillis = calendar.timeInMillis
+    myDatePickerDialog.datePicker.minDate = minDateInMillis
+
+// Set maximum date
+    calendar.set(maxYear, maxMonth, maxDay)
+    val maxDateInMillis = calendar.timeInMillis
+    myDatePickerDialog.datePicker.maxDate = maxDateInMillis
 
     Column {
 
@@ -163,7 +193,7 @@ fun DetailScreenBody(
                 ) {
                     Column {
                         Spacer(modifier = Modifier.size(8.dp))
-                        Row (
+                        Row(
                             modifier = Modifier.fillMaxWidth(),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
@@ -172,7 +202,8 @@ fun DetailScreenBody(
 
                             Text(
                                 text = mDate,
-                                modifier = Modifier.weight(1f))
+                                modifier = Modifier.weight(1f)
+                            )
 
                             Button(
                                 onClick = {
@@ -181,26 +212,17 @@ fun DetailScreenBody(
                                 },
                                 colors = ButtonDefaults.buttonColors()
                             ) {
-                                Text(text = "Date Picker")
+                                Text(text = "Erstes Mal")
 
                             }
                         }
 
                         OutlinedTextField(
-                            value = itemDetails.name,
-                            onValueChange = {
-                                onValueChange(itemDetails.copy(name = it))
-                            },
-                            label = { Text(text = "Name") },
-                            visualTransformation = VisualTransformation.None,
-                            keyboardOptions = KeyboardOptions.Default,
-                            keyboardActions = KeyboardActions(onDone = {}),
-                            maxLines = 1
-                        )
-                        OutlinedTextField(
                             value = itemDetails.description,
-                            onValueChange = { onValueChange(itemDetails.copy(description = it)) },
-                            label = { Text(text = "Beschreibung") },
+                            onValueChange = {
+                                onValueChange(itemDetails.copy(description = it))
+                            },
+                            label = { Text(text = "Bezeichnung") },
                             visualTransformation = VisualTransformation.None,
                             keyboardOptions = KeyboardOptions.Default,
                             keyboardActions = KeyboardActions(onDone = {}),
@@ -208,8 +230,13 @@ fun DetailScreenBody(
                         )
                         OutlinedTextField(
                             value = itemDetails.amount.toString(),
-                            onValueChange = { onValueChange(itemDetails.copy(
-                                amount = it.toDoubleOrNull() ?: 0.0)) },
+                            onValueChange = {
+                                onValueChange(
+                                    itemDetails.copy(
+                                        amount = it.toDoubleOrNull() ?: 0.0
+                                    )
+                                )
+                            },
                             label = { Text(text = "Betrag") },
                             visualTransformation = VisualTransformation.None,
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
@@ -233,18 +260,8 @@ fun DetailScreenBody(
                 modifier = Modifier
                     .padding(2.dp)
                     .weight(1f),
-                onClick = navigateToEntry
-            ) {
-                Text(text = "Neu")
-            }
-
-            Button(
-                modifier = Modifier
-                    .padding(2.dp)
-                    .weight(1f),
                 onClick = onSaveClick,
                 enabled = itemUiState.isEntryValid
-//                        enabled = itemUiState.isEntryValid,
             ) {
                 Text(text = "Save")
             }

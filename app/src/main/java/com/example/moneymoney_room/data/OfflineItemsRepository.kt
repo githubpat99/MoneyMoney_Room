@@ -16,4 +16,6 @@ class OfflineItemsRepository(private val itemDao: ItemDao) : ItemsRepository {
     override suspend fun updateItem(item: Item) = itemDao.update(item)
 
     override suspend fun deleteAllItems() = itemDao.deleteAllItems()
+
+    override suspend fun deleteAllItemsForYear(year: String) = itemDao.deleteAllItemsForYear(year)
 }

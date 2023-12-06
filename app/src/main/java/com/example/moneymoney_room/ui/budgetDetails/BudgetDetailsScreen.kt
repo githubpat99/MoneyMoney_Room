@@ -51,9 +51,10 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
+import java.util.Calendar
 
 object BudgetDetailsDestination : NavigationDestination {
-    override val route = "details"
+    override val route = "budgetDetails"
     override val titleRes = R.string.budgetDetails
     const val itemIdArg = "itemId"
     val routeWithArgs = "$route/{$itemIdArg}"   //todo PIN: itemIdArg always in {}
@@ -124,6 +125,7 @@ fun BudgetDetailScreenBody(
     onDeleteClick: () -> Unit,
 ) {
 
+    val context = LocalContext.current
     val budgetItemDetails = budgetItemUiState.budgetItemDetails
     var myLocalDateTime = Utilities.getDateFromTimestamp(budgetItemDetails.timestamp * 1000)
 
@@ -138,13 +140,33 @@ fun BudgetDetailScreenBody(
     var myDateString = localDateTime.format(formatter)
     var mDate by remember { mutableStateOf(myDateString) }
 
+    val calendar = Calendar.getInstance()
+    val minYear = myYear
+    val minMonth = Calendar.JANUARY // Month numbering starts from 0 (January is 0)
+    val minDay = 1
+
+    val maxYear = myYear
+    val maxMonth = Calendar.DECEMBER // Month numbering starts from 0 (December is 11)
+    val maxDay = 31
+
     val myDatePickerDialog = DatePickerDialog(
-        LocalContext.current,
+        context,
+        R.style.DialogTheme,
         { _: DatePicker, myYear: Int, myMonth: Int, myDay: Int ->
             mDate = "$myDay.${myMonth + 1}.$myYear"
             budgetItemDetails.timestamp = Utilities.getLongFromStringDate(mDate) / 1000
         }, myYear, myMonth, myDay
     )
+    // Set minimum date
+    calendar.set(minYear, minMonth, minDay)
+    val minDateInMillis = calendar.timeInMillis
+    myDatePickerDialog.datePicker.minDate = minDateInMillis
+
+// Set maximum date
+    calendar.set(maxYear, maxMonth, maxDay)
+    val maxDateInMillis = calendar.timeInMillis
+    myDatePickerDialog.datePicker.maxDate = maxDateInMillis
+
     var myBackgroundColor = colorResource(id = R.color.light_red)
     var myTitel = "Ausgabe"
     if (budgetItemDetails.debit == true) {
@@ -356,14 +378,6 @@ fun BudgetDetailScreenBody(
                 .padding(16.dp), // Adjust padding as needed
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Button(
-                modifier = Modifier
-                    .padding(2.dp)
-                    .weight(1f),
-                onClick = navigateToEntry
-            ) {
-                Text(text = "Neu")
-            }
 
             Button(
                 modifier = Modifier

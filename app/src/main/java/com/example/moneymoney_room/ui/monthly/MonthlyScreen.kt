@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.moneymoney_room.MoneyMoneyTopAppBar
 import com.example.moneymoney_room.R
+import com.example.moneymoney_room.data.BudgetItem
 import com.example.moneymoney_room.data.Item
 import com.example.moneymoney_room.ui.AppViewModelProvider
 import com.example.moneymoney_room.ui.CreateBudgetScreen
@@ -94,6 +95,9 @@ fun MonthlyScreen(
         ListScreenBody(
             viewModel,
             onItemClick = { month, year, endSaldo, totalAmount ->
+
+                println("MonthlyScreen - ListScreenBody - endSaldo: $endSaldo")
+
                 navigateToMonthlyDetail(
                     month,
                     year,
@@ -102,7 +106,8 @@ fun MonthlyScreen(
                 )
             }, // Pass year and month to navigateToMonthlyDetail
             navigateToEntry,
-            startSaldo
+            startSaldo,
+            year
         )
     }
 }
@@ -113,22 +118,39 @@ fun ListScreenBody(
     onItemClick: (String, String, Double, Double) -> Unit,
     navigateToEntry: () -> Unit,
     startSaldo: Double,
-
+    year: String
     ) {
 
     val monthlyUiState: MonthlyUiState by viewModel.monthlyUiState.collectAsState()
+    val budgetUiState by viewModel.budgetUiState.collectAsState()
 
-    println("MonthlyScreen - monthlyUiState: ${monthlyUiState.list}")
+    val decimalFormat = DecimalFormat("#,##0.00")
 
     //todo PIN: Performance issue
 
-    var background = Color.Green
-    val endSaldo = calculateEndSaldo(monthlyUiState.list, startSaldo)
-    if (endSaldo < startSaldo) {
-        background = Color.Red
+    val configState = viewModel.configuration.collectAsState(initial = null)
+    val budgetStart = configState.value?.approxStartSaldo ?: 0.0
+    val budgetEnd = configState.value?.approxEndSaldo ?: 0.0
+    val budgetSaldo = budgetEnd - budgetStart
+    val formattedBudgetStartSaldo = decimalFormat.format(budgetStart)
+    val formattedBudgetEndSaldo = decimalFormat.format(budgetEnd)
+    val formattedBudgetSaldo = decimalFormat.format(budgetSaldo)
+
+    var background = colorResource(id = R.color.green)
+    var endSaldo = 0.0
+
+    // only Calculate endSaldo when UiState Information is ready
+    if (monthlyUiState.list.isEmpty() == false) {
+        endSaldo = calculateEndSaldo(monthlyUiState.list, startSaldo)
+        viewModel.updateConfigEndSaldoForYear(endSaldo)
     }
 
-    val decimalFormat = DecimalFormat("#,###.##")
+
+    if (endSaldo < startSaldo) {
+        background = colorResource(id = R.color.dark_red)
+    }
+
+
     val formattedStartSaldo: String = decimalFormat.format(startSaldo)
     val formattedSaldo: String = decimalFormat.format(endSaldo - startSaldo)
     val formattedEndSaldo: String = decimalFormat.format(endSaldo)
@@ -156,13 +178,13 @@ fun ListScreenBody(
         Box(
             modifier = Modifier
                 .fillMaxSize()
+                .background(color = colorResource(id = R.color.light_blue))
         ) {
 
             // Header
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color.LightGray)
                     .padding(top = 64.dp),
 
                 ) {
@@ -170,26 +192,28 @@ fun ListScreenBody(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(colorResource(id = R.color.gray))
+//                        .background(colorResource(id = R.color.semi_gray))
                 ) {
 
                     CustomStyledText(
                         text = "",
                         textAlign = TextAlign.Left,
                         fontWeight = FontWeight.Bold,
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier
+                            .weight(1f)
+                            .background(color = colorResource(id = R.color.white)),
                     )
                     CustomStyledText(
                         text = "Budget",
-                        textAlign = TextAlign.End,
+                        textAlign = TextAlign.Center,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.weight(1f),
                         color = colorResource(id = R.color.white)
                     )
 
                     CustomStyledText(
-                        text = "Live  ",
-                        textAlign = TextAlign.End,
+                        text = "Live",
+                        textAlign = TextAlign.Center,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.weight(1f),
                         color = colorResource(id = R.color.white)
@@ -199,26 +223,27 @@ fun ListScreenBody(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     CustomStyledText(
-                        text = "01.01.2023",
+                        text = "01.01.$year",
                         textAlign = TextAlign.Left,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.weight(1f)
+                        fontWeight = FontWeight.Normal,
+                        modifier = Modifier.weight(1f),
+                        color = colorResource(id = R.color.white)
                     )
                     CustomStyledText(
-                        text = "5'500.00",
+                        text = formattedBudgetStartSaldo,
                         textAlign = TextAlign.End,
                         fontWeight = FontWeight.Normal,
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
+                        color = colorResource(id = R.color.white)
                     )
                     CustomStyledText(
                         text = "$formattedStartSaldo",
                         textAlign = TextAlign.End,
                         fontWeight = FontWeight.Normal,
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
+                        color = colorResource(id = R.color.white)
                     )
                 }
-
-
 
                 Row(
                     modifier = Modifier
@@ -227,22 +252,25 @@ fun ListScreenBody(
                 ) {
 
                     CustomStyledText(
-                        text = "31.12.2023",
+                        text = "31.12.$year",
                         textAlign = TextAlign.Left,
                         fontWeight = FontWeight.Bold,
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
+                        color = colorResource(id = R.color.white)
                     )
                     CustomStyledText(
-                        text = "17'500.00",
+                        text = formattedBudgetEndSaldo,
                         textAlign = TextAlign.End,
                         fontWeight = FontWeight.Bold,
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
+                        color = colorResource(id = R.color.white)
                     )
                     CustomStyledText(
                         text = "$formattedEndSaldo",
                         textAlign = TextAlign.End,
                         fontWeight = FontWeight.Bold,
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
+                        color = colorResource(id = R.color.white)
                     )
                 }
                 Row(
@@ -255,20 +283,22 @@ fun ListScreenBody(
                         text = "Saldo",
                         textAlign = TextAlign.Left,
                         fontWeight = FontWeight.Normal,
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
+                        color = colorResource(id = R.color.white)
                     )
                     CustomStyledText(
-                        text = "12'000.00",
+                        text = formattedBudgetSaldo,
                         textAlign = TextAlign.End,
                         fontWeight = FontWeight.Normal,
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
+                        color = colorResource(id = R.color.white)
                     )
                     CustomStyledText(
                         text = "$formattedSaldo",
                         textAlign = TextAlign.End,
                         fontWeight = FontWeight.Normal,
                         modifier = Modifier.weight(1f),
-                        color = saldoColor
+                        color = colorResource(id = R.color.white)
                     )
                 }
             }
@@ -280,26 +310,29 @@ fun ListScreenBody(
         modifier = Modifier
             .fillMaxWidth()
             .fillMaxHeight()
-            .padding(top = 210.dp, bottom = 24.dp)
+            .padding(top = 190.dp, bottom = 24.dp)
     ) {
-
-        println("MonthlyScreen - ListScreenBody - call ShowOnlyRelevantElements")
 
         ShowOnlyRelevantElements(
             monthlyUiState.list,
+            budgetUiState.list,
+            viewModel,
             startSaldo,
             endSaldo,
             onItemClick,
-            navigateToEntry
+            navigateToEntry,
+            year
         )
     }
 }
 
 fun calculateEndSaldo(list: List<Item>, startSaldo: Double): Double {
     var saldo = startSaldo
+
     for (item in list) {
         saldo += item.amount
     }
+
     return saldo
 }
 
@@ -307,16 +340,31 @@ fun calculateEndSaldo(list: List<Item>, startSaldo: Double): Double {
 @Composable
 fun ShowOnlyRelevantElements(
     itemList: List<Item>,
+    budgetItemList: List<BudgetItem>,
+    viewModel: MonthlyViewModel,
     startSaldo: Double,
     endSaldo: Double,
     onItemClick: (String, String, Double, Double) -> Unit,
     navigateToEntry: () -> Unit,
-
+    year: String
     ) {
     val monthlyTotals = calculateMonthlyTotals(itemList)
     val lazyListState = rememberLazyListState()
 
-    println("MonthlyScreen - ShowOnlyRelevantElements - monthlyTotals = $monthlyTotals")
+    // calculate monthly Totals and bring them to the MonthlyCards accordingly
+    val myBudgetItems = budgetItemList
+    val budgetTotals: List<MonthlyTotal>
+
+    val budgetTotalsList: List<Triple<String, String, Double>> = if (year.isNotBlank()) {
+        val myCalcItems = viewModel.reCalculateBudgetForMonthlyView(myBudgetItems, year).toList()
+        val budgetTotals = calculateMonthlyTotals(myCalcItems)
+
+        budgetTotals.map { (_, month, total) ->
+            Triple(year, month, total)
+        }
+    } else {
+        emptyList()
+    }
 
     LazyColumn(
         state = lazyListState
@@ -326,16 +374,20 @@ fun ShowOnlyRelevantElements(
             key(monthlyTotal) {
                 val (year, month, totalAmount) = monthlyTotal
 
-                val df = DecimalFormat("#,###.00", DecimalFormatSymbols(Locale("de", "CH")))
+                val df = DecimalFormat("#,##0.00", DecimalFormatSymbols(Locale("de", "CH")))
                 val formattedTotalAmount = df.format(totalAmount)
                 var itemColor = colorResource(id = R.color.dark_blue)
                 if (totalAmount < 0) {
                     itemColor = colorResource(id = R.color.dark_red)
                 }
 
+                val budgetTotalForMonth = getBudgetTotalForMonth(month, year, budgetTotalsList)
+                val formattedBudgetTotal = df.format(budgetTotalForMonth)
+
                 MonthlyCard(
                     month,
                     formattedTotalAmount,
+                    formattedBudgetTotal,
                     itemColor,
                     modifier = Modifier.clickable {
                         onItemClick(
@@ -356,11 +408,12 @@ fun ShowOnlyRelevantElements(
 fun MonthlyCard(
     month: String,
     formattedTotalAmount: String,
+    formattedBudgetTotal: String,
     itemColor: Color,
     modifier: Modifier = Modifier,
 ) {
     val myCardModifier = modifier
-        .padding(4.dp)
+        .padding(top = 4.dp, start = 4.dp, end = 4.dp)
         .background(color = colorResource(id = R.color.white))
 
     Row(
@@ -379,7 +432,7 @@ fun MonthlyCard(
             modifier = myCardModifier
                 .weight(1f),
             color = colorResource(id = R.color.gray),
-            text = Utilities.MonthUtils.getMonthName(month),
+            text = formattedBudgetTotal,
             textAlign = TextAlign.End
         )
         Text(
@@ -391,7 +444,6 @@ fun MonthlyCard(
         )
     }
 }
-
 
 @Composable
 fun CustomStyledText(
@@ -414,11 +466,22 @@ fun CustomStyledText(
     BasicText(
         text = text,
         style = customTextStyle,
-        modifier = modifier.padding(8.dp)
+        modifier = modifier
+            .padding(4.dp)
+//            .background(color = colorResource(id = R.color.semi_gray))
     )
 }
 
-data class MonthlyTotal(val year: String, val month: String, val totalAmount: Double)
+fun getBudgetTotalForMonth(
+    month: String,
+    year: String,
+    budgetTotals: List<Triple<String, String, Double>>
+): Double {
+    return budgetTotals.firstOrNull { it.first == year && it.second == month }?.third ?: 0.0
+}
+
+
+
 
 fun calculateMonthlyTotals(itemList: List<Item>): List<MonthlyTotal> {
     val monthlyTotals = mutableMapOf<String, Double>()
@@ -439,3 +502,5 @@ fun calculateMonthlyTotals(itemList: List<Item>): List<MonthlyTotal> {
         MonthlyTotal(year, month, totalAmount)
     }
 }
+
+data class MonthlyTotal(val year: String, val month: String, val totalAmount: Double)

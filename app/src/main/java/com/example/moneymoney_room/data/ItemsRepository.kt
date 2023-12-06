@@ -31,9 +31,14 @@ interface ItemsRepository {
     suspend fun deleteItem(item: Item)
 
     /**
-     * Delete item from the data source
+     * Delete allItems from the data source
      */
     suspend fun deleteAllItems()
+
+    /**
+     * Delete allItems from the data source
+     */
+    suspend fun deleteAllItemsForYear(year: String)
 
     /**
      * Update item in the data source

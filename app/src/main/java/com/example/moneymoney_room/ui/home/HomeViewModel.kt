@@ -22,7 +22,7 @@ import java.time.ZoneOffset
  * ViewModel to retrieve all items in the Room database.
  */
 class HomeViewModel(
-    private val itemsRepository: ItemsRepository,
+    val itemsRepository: ItemsRepository,
     application: MoneyMoneyApplication
 ) : ViewModel() {
 

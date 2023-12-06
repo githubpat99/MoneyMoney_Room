@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -22,16 +23,21 @@ interface ConfigurationDao {
     suspend fun updateApproxSaldi(approxStartSaldo: Double, approxEndSaldo: Double, budgetYear: String)
 
     @Query("UPDATE configuration " +
-            "SET status = CASE " +
-            "WHEN status = 0 THEN 1 " +
-            "WHEN status = 1 THEN 0 " +
-            "ELSE status = 0 END" +
-            ", ts = :ts " +
+            "SET status = 0, ts = :ts " +
             "WHERE budgetYear = :year")
-    suspend fun toggleBudgetStatus(year: Int, ts: Long)
+    suspend fun reOpenConfigurationForYear(year: Int, ts: Long)
 
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(configuration: Configuration)
+
+    @Query("update configuration set endSaldo = :endSaldo where budgetYear = :year")
+     fun updateConfigurationEndSaldoForYear(year: String, endSaldo: Double)
+
+    // Update the entire Configuration item
+    @Update
+    suspend fun updateConfiguration(configuration: Configuration)
 }
+
+
 

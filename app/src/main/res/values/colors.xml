@@ -12,9 +12,10 @@
     <color name="light_gray">#ABACB2</color>
     <color name="dark_blue">#001CBB</color>
     <color name="light_blue">#D9096187</color>
-    <color name="dark_red">#9F001D</color>
+    <color name="dark_red">#9A021E</color>
     <color name="light_red">#E0CD021E</color>
     <color name="dark_green">#032805</color>
+    <color name="green">#0E5812</color>
     <color name="ausgabe_Vorlage">#F95364</color>
     <color name="ausgabe_Used">#FE0B38</color>
     <color name="einnahme_Vorlage">#84EC88</color>
@@ -22,5 +23,9 @@
 
     <color name="primary_background">#0C7890</color>
     <color name="secondary_background">#F3876F</color>
+
+    <color name="customDatePickerHeaderColor">#FF0000</color> <!-- Replace with your desired header color -->
+    <color name="customDatePickerLinkColor">#0000FF</color> <!-- Replace with your desired link color -->
+
 
 </resources>

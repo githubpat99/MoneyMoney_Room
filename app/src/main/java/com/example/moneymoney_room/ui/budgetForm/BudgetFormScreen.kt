@@ -1,6 +1,7 @@
 package com.example.moneymoney_room.ui.budgetForm
 
 import android.annotation.SuppressLint
+import android.app.Application
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -55,18 +56,22 @@ import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.moneymoney_room.MoneyMoneyApplication
 import com.example.moneymoney_room.MoneyMoneyTopAppBar
 import com.example.moneymoney_room.R
 import com.example.moneymoney_room.data.BudgetItem
 import com.example.moneymoney_room.ui.AppViewModelProvider
 import com.example.moneymoney_room.ui.navigation.NavigationDestination
 import com.example.moneymoney_room.util.Utilities
+import com.example.moneymoney_room.util.YesNoDialog
 import kotlinx.coroutines.launch
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
 import java.time.LocalDateTime
 import java.time.Month
+import java.time.ZoneId
 import java.time.ZoneOffset
 import java.util.Locale
 
@@ -96,6 +101,7 @@ fun BudgetFormScreen(
 ) {
 
     var context = LocalContext.current
+    var showDialog by remember { mutableStateOf(false) }
     val paramYear = viewModel.year
     val paramTab = viewModel.tab
     val coroutineScope = rememberCoroutineScope()
@@ -110,8 +116,14 @@ fun BudgetFormScreen(
 
     var configUiState = viewModel.configuration.collectAsState(initial = null)
 
-    val budgetItemState = viewModel.budgetItemsRepository.getAllBudgetItemsStream().collectAsState(
-        initial = BudgetItems().list)
+    val appTimeZone = MoneyMoneyApplication.instance.appTimeZone
+
+
+    val tzMillis = appTimeZone.rawOffset
+    val timezoneLongSeconds: Long = tzMillis / 1000L
+
+    val budgetItemState = viewModel.budgetItemsRepository.getAllBudgetItemsStreamForYear(year, timezoneLongSeconds)
+        .collectAsState(initial = BudgetItems().list)
     val budgetItems = budgetItemState.value
 
     var startSaldo = configUiState.value?.approxStartSaldo
@@ -122,8 +134,6 @@ fun BudgetFormScreen(
     // Your logic when both configUiState and budgetItems are available
     // This block will execute only when both variables are not null
 
-    println ("BudgetFormScreen - startSaldo: $startSaldo")
-
     if (startSaldo != null) {
         viewModel.updateApproxSaldi(startSaldo, budgetItems, paramYear)
     }
@@ -131,8 +141,11 @@ fun BudgetFormScreen(
     val einnahmen = budgetItems.filter { it.debit == true }
     val ausgaben = budgetItems.filter { it.debit == false }
 
+    println("BudgetFormScreen - ausgaben: $ausgaben")
+
     budgetStatus = configUiState.value?.status ?: 0
-    budgetDate = Utilities.getStringDateFromTimestamp(configUiState.value?.ts ?: 1672531200) // 1.1.2023
+    budgetDate =
+        Utilities.getStringDateFromTimestamp(configUiState.value?.ts ?: 1672531200) // 1.1.2023
 
 
     Scaffold(
@@ -148,7 +161,7 @@ fun BudgetFormScreen(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(colorResource(id = R.color.light_gray))
+                .background(colorResource(id = R.color.semi_gray))
         ) {
             Row(
                 modifier = Modifier
@@ -158,7 +171,7 @@ fun BudgetFormScreen(
                 Text(
                     text = "Budget",
                     style = TextStyle(
-                        colorResource(id = R.color.gray),
+                        colorResource(id = R.color.white),
                         fontSize = 16.sp
                     ),
                     modifier = Modifier
@@ -168,7 +181,7 @@ fun BudgetFormScreen(
                 Text(
                     text = year.toString(),
                     style = TextStyle(
-                        colorResource(id = R.color.gray),
+                        colorResource(id = R.color.white),
                         fontSize = 16.sp
                     ),
                     modifier = Modifier
@@ -178,7 +191,7 @@ fun BudgetFormScreen(
                 Text(
                     text = "1.1.$year",
                     style = TextStyle(
-                        colorResource(id = R.color.gray),
+                        colorResource(id = R.color.white),
                         fontSize = 16.sp
                     ),
                     modifier = Modifier
@@ -190,44 +203,47 @@ fun BudgetFormScreen(
                     Modifier.background(colorResource(id = R.color.light_gray))
                 else Modifier.background(colorResource(id = R.color.white))
 
-                var startSaldoText = startSaldo.toString()
+                val toastTextHigh = "Max. Betrag erreicht. Bitte wenden Sie sich an " +
+                        "ihren Finanzberater ;-)".trimIndent()
+
+                val decimalFormat = DecimalFormat("#.##")
+                var startSaldoText = "0.0"
+                if (startSaldo != null) {
+                    startSaldoText = decimalFormat.format(startSaldo) // from configUiState
+                }
 
                 BasicTextField(
                     value = startSaldoText,
                     enabled = budgetStatus == 0,
                     onValueChange = { newValue ->
-                        // todo PIN - must be done nicer
+                        // todo PIN - still not absolutely happy with the behaviour
+                        // Matches up to seven digits before the decimal point and up to two decimal places
+                        val pattern = Regex("""^\d{1,7}(\.\d{1,2})?$""")
 
-                        val toastTextHigh = "Max. Betrag erreicht. Bitte wenden Sie sich an " +
-                                "ihren Finanzberater ;-)".trimIndent()
-
-                        val decIdx = newValue.toString().indexOf('.')
-                        if (decIdx >= 0 && decIdx < newValue.length - 3) {
-                            startSaldoText = newValue.substring(0, decIdx + 3)
-                        } else {
-                            startSaldoText = newValue
+                        var doubleValue = 0.0
+                        if (newValue.isNotBlank()) {
+                            doubleValue = newValue.toDoubleOrNull() ?: 0.0
                         }
-
-                        val doubleValue = startSaldoText.toDoubleOrNull() ?: 0.0
-
 
                         if (doubleValue != null) {
-                            if (doubleValue >= 1000000) {
-                                Toast.makeText(
-                                    context,
-                                    toastTextHigh,
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                                startSaldoText = (doubleValue / 10).toString()
+                            startSaldo = doubleValue
+                            println("BudgetformScreen - startSaldo 1: $startSaldo")
+                        }
+
+                        if (pattern.matches(doubleValue.toString())) {
+                            val matchingValue = doubleValue.toString()
+
+                            // The entered value matches the pattern
+                            // Update your ViewModel field here
+                            val new =
+                                configUiState.value?.copy(approxStartSaldo = matchingValue.toDouble())
+                            if (new != null) {
+                                viewModel.updateConfigUiState(new)
                             }
+                        } else {
+                            // The entered value does not match the pattern
+                            // Handle incorrect input format here
                         }
-
-                        saldoDouble = startSaldoText.toDoubleOrNull() ?: 0.0
-                        val new = configUiState.value?.copy(approxStartSaldo = saldoDouble!!)
-                        if (new != null) {
-                            viewModel.updateConfigUiState(new)
-                        }
-
                     },
                     textStyle = TextStyle(
                         color = Color.Black,
@@ -291,7 +307,9 @@ fun BudgetFormScreen(
             }
 
             Box(
-                modifier = Modifier.weight(0.8f)
+                modifier = Modifier
+                    .weight(0.8f)
+                    .background(color = Color.White)
             ) {
                 // Display the content based on the selected tab
                 when (tabState.value) {
@@ -351,7 +369,7 @@ fun BudgetFormScreen(
                     Text(
                         text = "Budget",
                         style = TextStyle(
-                            colorResource(id = R.color.gray),
+                            colorResource(id = R.color.white),
                             fontSize = 16.sp
                         ),
                         modifier = Modifier
@@ -361,7 +379,7 @@ fun BudgetFormScreen(
                     Text(
                         text = year.toString(),
                         style = TextStyle(
-                            colorResource(id = R.color.gray),
+                            colorResource(id = R.color.white),
                             fontSize = 16.sp
                         ),
                         modifier = Modifier
@@ -371,7 +389,7 @@ fun BudgetFormScreen(
                     Text(
                         text = "31.12.$year",
                         style = TextStyle(
-                            colorResource(id = R.color.gray),
+                            colorResource(id = R.color.white),
                             fontSize = 16.sp
                         ),
                         modifier = Modifier
@@ -394,7 +412,7 @@ fun BudgetFormScreen(
                     Text(
                         text = formattedEndSaldo,
                         style = TextStyle(
-                            colorResource(id = R.color.gray),
+                            colorResource(id = R.color.white),
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold
                         ),
@@ -405,8 +423,6 @@ fun BudgetFormScreen(
                 }
             }
 
-            val yearInt = year.toInt()
-
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -414,30 +430,7 @@ fun BudgetFormScreen(
                     .clickable {
                         // toggle BudgetStatus and update Timestamp
                         if (year != null) {
-                            viewModel.toggleBudgetStatus(
-                                yearInt,
-                                LocalDateTime
-                                    .now()
-                                    .toEpochSecond(ZoneOffset.UTC)
-                            )
-                        }
-
-                        println("pin - budgetStatus: $budgetStatus")
-
-                        if (budgetStatus == 0) {
-                            // Status changed to closed by toggle
-                            // Existing Forecast will be deleted -> there is no existing FC,
-                            // FC was deleted in advance when opening / re-opening the Budget
-                            // --------------------------------------------------------------
-                            // New Forecast will be built based on Budget
-                            // todo: pin
-
-                            // Navigate Budget / FC - Overview
-                            // todo: pin
-                            navigateBack()
-
-                        } else {
-                            // Status will be re-opened by toggle
+                            showDialog = true
                         }
                     }
             ) {
@@ -460,6 +453,42 @@ fun BudgetFormScreen(
             }
         }
     }
+
+    // Display the Yes/No dialog based on showDialog state
+    YesNoDialog(
+        showDialog = showDialog,
+        onDismiss = { showDialog = false },
+        onYesClick = {
+            val yearInt = year.toInt()
+            // Handle "Yes" action
+
+            if (budgetStatus == 0) {
+
+                // update Live Data based on Budget
+                coroutineScope.launch {
+
+                    viewModel.deleteItemsForYear(year)
+                    viewModel.insertItemsForYear(budgetItems, year)
+
+                }
+
+                // finally navigateBack to HomeScreen
+                onNavigateUp() // Navigate back to Home
+            } else {
+                coroutineScope.launch {
+                    viewModel.reOpenBudgetStatus(
+                        yearInt,
+                        LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
+                    )
+                }
+            }
+
+            showDialog = false // Close the dialog
+        },
+        onNoClick = {
+            showDialog = false // Close the dialog if "No" is clicked
+        }
+    )
 }
 
 
@@ -517,8 +546,6 @@ fun BudgetFormTabContent(
     year: String,
 ) {
 
-    val context = LocalContext.current
-
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -546,19 +573,17 @@ fun BudgetFormTabContent(
                     .fillMaxWidth()
                     .background(backgroundColor)
             ) {
-                // Floating button at the bottom
-                val bStroke = if (budgetStatus == 0)
-                    BorderStroke(1.dp, colorResource(id = R.color.white))
-                else
-                    BorderStroke(0.dp, colorResource(id = R.color.black))
                 Button(
                     modifier = Modifier
                         .padding(4.dp)
                         .align(Alignment.BottomStart),
                     onClick = {
                         val yearInt = year.toInt()
-                        val startOfYear = LocalDateTime.of(yearInt, Month.JANUARY, 1, 0, 0)
-                        val ts = startOfYear.toEpochSecond(ZoneOffset.UTC)
+                        val startOfYear = LocalDateTime.of(yearInt, Month.JANUARY, 1, 1, 0)
+                        val appTimeZone = MoneyMoneyApplication.instance.appTimeZone
+                        val zoneId = ZoneId.of(appTimeZone.id)
+                        val zoneOffset = zoneId.rules.getOffset(java.time.Instant.now())
+                        val ts = startOfYear.toEpochSecond(zoneOffset)
                         val budgetItem: BudgetItem =
                             BudgetItem(0, ts, "Neu", "", 12, 0.0, 0.0, debit)
                         onAddClicked(budgetItem)
@@ -568,7 +593,7 @@ fun BudgetFormTabContent(
                         contentColor = colorResource(id = R.color.white),
                         containerColor = backgroundColor
                     ),
-                    border = bStroke
+                    border = BorderStroke(1.dp, colorResource(id = R.color.white))
                 ) {
 
                     Icon(
@@ -603,7 +628,7 @@ fun MyLazyList(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(backgroundColor)
+//                    .background(backgroundColor)
             ) {
                 Text(
                     text = " Name",

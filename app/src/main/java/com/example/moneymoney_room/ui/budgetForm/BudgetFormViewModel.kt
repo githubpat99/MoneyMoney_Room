@@ -11,6 +11,8 @@ import com.example.moneymoney_room.data.BudgetItem
 import com.example.moneymoney_room.data.BudgetItemsRepository
 import com.example.moneymoney_room.data.Configuration
 import com.example.moneymoney_room.data.ConfigurationRepository
+import com.example.moneymoney_room.data.Item
+import com.example.moneymoney_room.data.ItemsRepository
 import com.example.moneymoney_room.data.MoneyMoneyDatabase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filterNotNull
@@ -23,8 +25,9 @@ import java.time.LocalTime
 import java.time.ZoneOffset
 
 class BudgetFormViewModel(
-    configurationRepository: ConfigurationRepository,
+    val configurationRepository: ConfigurationRepository,
     val budgetItemsRepository: BudgetItemsRepository,
+    val itemsRepository: ItemsRepository,
     application: MoneyMoneyApplication,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
@@ -52,11 +55,7 @@ class BudgetFormViewModel(
 
     fun updateConfigUiState(configuration: Configuration) {
 
-        configUiState = configuration
-        configUiState.approxStartSaldo = configuration.approxStartSaldo
-        configUiState.approxEndSaldo = configuration.approxEndSaldo
-
-        updateConfiguration(configUiState.approxStartSaldo, configUiState.approxEndSaldo, configUiState.budgetYear.toString())
+        updateConfigItem(configuration)
     }
 
     init {
@@ -68,13 +67,24 @@ class BudgetFormViewModel(
         }
     }
 
-    fun updateApproxSaldi(approxStartSaldo: Double, budgetItems: List<BudgetItem>, year: String) {
+    fun updateApproxSaldi(
+        approxStartSaldo: Double,
+        budgetItems: List<BudgetItem>,
+        year: String
+    ) {
+        configUiState.approxStartSaldo = approxStartSaldo
+        configUiState.approxEndSaldo = calculateApproxEndSaldo(approxStartSaldo, budgetItems, year)
 
-        approxEndSaldo = calculateApproxEndSaldo(approxStartSaldo, budgetItems, year)
-        updateConfiguration(approxStartSaldo, approxEndSaldo, year)
+        println("BudgetFormViewModel - updateApproxSaldi: $configUiState")
+
+        updateConfigApproxSaldi(approxStartSaldo, approxEndSaldo, year)
     }
 
-    fun calculateApproxEndSaldo(approxStartSaldo: Double, budgetItems: List<BudgetItem>, year: String): Double {
+    fun calculateApproxEndSaldo(
+        approxStartSaldo: Double,
+        budgetItems: List<BudgetItem>,
+        year: String,
+    ): Double {
 
         val yearInt = year.toInt()
 
@@ -85,6 +95,8 @@ class BudgetFormViewModel(
         val startOfDayTs = startDate.atStartOfDay().toEpochSecond(ZoneOffset.UTC)
 
         var totalAmount = approxStartSaldo
+        var newItemList = mutableListOf<Item>()
+//        var newItem: Item = Item(0, 0, "", "", 0, 0.0, 0.0, false)
 
         for (item in budgetItems) {
 
@@ -97,6 +109,10 @@ class BudgetFormViewModel(
                     } else {
                         itemAmount -= item.amount
                     }
+                    val newItem = Item(0, date, "", item.name, 0, item.amount, 0.0, item.debit)
+                    newItemList.add(newItem)
+
+
                 }
                 date = when (item.type) {
                     12 -> LocalDateTime.ofEpochSecond(date, 0, ZoneOffset.UTC).plusMonths(1)
@@ -123,38 +139,107 @@ class BudgetFormViewModel(
 
         val df = DecimalFormat("#.##")
         approxEndSaldo = df.format(totalAmount).toDouble()
+
         return approxEndSaldo
     }
 
-    fun toggleBudgetStatus(year: Int, ts: Long) {
+    fun reOpenBudgetStatus(year: Int, ts: Long) {
         viewModelScope.launch {
 
-            if (moneyMoneyDatabase != null) {
-                moneyMoneyDatabase.configurationDao()
-                    .toggleBudgetStatus(year, ts)
-            }
+            configurationRepository.reOpenConfigurationForYear(year, ts)
+
+            println("BudgetFormViewModel - reOpenBudgetStatus: $year")
+
         }
     }
-    private fun updateConfiguration(
-        approxStartSaldo: Double,
-        approxEndSaldo: Double,
-        year: String
-    ) {
 
-        this.approxStartSaldo = approxStartSaldo
-        this.approxEndSaldo = approxEndSaldo
+    fun updateConfigItem(configuration: Configuration) {
+
+        println("BudgetFormViewModel - updateConfigItem: $configuration")
 
         viewModelScope.launch {
-
-            if (moneyMoneyDatabase != null) {
-                moneyMoneyDatabase.configurationDao()
-                    .updateApproxSaldi(approxStartSaldo, approxEndSaldo, year)
-            }
+            moneyMoneyDatabase.configurationDao().updateConfiguration(configuration)
         }
+
+    }
+
+    fun updateConfigApproxSaldi(approxStartSaldo: Double, approxEndSaldo: Double, year: String) {
+
+        println("BudgetFormViewModel - updateConfigItem: $configuration")
+
+        viewModelScope.launch {
+            moneyMoneyDatabase.configurationDao().updateApproxSaldi(approxStartSaldo, approxEndSaldo, year)
+        }
+
     }
 
     suspend fun saveBudgetItem(budgetItem: BudgetItem) {
         budgetItemsRepository.insertBudgetItem(budgetItem)
+    }
+
+    suspend fun deleteItemsForYear(year: String) {
+        itemsRepository.deleteAllItemsForYear(year)
+    }
+
+    suspend fun insertItemsForYear(budgetItems: List<BudgetItem>, year: String) {
+        // calculate Items
+        addItemsToRepository(budgetItems, year)
+
+        configUiState.startSaldo = configUiState.approxStartSaldo
+        configUiState.endSaldo = configUiState.approxEndSaldo
+        configUiState.status = 1
+        configUiState.ts = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
+
+        println("BudgetFormViewModel - configUiState: $configUiState")
+        updateConfigItem(configUiState)
+    }
+
+    suspend fun addItemsToRepository(budgetItems: List<BudgetItem>, year: String) {
+
+        val yearInt = year.toInt()
+
+        val endDate = LocalDate.of(yearInt, 12, 31)
+        val endOfDayTs = endDate.atTime(LocalTime.MAX).toEpochSecond(ZoneOffset.UTC)
+
+        val startDate = LocalDate.of(yearInt, 1, 1)
+        val startOfDayTs = startDate.atStartOfDay().toEpochSecond(ZoneOffset.UTC)
+
+        for (item in budgetItems) {
+
+            var itemAmount = 0.0
+            var date = item.timestamp
+            while (date <= endOfDayTs) {
+                if (date >= startOfDayTs) {
+                    var amount = item.amount
+                    if (item.debit == false) {
+                        amount = item.amount * -1
+                    }
+
+                    val newItem = Item(0, date * 1000, "", item.name, 0, amount, 0.0, item.debit)
+                    itemsRepository.insertItem(newItem)
+
+                }
+                date = when (item.type) {
+                    12 -> LocalDateTime.ofEpochSecond(date, 0, ZoneOffset.UTC).plusMonths(1)
+                        .toEpochSecond(ZoneOffset.UTC)
+
+                    6 -> LocalDateTime.ofEpochSecond(date, 0, ZoneOffset.UTC).plusMonths(2)
+                        .toEpochSecond(ZoneOffset.UTC)
+
+                    4 -> LocalDateTime.ofEpochSecond(date, 0, ZoneOffset.UTC).plusMonths(3)
+                        .toEpochSecond(ZoneOffset.UTC)
+
+                    3 -> LocalDateTime.ofEpochSecond(date, 0, ZoneOffset.UTC).plusMonths(4)
+                        .toEpochSecond(ZoneOffset.UTC)
+
+                    2 -> LocalDateTime.ofEpochSecond(date, 0, ZoneOffset.UTC).plusMonths(6)
+                        .toEpochSecond(ZoneOffset.UTC)
+
+                    else -> LocalDateTime.ofEpochSecond(date, 0, ZoneOffset.UTC).plusMonths(12)
+                        .toEpochSecond(ZoneOffset.UTC)
+                }
+            }
+        }
     }
 }
 

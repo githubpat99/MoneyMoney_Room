@@ -16,13 +16,11 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -39,7 +37,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -335,7 +332,7 @@ fun ItemCard(
     item: Item, modifier: Modifier = Modifier,
 ) {
     val myCardModifier = modifier
-        .padding(4.dp)
+        .padding(top = 4.dp, start = 4.dp, end = 4.dp)
         .background(color = colorResource(id = R.color.white))
 
     val now = Utilities.getNowAsLong()
@@ -359,22 +356,12 @@ fun ItemCard(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Icon(
-            modifier = myCardModifier
-                .size(8.dp),
-            painter = painterResource(id = R.drawable.baseline_24),
-            contentDescription = "Money-Sign"
-        )
+
         Column {
             Text(
                 modifier = myCardModifier,
                 color = colorResource(id = R.color.gray),
                 text = Utilities.getTimestampAsDate(item.timestamp)
-            )
-            Text(
-                modifier = myCardModifier,
-                color = colorResource(id = R.color.gray),
-                text = item.name
             )
         }
 
