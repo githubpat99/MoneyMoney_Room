@@ -231,9 +231,11 @@ fun DetailScreenBody(
                         OutlinedTextField(
                             value = itemDetails.amount.toString(),
                             onValueChange = {
+                                val parsedValue = it.toDoubleOrNull() ?: 0.0
+                                val validatedValue = if (parsedValue > 999999.9) 999999.9 else parsedValue
                                 onValueChange(
                                     itemDetails.copy(
-                                        amount = it.toDoubleOrNull() ?: 0.0
+                                        amount = validatedValue
                                     )
                                 )
                             },

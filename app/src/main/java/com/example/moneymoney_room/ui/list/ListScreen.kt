@@ -333,21 +333,22 @@ fun ItemCard(
 ) {
     val myCardModifier = modifier
         .padding(top = 4.dp, start = 4.dp, end = 4.dp)
-        .background(color = colorResource(id = R.color.white))
+        .background(color = colorResource(id = R.color.light_blue))
 
     val now = Utilities.getNowAsLong()
     val visualDate = Utilities.getTimestampAsDate(now)
 
-    var itemColor = colorResource(id = R.color.dark_blue)
+    var itemColor = colorResource(id = R.color.white)
     if (item.amount < 0)
-        itemColor = colorResource(id = R.color.dark_red)
+        itemColor = colorResource(id = R.color.ausgabe_Vorlage)
 
     val fontFamily = FontFamily.Default
 
     val textStyle = TextStyle(
         color = itemColor,
         fontFamily = fontFamily, // Set the appropriate font family here
-        textAlign = TextAlign.End
+        textAlign = TextAlign.End,
+        fontSize = 16.sp
     )
 
     Row(
@@ -360,7 +361,7 @@ fun ItemCard(
         Column {
             Text(
                 modifier = myCardModifier,
-                color = colorResource(id = R.color.gray),
+                color = colorResource(id = R.color.white),
                 text = Utilities.getTimestampAsDate(item.timestamp)
             )
         }

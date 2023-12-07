@@ -71,7 +71,7 @@ class HomeViewModel(
 }
 
 data class HomeUiState(
-    val userId: String = "Demoversion",
-    val password: String = "Passwort",
+    val userId: String = "MoneyMoney - Demo",
+    val password: String = "Viel Spass...",
 )
 

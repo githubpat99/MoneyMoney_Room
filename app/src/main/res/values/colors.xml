@@ -13,6 +13,7 @@
     <color name="dark_blue">#001CBB</color>
     <color name="light_blue">#D9096187</color>
     <color name="dark_red">#9A021E</color>
+    <color name="transparent">#1FFFFFFF</color>
     <color name="light_red">#E0CD021E</color>
     <color name="dark_green">#032805</color>
     <color name="green">#0E5812</color>

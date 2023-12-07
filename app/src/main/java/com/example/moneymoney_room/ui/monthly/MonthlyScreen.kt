@@ -10,11 +10,13 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.BasicText
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Scaffold
@@ -23,12 +25,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -118,8 +124,8 @@ fun ListScreenBody(
     onItemClick: (String, String, Double, Double) -> Unit,
     navigateToEntry: () -> Unit,
     startSaldo: Double,
-    year: String
-    ) {
+    year: String,
+) {
 
     val monthlyUiState: MonthlyUiState by viewModel.monthlyUiState.collectAsState()
     val budgetUiState by viewModel.budgetUiState.collectAsState()
@@ -346,14 +352,20 @@ fun ShowOnlyRelevantElements(
     endSaldo: Double,
     onItemClick: (String, String, Double, Double) -> Unit,
     navigateToEntry: () -> Unit,
-    year: String
-    ) {
+    year: String,
+) {
+    var showChart by remember { mutableStateOf(2) }
     val monthlyTotals = calculateMonthlyTotals(itemList)
+    val sumMT = monthlyTotals.sumOf { it.totalAmount }
+    val highestMT = monthlyTotals.maxByOrNull { it.totalAmount }
+    val highest = highestMT?.totalAmount ?: 0.0
+    val lowestMT = monthlyTotals.minByOrNull { it.totalAmount }
+    val lowest = lowestMT?.totalAmount ?: 0.0
+
     val lazyListState = rememberLazyListState()
 
-    // calculate monthly Totals and bring them to the MonthlyCards accordingly
+    // calculate monthly Totals
     val myBudgetItems = budgetItemList
-    val budgetTotals: List<MonthlyTotal>
 
     val budgetTotalsList: List<Triple<String, String, Double>> = if (year.isNotBlank()) {
         val myCalcItems = viewModel.reCalculateBudgetForMonthlyView(myBudgetItems, year).toList()
@@ -366,38 +378,183 @@ fun ShowOnlyRelevantElements(
         emptyList()
     }
 
-    LazyColumn(
-        state = lazyListState
+    Box(
+        modifier = Modifier.fillMaxSize()
     ) {
+        if (showChart == 1) {
+            // Show Budget Chart
+            Column(modifier = Modifier.fillMaxWidth()) {
+                var chartSaldo = 0.0
 
-        items(monthlyTotals) { monthlyTotal ->
-            key(monthlyTotal) {
-                val (year, month, totalAmount) = monthlyTotal
+                // set the Calculation Factor for my Canvas
+                val totalWidth = 100
+                val startSaldoWidth = 60
+                val restWidth = totalWidth - startSaldoWidth - 4
+                var factor = 1
 
-                val df = DecimalFormat("#,##0.00", DecimalFormatSymbols(Locale("de", "CH")))
-                val formattedTotalAmount = df.format(totalAmount)
-                var itemColor = colorResource(id = R.color.dark_blue)
-                if (totalAmount < 0) {
-                    itemColor = colorResource(id = R.color.dark_red)
-                }
+                while (restWidth < sumMT / factor) factor++
+                while (restWidth < highest / factor) factor++
+                while (restWidth < lowest * -1 / factor) factor++
 
-                val budgetTotalForMonth = getBudgetTotalForMonth(month, year, budgetTotalsList)
-                val formattedBudgetTotal = df.format(budgetTotalForMonth)
+                monthlyTotals.forEach { monthlyTotal ->
+                    key(monthlyTotal) {
+                        val (year, month, totalAmount) = monthlyTotal
 
-                MonthlyCard(
-                    month,
-                    formattedTotalAmount,
-                    formattedBudgetTotal,
-                    itemColor,
-                    modifier = Modifier.clickable {
-                        onItemClick(
-                            month,
-                            year,
-                            endSaldo,
-                            totalAmount
+                        val df = DecimalFormat("#,##0.00", DecimalFormatSymbols(Locale("de", "CH")))
+
+                        val budgetTotalForMonth =
+                            getBudgetTotalForMonth(month, year, budgetTotalsList)
+
+                        chartSaldo += budgetTotalForMonth
+
+                        val formattedBudgetTotal = df.format(budgetTotalForMonth)
+                        val monthText = Utilities.MonthUtils.getMonthName(month)
+
+                        // todo PIN - correct values for Float using the Calculation Factor
+                        val color = if (chartSaldo > 0)
+                            colorResource(id = R.color.light_blue)
+                        else colorResource(id = R.color.transparent)
+                        val slices = listOf(
+                            Slice(
+                                value = startSaldoWidth.toFloat(),
+                                color = colorResource(id = R.color.light_blue),
+                                text = monthText
+                            ),
+                            Slice(
+                                value = (chartSaldo / factor).toFloat(),
+                                color = color,
+                                text = formattedBudgetTotal
+                            )
+                        )
+
+                        StackedBar(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(30.dp),
+                            slices = slices
                         )
                     }
-                )
+                }
+            }
+        }
+        if (showChart == 2) {
+            // Show Live Chart
+            Column(modifier = Modifier.fillMaxWidth()) {
+                var chartSaldo = 0.0
+
+                // set the Calculation Factor for my Canvas
+                val totalWidth = 100
+                val startSaldoWidth = 60
+                val restWidth = totalWidth - startSaldoWidth - 4
+                var factor = 1
+
+                while (restWidth < sumMT / factor) factor++
+                while (restWidth < highest / factor) factor++
+                while (restWidth < lowest * -1 / factor) factor++
+
+                monthlyTotals.forEach { monthlyTotal ->
+                    key(monthlyTotal) {
+                        val (year, month, totalAmount) = monthlyTotal
+
+                        chartSaldo += totalAmount
+
+                        val df = DecimalFormat("#,##0.00", DecimalFormatSymbols(Locale("de", "CH")))
+                        val formattedTotalAmount = df.format(totalAmount)
+
+                        val monthText = Utilities.MonthUtils.getMonthName(month)
+
+                        // todo PIN - correct values for Float using the Calculation Factor
+                        val color = if (chartSaldo > 0)
+                            colorResource(id = R.color.light_blue)
+                        else colorResource(id = R.color.transparent)
+                        val slices = listOf(
+                            Slice(
+                                value = startSaldoWidth.toFloat(),
+                                color = colorResource(id = R.color.light_blue),
+                                text = monthText
+                            ),
+                            Slice(
+                                value = (chartSaldo / factor).toFloat(),
+                                color = color,
+                                text = formattedTotalAmount
+                            )
+                        )
+
+                        StackedBar(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(30.dp),
+                            slices = slices
+                        )
+                    }
+                }
+            }
+        }
+        if (showChart == 0) {
+            LazyColumn(
+                state = lazyListState
+            ) {
+
+                items(monthlyTotals) { monthlyTotal ->
+                    key(monthlyTotal) {
+                        val (year, month, totalAmount) = monthlyTotal
+
+                        val df = DecimalFormat("#,##0.00", DecimalFormatSymbols(Locale("de", "CH")))
+                        val formattedTotalAmount = df.format(totalAmount)
+                        var itemColor = colorResource(id = R.color.white)
+                        if (totalAmount < 0) {
+                            itemColor = colorResource(id = R.color.ausgabe_Vorlage)
+                        }
+
+                        val budgetTotalForMonth =
+                            getBudgetTotalForMonth(month, year, budgetTotalsList)
+                        val formattedBudgetTotal = df.format(budgetTotalForMonth)
+
+                        MonthlyCard(
+                            month,
+                            formattedTotalAmount,
+                            formattedBudgetTotal,
+                            itemColor,
+                            modifier = Modifier.clickable {
+                                onItemClick(
+                                    month,
+                                    year,
+                                    endSaldo,
+                                    totalAmount
+                                )
+                            }
+                        )
+                    }
+                }
+            }
+        }
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.BottomStart)
+        ) {
+            Row {
+                Button(
+                    modifier = Modifier.padding(start = 8.dp),
+                    enabled = (showChart != 0),
+                    onClick = { showChart = 0 }
+                ) {
+                    Text("List")
+                }
+                Button(
+                    modifier = Modifier.padding(start = 8.dp),
+                    enabled = (showChart != 1),
+                    onClick = { showChart = 1 }
+                ) {
+                    Text("Budget Chart")
+                }
+                Button(
+                    modifier = Modifier.padding(start = 8.dp),
+                    enabled = (showChart != 2),
+                    onClick = { showChart = 2 }
+                ) {
+                    Text("Live Chart")
+                }
             }
         }
     }
@@ -413,34 +570,47 @@ fun MonthlyCard(
     modifier: Modifier = Modifier,
 ) {
     val myCardModifier = modifier
-        .padding(top = 4.dp, start = 4.dp, end = 4.dp)
-        .background(color = colorResource(id = R.color.white))
+        .padding(start = 4.dp, top = 3.dp, end = 4.dp, bottom = 2.dp)
+        .background(color = colorResource(id = R.color.light_blue))
 
     Row(
-        modifier = myCardModifier
+        modifier = Modifier
+            .padding(bottom = 3.dp)
+            .background(colorResource(id = R.color.light_blue))
             .fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(0.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
             modifier = myCardModifier
                 .weight(1f),
-            color = colorResource(id = R.color.gray),
-            text = Utilities.MonthUtils.getMonthName(month)
+            text = Utilities.MonthUtils.getMonthName(month),
+            style = TextStyle(
+                color = colorResource(id = R.color.white),
+                textAlign = TextAlign.Left,
+                fontSize = 16.sp
+            )
         )
         Text(
             modifier = myCardModifier
                 .weight(1f),
-            color = colorResource(id = R.color.gray),
             text = formattedBudgetTotal,
-            textAlign = TextAlign.End
+            style = TextStyle(
+                color = colorResource(id = R.color.light_gray),
+                textAlign = TextAlign.End,
+                fontSize = 16.sp
+            )
         )
         Text(
             modifier = myCardModifier
                 .weight(1f),
             color = itemColor,
             text = formattedTotalAmount,
-            textAlign = TextAlign.End
+            style = TextStyle(
+                color = colorResource(id = R.color.white),
+                textAlign = TextAlign.End,
+                fontSize = 16.sp
+            )
         )
     }
 }
@@ -475,12 +645,10 @@ fun CustomStyledText(
 fun getBudgetTotalForMonth(
     month: String,
     year: String,
-    budgetTotals: List<Triple<String, String, Double>>
+    budgetTotals: List<Triple<String, String, Double>>,
 ): Double {
     return budgetTotals.firstOrNull { it.first == year && it.second == month }?.third ?: 0.0
 }
-
-
 
 
 fun calculateMonthlyTotals(itemList: List<Item>): List<MonthlyTotal> {

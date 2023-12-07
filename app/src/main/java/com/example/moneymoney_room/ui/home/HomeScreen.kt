@@ -102,9 +102,8 @@ fun HomeScreen(
             )
 
             if (viewModel.homeUiState.password.isNotBlank()) {
-                switch = true
-                if (viewModel.homeUiState.password == "Passwort ") {
-                    patPrivate = true
+                if (viewModel.homeUiState.password == "Viel Spass") {
+                    switch = true
                 }
             }
 
@@ -128,30 +127,32 @@ fun HomeScreen(
                 color = Color.Gray, thickness = 1.dp
             )
 
-            Row() {
-                ActionButton(
-                    modifier = Modifier
-                        .padding(8.dp),
-                    active = switch,
-                    navigateToRegistration,
-                    text = "Registration"
-                )
-                DeleteAll(
-                    modifier = Modifier
-                        .padding(8.dp),
-                    active = switch,
-                    onClick = {
-                        val active = switch
-                        if (active) {
-                            coroutineScope.launch {
-                                viewModel.deleteItems()
-                            }
-                        }
-                    },
-                    text = "Live löschen"
-                )
-            }
+            if (switch == true) {
 
+                Row() {
+                    ActionButton(
+                        modifier = Modifier
+                            .padding(8.dp),
+                        active = switch,
+                        navigateToRegistration,
+                        text = "Registration"
+                    )
+                    DeleteAll(
+                        modifier = Modifier
+                            .padding(8.dp),
+                        active = switch,
+                        onClick = {
+                            val active = switch
+                            if (active) {
+                                coroutineScope.launch {
+                                    viewModel.deleteItems()
+                                }
+                            }
+                        },
+                        text = "Live löschen"
+                    )
+                }
+            }
 
         }
     }
@@ -217,22 +218,37 @@ fun LoginCard(
             // userId
             OutlinedTextField(
                 value = homeUiState.userId,
+                readOnly = true,
                 onValueChange = { onValueChange(homeUiState.copy(userId = it)) },
-                label = { Text("User") },
+                label = { Text(
+                    "User",
+                    color = colorResource(id = R.color.light_gray)) },
                 visualTransformation = VisualTransformation.None,
                 keyboardOptions = KeyboardOptions.Default,
                 keyboardActions = KeyboardActions(onDone = {}),
-                maxLines = 1
+                textStyle = TextStyle(
+                    colorResource(id = R.color.white),
+                    fontSize = 14.sp),
+                maxLines = 1,
+                modifier = Modifier
+                    .background( color = colorResource(id = R.color.black))
             )
             // userId
             OutlinedTextField(
                 value = homeUiState.password,
                 onValueChange = { onValueChange(homeUiState.copy(password = it)) },
-                label = { Text(text = "Passwort") },
+                label = { Text(
+                    "Passwort",
+                    color = colorResource(id = R.color.light_gray)) },
                 visualTransformation = VisualTransformation.None,
                 keyboardOptions = KeyboardOptions.Default,
                 keyboardActions = KeyboardActions(onDone = {}),
-                maxLines = 1
+                textStyle = TextStyle(
+                    colorResource(id = R.color.white),
+                    fontSize = 18.sp),
+                maxLines = 1,
+                modifier = Modifier
+                    .background( color = colorResource(id = R.color.black))
             )
         }
 
