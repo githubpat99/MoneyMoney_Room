@@ -231,7 +231,9 @@ fun BudgetDetailScreenBody(
                         OutlinedTextField(
                             value = budgetItemDetails.name,
                             onValueChange = {
-                                onValueChange(budgetItemDetails.copy(name = it))
+                                if (it.length <= 20) {
+                                    onValueChange(budgetItemDetails.copy(name = it))
+                                }
                             },
                             label = { Text(text = "Bezeichnung") },
                             visualTransformation = VisualTransformation.None,

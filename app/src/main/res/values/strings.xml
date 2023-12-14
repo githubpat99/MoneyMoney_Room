@@ -6,11 +6,13 @@
     <string name="entry">Entry Screen</string>
     <string name="details">Details Screen</string>
     <string name="budgetDetails">Budget Details Screen</string>
-    <string name="registration">Registration Screen</string>
+    <string name="registration">Einstellungen</string>
     <string name="overview">Meine Budgets</string>
     <string name="budgetScreen">Budget Screen</string>
     <string name="googlePickerScreen">GDrive Selection</string>
     <string name="budgetFormScreen">Budget</string>
     <string name="ok">OK</string>
     <string name="budget">Budgetplanung</string>
+    <string name="currency">CHF</string>
+
 </resources>

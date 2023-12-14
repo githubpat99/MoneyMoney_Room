@@ -15,7 +15,7 @@ class ConfigurationRepository(private val configurationDao: ConfigurationDao) {
         configurationDao.updateConfigurationEndSaldoForYear(year, endSaldo)
     }
 
-    suspend fun reOpenConfigurationForYear(year: Int, timestamp: Long) {
-        configurationDao.reOpenConfigurationForYear(year, timestamp)
+    suspend fun reOpenConfigurationForYear(year: Int, timestamp: Long, startSaldo: Double, endSaldo: Double) {
+        configurationDao.reOpenConfigurationForYear(year, timestamp, startSaldo, endSaldo)
     }
 }

@@ -122,7 +122,7 @@ fun BudgetFormScreen(
     val tzMillis = appTimeZone.rawOffset
     val timezoneLongSeconds: Long = tzMillis / 1000L
 
-    val budgetItemState = viewModel.budgetItemsRepository.getAllBudgetItemsStreamForYear(year, timezoneLongSeconds)
+    val budgetItemState = viewModel.budgetItemsRepository.getAllBudgetItemsStreamForYearTZ(year, timezoneLongSeconds)
         .collectAsState(initial = BudgetItems().list)
     val budgetItems = budgetItemState.value
 
@@ -202,9 +202,6 @@ fun BudgetFormScreen(
                 val modifierFlexible = if (budgetStatus == 1)
                     Modifier.background(colorResource(id = R.color.light_gray))
                 else Modifier.background(colorResource(id = R.color.white))
-
-                val toastTextHigh = "Max. Betrag erreicht. Bitte wenden Sie sich an " +
-                        "ihren Finanzberater ;-)".trimIndent()
 
                 val decimalFormat = DecimalFormat("#.##")
                 var startSaldoText = "0.0"
@@ -435,9 +432,9 @@ fun BudgetFormScreen(
                     }
             ) {
 
-                var budgetText = "Budget ready -> save & go..."
+                var budgetText = "Budget bereit - für Live Daten hier klicken"
                 if (budgetStatus == 1) {
-                    budgetText = "Budget done -> Date $budgetDate"
+                    budgetText = "Budget wurde am $budgetDate erstellt - für Anpassungen hier klicken"
                 }
                 Text(
                     text = budgetText,
@@ -469,16 +466,18 @@ fun BudgetFormScreen(
 
                     viewModel.deleteItemsForYear(year)
                     viewModel.insertItemsForYear(budgetItems, year)
-
                 }
 
                 // finally navigateBack to HomeScreen
                 onNavigateUp() // Navigate back to Home
             } else {
                 coroutineScope.launch {
+
+                    viewModel.deleteItemsForYear(year)
                     viewModel.reOpenBudgetStatus(
                         yearInt,
-                        LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
+                        LocalDateTime.now().toEpochSecond(ZoneOffset.UTC),
+                        0.0, 0.0
                     )
                 }
             }

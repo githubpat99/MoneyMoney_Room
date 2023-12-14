@@ -33,12 +33,12 @@ class MonthlyDetailsViewModel(
 
     val itemsRepository = itemsRepository
     private val moneyMoneyDatabase = MoneyMoneyDatabase.getDatabase(application)
-    val configuration: Flow<Configuration?> =
-        moneyMoneyDatabase.configurationDao().getConfiguration()
-
 
     var value = checkNotNull(savedStateHandle[MonthlyDetailDestination.Year])
     val year = value
+    val yearString = "$year"
+    val configuration: Flow<Configuration?> =
+        moneyMoneyDatabase.configurationDao().getConfigurationForYear(yearString)
     var value2 = checkNotNull(savedStateHandle[MonthlyDetailDestination.Month])
     val month = value2
     var value3 = checkNotNull(savedStateHandle[MonthlyDetailDestination.EndSaldo])
@@ -47,7 +47,7 @@ class MonthlyDetailsViewModel(
     val monthlyTotal: Double = value4.toString().toDouble()
 
     val yearAndMonth = "$year$month".toInt()
-    val yearString = "$year"
+
 
     val timestamps = getFirstAndLastTimestamp(yearAndMonth)
     val firstTimestamp = timestamps.first

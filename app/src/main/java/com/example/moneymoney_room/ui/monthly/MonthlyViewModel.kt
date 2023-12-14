@@ -1,6 +1,8 @@
 package com.example.moneymoney_room.ui.monthly
 
 import android.content.Context
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.text.font.FontWeight
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -42,6 +44,8 @@ class MonthlyViewModel(
     val appTimezone = application.appTimeZone
     val tzMillis = appTimezone.rawOffset
     val timezoneLongSeconds: Long = tzMillis / 1000L
+    var budgetFont = mutableStateOf(FontWeight.Normal)
+    var liveFont = mutableStateOf(FontWeight.Normal)
 
     val configuration: Flow<Configuration?> =
         moneyMoneyDatabase.configurationDao().getConfigurationForYear(year)
@@ -57,7 +61,7 @@ class MonthlyViewModel(
             )
 
     val budgetUiState: StateFlow<BudgetUiState> =
-        budgetItemsRepository.getAllBudgetItemsStreamForYear(year, timezoneLongSeconds).map { BudgetUiState(it) }
+        budgetItemsRepository.getAllBudgetItemsStreamForYearTZ(year, timezoneLongSeconds).map { BudgetUiState(it) }
             .stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(TIMEOUT_MILLIS),

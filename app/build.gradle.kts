@@ -112,9 +112,8 @@ dependencies {
     // kotlinx-coroutines-android
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 
-
-
-
+    // runtime - Live Data
+    implementation("androidx.compose.runtime:runtime-livedata:1.5.4") // Use the appropriate version
 
 
     // Testing

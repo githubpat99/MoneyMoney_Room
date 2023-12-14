@@ -13,7 +13,9 @@ interface BudgetItemsRepository {
     /**
      * Retrieve all the items from the the given year.
      */
-    fun getAllBudgetItemsStreamForYear(year: String, timeZoneOffsetInSeconds: Long): Flow<List<BudgetItem>>
+    fun getAllBudgetItemsStreamForYearTZ(year: String, timeZoneOffsetInSeconds: Long): Flow<List<BudgetItem>>
+
+    fun getAllBudgetItemsStreamForYear(year: String): Flow<List<BudgetItem>>
 
     /**
      * Retrieve an item from the given data source that matches with the [id].
@@ -39,5 +41,10 @@ interface BudgetItemsRepository {
      * Update item in the data source
      */
     suspend fun updateBudgetItem(budgetItem: BudgetItem)
+
+    /**
+     * Delete all the items from the the given year.
+     */
+    suspend fun deleteBudgetItemsForYear(year: String, timeZoneOffsetInSeconds: Long)
 
 }

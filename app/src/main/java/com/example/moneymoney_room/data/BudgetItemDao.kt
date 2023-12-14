@@ -20,12 +20,12 @@ interface BudgetItemDao {
     @Query("SELECT * FROM budgetItems " +
             "WHERE strftime('%Y', datetime(timestamp, 'unixepoch')) = :year " +
             "ORDER BY timestamp ASC")
-    fun getItemsForYear(year: String): Flow<List<BudgetItem>>
+    fun getBudgetItemsForYear(year: String): Flow<List<BudgetItem>>
 
     @Query("SELECT * FROM budgetItems " +
-            "WHERE strftime('%Y', datetime(timestamp + :timeZoneOffsetInSeconds, 'unixepoch')) = :year " +
+            "WHERE strftime('%Y', datetime(timestamp, 'unixepoch', :timeZoneOffsetInSeconds || ' seconds')) = :year " +
             "ORDER BY timestamp ASC, id DESC")
-    fun getBudgetItemsForYear(year: String, timeZoneOffsetInSeconds: Long): Flow<List<BudgetItem>>
+    fun getBudgetItemsForYearTZ(year: String, timeZoneOffsetInSeconds: Long): Flow<List<BudgetItem>>
 
 
 
@@ -43,7 +43,11 @@ interface BudgetItemDao {
     @Delete
     suspend fun delete(budgetItem: BudgetItem)
 
-    // Bulk Insert for a specific Account
+    // Delete for a specific Year
+    @Query("DELETE from budgetItems WHERE strftime('%Y', datetime(timestamp + :timeZoneOffsetInSeconds, 'unixepoch')) = :year")
+    suspend fun deleteBudgetItemsForYear(year: String, timeZoneOffsetInSeconds: Long)
+
+    // Bulk Delete for a specific Account
     @Query("DELETE from budgetItems")
     suspend fun deleteAllBudgetItems()
 }

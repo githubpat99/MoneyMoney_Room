@@ -4,8 +4,11 @@ import kotlinx.coroutines.flow.Flow
 
 class OfflineBudgetItemsRepository(private val budgetItemDao: BudgetItemDao) : BudgetItemsRepository {
     override fun getAllBudgetItemsStream(): Flow<List<BudgetItem>> = budgetItemDao.getAllItems()
-    override fun getAllBudgetItemsStreamForYear(year: String, timeZoneOffsetInSeconds: Long): Flow<List<BudgetItem>> =
-        budgetItemDao.getBudgetItemsForYear(year, timeZoneOffsetInSeconds)
+    override fun getAllBudgetItemsStreamForYearTZ(year: String, timeZoneOffsetInSeconds: Long): Flow<List<BudgetItem>> =
+        budgetItemDao.getBudgetItemsForYearTZ(year, timeZoneOffsetInSeconds)
+
+    override fun getAllBudgetItemsStreamForYear(year: String): Flow<List<BudgetItem>> =
+        budgetItemDao.getBudgetItemsForYear(year)
 
     override fun getBudgetItemStream(id: Int): Flow<BudgetItem?> = budgetItemDao.getItem(id)
 
@@ -16,4 +19,8 @@ class OfflineBudgetItemsRepository(private val budgetItemDao: BudgetItemDao) : B
     override suspend fun updateBudgetItem(budgetItem: BudgetItem) = budgetItemDao.update(budgetItem)
 
     override suspend fun deleteAllBudgetItems() = budgetItemDao.deleteAllBudgetItems()
+
+    override suspend fun deleteBudgetItemsForYear(year: String, timeZoneOffsetInSeconds: Long) =
+        budgetItemDao.deleteBudgetItemsForYear(year, timeZoneOffsetInSeconds)
+
 }

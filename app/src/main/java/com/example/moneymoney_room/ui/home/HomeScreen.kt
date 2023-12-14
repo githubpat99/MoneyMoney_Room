@@ -45,7 +45,6 @@ import com.example.moneymoney_room.ui.navigation.NavigationDestination
 import com.example.moneymoney_room.ui.overview.BudgetBox
 import com.example.moneymoney_room.ui.overview.LiveDataBox
 import com.example.moneymoney_room.util.Utilities
-import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
@@ -102,7 +101,7 @@ fun HomeScreen(
             )
 
             if (viewModel.homeUiState.password.isNotBlank()) {
-                if (viewModel.homeUiState.password == "Viel Spass") {
+                if (viewModel.homeUiState.password == "Viel Spass...") {
                     switch = true
                 }
             }
@@ -135,21 +134,7 @@ fun HomeScreen(
                             .padding(8.dp),
                         active = switch,
                         navigateToRegistration,
-                        text = "Registration"
-                    )
-                    DeleteAll(
-                        modifier = Modifier
-                            .padding(8.dp),
-                        active = switch,
-                        onClick = {
-                            val active = switch
-                            if (active) {
-                                coroutineScope.launch {
-                                    viewModel.deleteItems()
-                                }
-                            }
-                        },
-                        text = "Live löschen"
+                        text = "Budget - Management"
                     )
                 }
             }

@@ -16,8 +16,8 @@ fun YesNoDialog(
     if (showDialog) {
         AlertDialog(
             onDismissRequest = onDismiss,
-            title = { Text(text = "Warning") },
-            text = { Text(text = "Daten werden neu erstellt. OK?") },
+            title = { Text(text = "Warnung") },
+            text = { Text(text = "Daten werden neu erstellt. Einverstanden?") },
             confirmButton = {
                 Button(onClick = onYesClick) {
                     Text(text = "Ja")

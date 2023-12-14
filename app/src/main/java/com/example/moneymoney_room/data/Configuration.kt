@@ -6,7 +6,7 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "configuration")
 data class Configuration(
     @PrimaryKey(autoGenerate = true)
-    val id: Int = 1,
+    val id: Int = 0,
     var ts: Long = 1672527600,
     var status: Int = 0,
     val budgetYear: Int = 2023,

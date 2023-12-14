@@ -59,7 +59,7 @@ fun CreateBudgetScreen(
 
         ) {
         Text(
-            text = "Bitte zuerst ein Budget erstellen oder downloaden",
+            text = "Bitte den Budgetprozess erst abschliessen",
             color = Color.White,
             fontSize = 20.sp, // Customize the font size
             textAlign = TextAlign.Center, // Center-align the text

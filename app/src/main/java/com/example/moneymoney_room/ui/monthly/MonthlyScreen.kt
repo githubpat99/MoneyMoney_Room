@@ -45,7 +45,7 @@ import com.example.moneymoney_room.R
 import com.example.moneymoney_room.data.BudgetItem
 import com.example.moneymoney_room.data.Item
 import com.example.moneymoney_room.ui.AppViewModelProvider
-import com.example.moneymoney_room.ui.CreateBudgetScreen
+import com.example.moneymoney_room.ui.BudgetInfoScreen
 import com.example.moneymoney_room.ui.list.ListViewModel
 import com.example.moneymoney_room.ui.navigation.NavigationDestination
 import com.example.moneymoney_room.util.Utilities
@@ -80,7 +80,6 @@ fun MonthlyScreen(
 
     val configurationState = viewModel.configuration.collectAsState(initial = null)
     var startSaldo = 0.0
-    var title = "Budget / Live - Daten"
     var year = ""
 
     if (configurationState.value != null) {
@@ -171,13 +170,15 @@ fun ListScreenBody(
     val context = LocalContext.current
     val listViewModel: ListViewModel = viewModel(factory = AppViewModelProvider.Factory)
 
+    var dynamicFontWeight by remember {
+        mutableStateOf(FontWeight.Normal)
+    }
+
     if (monthlyUiState.list.isEmpty()) {
 
-        // Create Budget first
-        CreateBudgetScreen(
+        BudgetInfoScreen(
             viewModel = listViewModel,
-            context = context,
-            coroutineScope = coroutineScope
+            context = context
         )
     } else {
 
@@ -209,21 +210,61 @@ fun ListScreenBody(
                             .weight(1f)
                             .background(color = colorResource(id = R.color.white)),
                     )
-                    CustomStyledText(
-                        text = "Budget",
-                        textAlign = TextAlign.Center,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.weight(1f),
-                        color = colorResource(id = R.color.white)
-                    )
 
-                    CustomStyledText(
-                        text = "Live",
-                        textAlign = TextAlign.Center,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.weight(1f),
-                        color = colorResource(id = R.color.white)
-                    )
+                    if (viewModel.budgetFont.value == FontWeight.Bold) {
+                        // Budget is active
+                        CustomStyledText(
+                            text = "Budget",
+                            textAlign = TextAlign.Center,
+                            fontWeight = viewModel.budgetFont.value,
+                            modifier = Modifier.weight(1f),
+                            color = colorResource(id = R.color.white)
+                        )
+                        CustomStyledText(
+                            text = "Live",
+                            textAlign = TextAlign.Center,
+                            fontWeight = viewModel.liveFont.value,
+                            modifier = Modifier
+                                .weight(1f)
+                                .background(color = colorResource(id = R.color.white)),
+                            color = colorResource(id = R.color.white)
+                        )
+                    } else if (viewModel.liveFont.value == FontWeight.Bold) {
+                        // Live is active
+                        CustomStyledText(
+                            text = "Budget",
+                            textAlign = TextAlign.Center,
+                            fontWeight = viewModel.budgetFont.value,
+                            modifier = Modifier
+                                .weight(1f)
+                                .background(color = colorResource(id = R.color.white)),
+                            color = colorResource(id = R.color.white)
+                        )
+                        CustomStyledText(
+                            text = "Live",
+                            textAlign = TextAlign.Center,
+                            fontWeight = viewModel.liveFont.value,
+                            modifier = Modifier.weight(1f),
+                            color = colorResource(id = R.color.white)
+                        )
+                    } else {
+                        // List is active
+                        CustomStyledText(
+                            text = "Budget",
+                            textAlign = TextAlign.Center,
+                            fontWeight = viewModel.budgetFont.value,
+                            modifier = Modifier.weight(1f),
+                            color = colorResource(id = R.color.white)
+                        )
+                        CustomStyledText(
+                            text = "Live",
+                            textAlign = TextAlign.Center,
+                            fontWeight = viewModel.liveFont.value,
+                            modifier = Modifier.weight(1f),
+                            color = colorResource(id = R.color.white)
+                        )
+                    }
+
                 }
                 Row(
                     modifier = Modifier.fillMaxWidth()
@@ -383,6 +424,9 @@ fun ShowOnlyRelevantElements(
     ) {
         if (showChart == 1) {
             // Show Budget Chart
+            viewModel.budgetFont.value = FontWeight.Bold
+            viewModel.liveFont.value = FontWeight.Normal
+
             Column(modifier = Modifier.fillMaxWidth()) {
                 var chartSaldo = 0.0
 
@@ -406,6 +450,8 @@ fun ShowOnlyRelevantElements(
                             getBudgetTotalForMonth(month, year, budgetTotalsList)
 
                         chartSaldo += budgetTotalForMonth
+                        val subTotDouble = chartSaldo + startSaldo
+                        val subTotal = df.format(subTotDouble)
 
                         val formattedBudgetTotal = df.format(budgetTotalForMonth)
                         val monthText = Utilities.MonthUtils.getMonthName(month)
@@ -416,11 +462,13 @@ fun ShowOnlyRelevantElements(
                         else colorResource(id = R.color.transparent)
                         val slices = listOf(
                             Slice(
+                                saldo = subTotal,
                                 value = startSaldoWidth.toFloat(),
                                 color = colorResource(id = R.color.light_blue),
                                 text = monthText
                             ),
                             Slice(
+                                saldo = subTotal,
                                 value = (chartSaldo / factor).toFloat(),
                                 color = color,
                                 text = formattedBudgetTotal
@@ -439,6 +487,9 @@ fun ShowOnlyRelevantElements(
         }
         if (showChart == 2) {
             // Show Live Chart
+            viewModel.budgetFont.value = FontWeight.Normal
+            viewModel.liveFont.value = FontWeight.Bold
+
             Column(modifier = Modifier.fillMaxWidth()) {
                 var chartSaldo = 0.0
 
@@ -455,10 +506,13 @@ fun ShowOnlyRelevantElements(
                 monthlyTotals.forEach { monthlyTotal ->
                     key(monthlyTotal) {
                         val (year, month, totalAmount) = monthlyTotal
+                        val df = DecimalFormat("#,##0.00", DecimalFormatSymbols(Locale("de", "CH")))
 
                         chartSaldo += totalAmount
+                        val subTotDouble = chartSaldo + startSaldo
+                        val subTotal = df.format(subTotDouble)
 
-                        val df = DecimalFormat("#,##0.00", DecimalFormatSymbols(Locale("de", "CH")))
+
                         val formattedTotalAmount = df.format(totalAmount)
 
                         val monthText = Utilities.MonthUtils.getMonthName(month)
@@ -469,11 +523,13 @@ fun ShowOnlyRelevantElements(
                         else colorResource(id = R.color.transparent)
                         val slices = listOf(
                             Slice(
+                                saldo = subTotal,
                                 value = startSaldoWidth.toFloat(),
                                 color = colorResource(id = R.color.light_blue),
                                 text = monthText
                             ),
                             Slice(
+                                saldo = subTotal,
                                 value = (chartSaldo / factor).toFloat(),
                                 color = color,
                                 text = formattedTotalAmount
@@ -491,6 +547,9 @@ fun ShowOnlyRelevantElements(
             }
         }
         if (showChart == 0) {
+            viewModel.budgetFont.value = FontWeight.SemiBold
+            viewModel.liveFont.value = FontWeight.SemiBold
+
             LazyColumn(
                 state = lazyListState
             ) {

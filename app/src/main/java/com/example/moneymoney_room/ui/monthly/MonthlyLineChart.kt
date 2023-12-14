@@ -89,16 +89,14 @@ fun StackedBar(modifier: Modifier, slices: List<Slice>) {
                 val textLayoutResult: TextLayoutResult =
                     textMeasurer.measure(
                         text = AnnotatedString(it.text),
-                        style = TextStyle(
-                            color = textColor,
-                            textAlign = TextAlign.Left,
-                            fontSize = 16.sp
-                        )
+                        style = TextStyle(fontSize = 16.sp)
                     )
                 add(textLayoutResult)
             }
         }
     }
+
+    println("StackBar - textLayoutResults: $textLayoutResults")
 
     Canvas(modifier = modifier) {
         val canvasWidth = size.width
@@ -119,20 +117,82 @@ fun StackedBar(modifier: Modifier, slices: List<Slice>) {
             // Draw Text
             val textSize = textLayoutResults[index].size
             val style = textLayoutResults[index].layoutInput.style
-            drawText(
-                textMeasurer = textMeasurer,
-                    text = slice.text,
+            var sliceText = ""
+
+            println("StackBar - slice.text: ${slice.text} - slice.saldo: ${slice.saldo}")
+
+            if (slice.text.substring(slice.text.length-2).toDoubleOrNull() == null) {
+                // than it's non numeric ==> Month
+                sliceText = slice.text
+                drawText(
+                    textMeasurer = textMeasurer,
+                    text = sliceText,
                     topLeft = Offset(
-                        x = currentX + 12,  // was 12
+                        x = currentX + 12,
                         y = (canvasHeight - textSize.height) / 2
                     ),
-                    style = style
-            )
+                    style = TextStyle(
+                        color = textColor,
+                        textAlign = TextAlign.Left,
+                        fontSize = 16.sp
+                    )
+                )
+            } else {
+
+
+                val sliceTextX = 710f  // fix Position
+              val saldoX = 1064f
+
+                val textLayoutResult = textMeasurer.measure(
+                    AnnotatedString(slice.text),
+                    TextStyle(fontSize = 16.sp)
+                )
+                val textWidth = textLayoutResult.size.width
+                val saldoLayoutResult = textMeasurer.measure(
+                    AnnotatedString(slice.saldo),
+                    TextStyle(fontSize = 16.sp)
+                )
+                val saldoWidth = saldoLayoutResult.size.width
+//
+//                val xPos = saldoX - saldoWidth
+//
+//                println("StackBar - saldoX: ${saldoX} - saldoWidth: $saldoWidth - xPos: $xPos")
+//
+
+                drawText(
+                    textMeasurer = textMeasurer,
+                    text = slice.text,
+                    topLeft = Offset(
+                        x = sliceTextX - textWidth,
+                        y = (canvasHeight - textSize.height) / 2
+                    ),
+                    style = TextStyle(
+                        color = textColor,
+                        textAlign = TextAlign.Right,
+                        fontSize = 16.sp
+                    )
+                )
+                drawText(
+                    textMeasurer = textMeasurer,
+                    text = slice.saldo,
+                    topLeft = Offset(
+                        x = saldoX - saldoWidth,
+                        y = (canvasHeight - textSize.height) / 2
+                    ),
+                    style = TextStyle(
+                        color = textColor,
+                        textAlign = TextAlign.Right,
+                        fontSize = 16.sp
+                    )
+                )
+            }
+
+
 
             // Update start position of next rectangle
             currentX += width
         }
     }
 }
-data class Slice(val value: Float, val color: Color, val text: String) {
+data class Slice(val saldo: String, val value: Float, val color: Color, val text: String) {
 }

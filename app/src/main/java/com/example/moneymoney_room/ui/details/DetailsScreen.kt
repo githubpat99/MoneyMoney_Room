@@ -220,7 +220,9 @@ fun DetailScreenBody(
                         OutlinedTextField(
                             value = itemDetails.description,
                             onValueChange = {
-                                onValueChange(itemDetails.copy(description = it))
+                                if (it.length <= 20) {
+                                    onValueChange(itemDetails.copy(description = it))
+                                }
                             },
                             label = { Text(text = "Bezeichnung") },
                             visualTransformation = VisualTransformation.None,
@@ -232,7 +234,8 @@ fun DetailScreenBody(
                             value = itemDetails.amount.toString(),
                             onValueChange = {
                                 val parsedValue = it.toDoubleOrNull() ?: 0.0
-                                val validatedValue = if (parsedValue > 999999.9) 999999.9 else parsedValue
+                                val validatedValue =
+                                    if (parsedValue > 999999.9) 999999.9 else parsedValue
                                 onValueChange(
                                     itemDetails.copy(
                                         amount = validatedValue

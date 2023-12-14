@@ -88,7 +88,9 @@ object AppViewModelProvider {
 
         // Initializer for RegistrationViewModel
         initializer {
-            RegistrationViewModel(moneymoneyApplication())
+            RegistrationViewModel(
+                moneymoneyApplication().container.budgetItemsRepository,
+                moneymoneyApplication())
         }
 
         // Initializer for OverviewViewModel

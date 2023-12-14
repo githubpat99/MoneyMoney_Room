@@ -143,10 +143,10 @@ class BudgetFormViewModel(
         return approxEndSaldo
     }
 
-    fun reOpenBudgetStatus(year: Int, ts: Long) {
+    fun reOpenBudgetStatus(year: Int, ts: Long, startSaldo: Double, endSaldo: Double) {
         viewModelScope.launch {
 
-            configurationRepository.reOpenConfigurationForYear(year, ts)
+            configurationRepository.reOpenConfigurationForYear(year, ts, startSaldo, endSaldo)
 
             println("BudgetFormViewModel - reOpenBudgetStatus: $year")
 
@@ -157,15 +157,36 @@ class BudgetFormViewModel(
 
         println("BudgetFormViewModel - updateConfigItem: $configuration")
 
-        viewModelScope.launch {
-            moneyMoneyDatabase.configurationDao().updateConfiguration(configuration)
+        val ts = configuration.ts
+        val status = configuration.status
+        val budgetYear = configuration.budgetYear
+        val password = configuration.password
+        val email = configuration.email
+        val startSaldo = configuration.startSaldo
+        val endSaldo = configuration.endSaldo
+        val approxStartSaldo = configuration.approxStartSaldo
+        val approxEndSaldo = configuration.approxEndSaldo
+
+        val updateJob = viewModelScope.launch {
+            moneyMoneyDatabase.configurationDao().updateConfigurationForYear(
+                ts, status, budgetYear, password, email, startSaldo, endSaldo, approxStartSaldo, approxEndSaldo
+            )
         }
 
+        updateJob.invokeOnCompletion { // Check when the job completes (either successfully or with an error)
+            if (updateJob.isCompleted && updateJob.isCompleted) {
+                // Update was successful
+                println("Update successful!")
+            } else {
+                // Update failed
+                println("Update failed!")
+            }
+        }
     }
 
     fun updateConfigApproxSaldi(approxStartSaldo: Double, approxEndSaldo: Double, year: String) {
 
-        println("BudgetFormViewModel - updateConfigItem: $configuration")
+        println("BudgetFormViewModel - updateConfigApproxSaldi: $configuration")
 
         viewModelScope.launch {
             moneyMoneyDatabase.configurationDao().updateApproxSaldi(approxStartSaldo, approxEndSaldo, year)
@@ -248,7 +269,7 @@ data class BudgetItems(
 )
 
 fun Configuration.toConfigUiState(): Configuration = Configuration(
-    id = id,
+//    id = id,
     ts = ts,
     status = status,
     budgetYear = budgetYear,
