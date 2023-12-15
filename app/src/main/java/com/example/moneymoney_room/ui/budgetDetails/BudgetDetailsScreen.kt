@@ -4,19 +4,25 @@ import android.annotation.SuppressLint
 import android.app.DatePickerDialog
 import android.widget.DatePicker
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -76,7 +82,7 @@ fun BudgetDetailsScreen(
     val coroutineScope = rememberCoroutineScope()
     val ts = viewModel.budgetItemUiState.budgetItemDetails.timestamp
     val instant = Instant.ofEpochSecond(ts)
-    var dateTime = LocalDateTime.ofInstant(instant,ZoneOffset.UTC)
+    var dateTime = LocalDateTime.ofInstant(instant, ZoneOffset.UTC)
     val navRoute = if (viewModel.budgetItemUiState.budgetItemDetails.debit) 0 else 1
 
     Scaffold(
@@ -86,7 +92,8 @@ fun BudgetDetailsScreen(
                 title = stringResource(id = R.string.details),
                 canNavigateBack = true,
                 navigateUp = {
-                    navigateToBudgetForm(dateTime.year.toString(), navRoute.toString())}
+                    navigateToBudgetForm(dateTime.year.toString(), navRoute.toString())
+                }
             )
         }
     ) {
@@ -124,6 +131,8 @@ fun BudgetDetailScreenBody(
     onSaveClick: () -> Unit,
     onDeleteClick: () -> Unit,
 ) {
+
+
 
     val context = LocalContext.current
     val budgetItemDetails = budgetItemUiState.budgetItemDetails
@@ -169,11 +178,18 @@ fun BudgetDetailScreenBody(
 
     var myBackgroundColor = colorResource(id = R.color.light_red)
     var myTitel = "Ausgabe"
+
+
+    var expanded by remember { mutableStateOf(false) }
+    var selectedItem by remember { mutableStateOf(budgetItemDetails.name) }
+    var items =
+        budgetItemUiState.ausgaben
+
     if (budgetItemDetails.debit == true) {
         myBackgroundColor = colorResource(id = R.color.light_blue)
         myTitel = "Einnahme"
+        items = budgetItemUiState.einnahmen
     }
-
     Column {
 
         LazyColumn(
@@ -190,7 +206,8 @@ fun BudgetDetailScreenBody(
                     style = TextStyle(
                         color = colorResource(id = R.color.white),
                         fontSize = 24.sp,
-                        fontWeight = FontWeight.Bold)
+                        fontWeight = FontWeight.Bold
+                    )
                 )
             }
 
@@ -228,29 +245,53 @@ fun BudgetDetailScreenBody(
                             }
                         }
 
-                        OutlinedTextField(
-                            value = budgetItemDetails.name,
-                            onValueChange = {
-                                if (it.length <= 20) {
-                                    onValueChange(budgetItemDetails.copy(name = it))
+                        Box {
+                            Column {
+                                Text(
+                                    text = "Bezeichnung", // Your label text here
+                                    color = colorResource(id = R.color.gray), // Color for the label (optional)
+                                    fontSize = 14.sp, // Font size for the label (optional)
+                                    modifier = Modifier.padding(start = 16.dp, top = 16.dp)
+                                )
+
+                                Text(
+                                    text = budgetItemDetails.name, // Display selected item
+                                    color = colorResource(id = R.color.white),
+                                    modifier = Modifier
+                                        .clickable { expanded = !expanded }
+                                        .padding(16.dp)
+                                )
+                            }
+
+                            if (expanded) {
+                                DropdownMenu(
+                                    expanded = expanded,
+                                    onDismissRequest = { expanded = false },
+                                    modifier = Modifier
+                                        .width(IntrinsicSize.Min)
+                                        .background(colorResource(id = R.color.light_gray))
+                                ) {
+                                    items.forEach { item ->
+                                        DropdownMenuItem(
+                                            onClick = {
+                                                onValueChange(budgetItemDetails.copy(name = item))
+                                                expanded = false
+                                            },
+                                            text = {
+                                                Text(text = item)
+                                            }
+                                        )
+                                    }
                                 }
-                            },
-                            label = { Text(text = "Bezeichnung") },
-                            visualTransformation = VisualTransformation.None,
-                            keyboardOptions = KeyboardOptions.Default,
-                            keyboardActions = KeyboardActions(onDone = {}),
-                            maxLines = 1,
-                            textStyle = TextStyle(
-                                color = colorResource(id = R.color.white),
-                                fontSize = 16.sp,
-                            )
-                        )
+                            }
+                        }
 
                         OutlinedTextField(
                             value = budgetItemDetails.amount.toString(),
                             onValueChange = {
                                 val parsedValue = it.toDoubleOrNull() ?: 0.0
-                                val validatedValue = if (parsedValue > 999999.9) 999999.9 else parsedValue
+                                val validatedValue =
+                                    if (parsedValue > 999999.9) 999999.9 else parsedValue
                                 onValueChange(
                                     budgetItemDetails.copy(
                                         amount = validatedValue
@@ -279,16 +320,17 @@ fun BudgetDetailScreenBody(
                     4 to 2,
                     5 to 1
                 )
-                val reverseTypeIdxMap = typeIdxMap.entries.associate { (key, value) -> value to key }
+                val reverseTypeIdxMap =
+                    typeIdxMap.entries.associate { (key, value) -> value to key }
 
                 val storedTypeIdx = reverseTypeIdxMap[budgetItemDetails.type]
                 var selectedIndex by remember { mutableStateOf(storedTypeIdx ?: 0) }
-                
+
                 // If storedTypeIdx is not null, update selectedIndex
                 storedTypeIdx?.let {
                     selectedIndex = it
                 }
-                
+
                 val buttonTextMap = mapOf(
                     0 to "monatlich",
                     1 to "2 monatlich",
@@ -300,8 +342,9 @@ fun BudgetDetailScreenBody(
                 )
 
                 Column {
-                    Row( modifier = Modifier
-                        .padding(end = 48.dp)
+                    Row(
+                        modifier = Modifier
+                            .padding(end = 48.dp)
                     ) {
                         for (i in 0 until 2) {
                             PressIconButton(
@@ -323,8 +366,9 @@ fun BudgetDetailScreenBody(
                             )
                         }
                     }
-                    Row( modifier = Modifier
-                        .padding(end = 48.dp)
+                    Row(
+                        modifier = Modifier
+                            .padding(end = 48.dp)
                     ) {
                         for (i in 2 until 4) {
                             PressIconButton(
@@ -346,8 +390,9 @@ fun BudgetDetailScreenBody(
                             )
                         }
                     }
-                    Row( modifier = Modifier
-                        .padding(end = 48.dp)
+                    Row(
+                        modifier = Modifier
+                            .padding(end = 48.dp)
                     ) {
                         for (i in 4 until 6) {
                             PressIconButton(
@@ -427,9 +472,11 @@ fun PressIconButton(
         modifier = modifier
 
     ) {
-        Text(modifier = Modifier
-            .padding(0.dp),
-            text = buttonTextMap[index] ?: "")
+        Text(
+            modifier = Modifier
+                .padding(0.dp),
+            text = buttonTextMap[index] ?: ""
+        )
     }
 }
 

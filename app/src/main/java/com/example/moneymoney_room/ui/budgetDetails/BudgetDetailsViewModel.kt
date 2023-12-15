@@ -88,13 +88,6 @@ fun BudgetItem.toBudgetItemUiState(isEntryValid: Boolean = false): BudgetItemUiS
     isEntryValid = isEntryValid
 )
 
-/**
- * UI state for ItemDetailsScreen
- */
-data class BudgetItemUiState(
-    val budgetItemDetails: BudgetItemDetails = BudgetItemDetails(),
-    val isEntryValid: Boolean = false
-)
 
 /**
  * Extension function to convert [ItemDetails] to [Item]. If the value of [ItemDetails.price] is
@@ -112,6 +105,39 @@ fun BudgetItem.toBudgetItemDetails(): BudgetItemDetails = BudgetItemDetails(
     balance = 0.0,
     debit = debit
 )
+fun BudgetItemDetails.toBudgetItem(): BudgetItem = BudgetItem(
+    id = id,
+    timestamp = timestamp,
+    name = name,
+    description = description,
+    type = type,
+    amount = amount,
+    balance = 0.0,
+    debit = debit
+)
+
+/**
+ * UI state for ItemDetailsScreen
+ */
+data class BudgetItemUiState(
+    val budgetItemDetails: BudgetItemDetails = BudgetItemDetails(),
+    val isEntryValid: Boolean = false,
+    val ausgaben: List<String> = listOf(
+        "Haushalt",
+         "Versicherung ",
+         "Krankenkasse ",
+         "Miete ",
+         "Ausgang ",
+         "Geschenke ",
+         "Steuern ",
+         "Nebenkosten ",
+         "Diverses"
+    ),
+    val einnahmen: List<String> = listOf(
+         "Einkommen ",
+         "Boni"
+    )
+)
 
 data class BudgetItemDetails(
     val id: Int = 0,
@@ -123,14 +149,3 @@ data class BudgetItemDetails(
     val balance: Double = 0.00,
     val debit: Boolean = false)
 
-
-fun BudgetItemDetails.toBudgetItem(): BudgetItem = BudgetItem(
-    id = id,
-    timestamp = timestamp,
-    name = name,
-    description = description,
-    type = type,
-    amount = amount,
-    balance = 0.0,
-    debit = debit
-)

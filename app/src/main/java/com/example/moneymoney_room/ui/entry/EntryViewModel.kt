@@ -46,7 +46,20 @@ class EntryViewModel(
  */
 data class ItemUiState(
     val itemDetails: ItemDetails = ItemDetails(),
-    val isEntryValid: Boolean = false
+    val isEntryValid: Boolean = false,
+    val entries: List<String> = listOf(
+        "Haushalt",
+        "Versicherung ",
+        "Krankenkasse ",
+        "Miete ",
+        "Ausgang ",
+        "Geschenke ",
+        "Steuern ",
+        "Nebenkosten ",
+        "Diverses",
+        "Einkommen ",
+        "Boni"
+    )
 )
 
 data class ItemDetails(

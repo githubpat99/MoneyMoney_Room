@@ -26,7 +26,11 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -45,6 +49,9 @@ import com.example.moneymoney_room.ui.navigation.NavigationDestination
 import com.example.moneymoney_room.ui.overview.BudgetBox
 import com.example.moneymoney_room.ui.overview.LiveDataBox
 import com.example.moneymoney_room.util.Utilities
+import com.example.moneymoney_room.util.VideoPlayerComponent
+import com.google.android.exoplayer2.Player
+import com.google.android.exoplayer2.SimpleExoPlayer
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
@@ -73,7 +80,25 @@ fun HomeScreen(
     val coroutineScope = rememberCoroutineScope()
     val appContext = LocalContext.current.applicationContext
     var switch: Boolean = false
-    var patPrivate: Boolean = false
+    var playVideo: Boolean by remember { mutableStateOf(false) }
+    var stopPlayback: () -> Unit = {
+        // Stop video playback
+        playVideo = false
+    }
+
+    val player = remember {
+        val exoPlayer = SimpleExoPlayer.Builder(appContext).build()
+        exoPlayer.addListener(object : Player.Listener {
+            override fun onPlaybackStateChanged(state: Int) {
+                if (state == Player.STATE_ENDED) {
+                    playVideo = false // Update playVideo state to hide the video
+                }
+            }
+
+            // Implement other required methods here if needed
+        })
+        exoPlayer
+    }
 
     Box(
         modifier = Modifier
@@ -106,39 +131,63 @@ fun HomeScreen(
                 }
             }
 
-            Divider(
-                modifier = Modifier
-                    .padding(top = 12.dp),
-                color = Color.Gray, thickness = 1.dp
-            )
+            if (playVideo) {
 
-            HorizontalScrollableOverview(
-                {
-                    println("HomeScreen - navigateToBudgetForm it: $it")
+                VideoPlayerComponent(
+                    player = player,
+                    context = appContext,
+                    playVideo = playVideo,
+                    onTogglePlayback = { newPlayState ->
+                        playVideo = newPlayState
+                    },
+                    onStopPlayback = stopPlayback
+                )
+            } else {
 
-                    navigateToBudgetForm(it,"0") },
-                { navigateToMonthly(it) },
-                viewModel)
+                Divider(
+                    modifier = Modifier
+                        .padding(top = 12.dp),
+                    color = Color.Gray, thickness = 1.dp
+                )
+                HorizontalScrollableOverview(
+                    {
+                        println("HomeScreen - navigateToBudgetForm it: $it")
 
-            Divider(
-                modifier = Modifier
-                    .padding(top = 4.dp),
-                color = Color.Gray, thickness = 1.dp
-            )
+                        navigateToBudgetForm(it, "0")
+                    },
+                    { navigateToMonthly(it) },
+                    viewModel
+                )
 
-            if (switch == true) {
+                Divider(
+                    modifier = Modifier
+                        .padding(top = 4.dp),
+                    color = Color.Gray, thickness = 1.dp
+                )
 
-                Row() {
-                    ActionButton(
-                        modifier = Modifier
-                            .padding(8.dp),
-                        active = switch,
-                        navigateToRegistration,
-                        text = "Budget - Management"
-                    )
+                if (switch == true) {
+                    Column {
+
+                        Row {
+                            ActionButton(
+                                modifier = Modifier
+                                    .padding(8.dp),
+                                active = switch,
+                                navigateToRegistration,
+                                text = "Budget - Mgmt"
+                            )
+
+                            Button(onClick = {
+                                playVideo = true
+                            }) {
+                                Text("Play Video")
+                            }
+                        }
+
+                    }
                 }
-            }
 
+            }
         }
     }
 }
@@ -166,31 +215,6 @@ fun ActionButton(
 }
 
 @Composable
-fun DeleteAll(
-    modifier: Modifier,
-    active: Boolean,
-    onClick: () -> Unit,
-    text: String,
-) {
-    Button(
-        modifier = modifier,
-        onClick = {
-            if (active) {
-                onClick()
-            }
-        },
-        enabled = active,
-        colors = ButtonDefaults.buttonColors(
-            contentColor = Color.LightGray,
-            disabledContentColor = Color.Gray
-        )
-    ) {
-        Text(text = text)
-
-    }
-}
-
-@Composable
 fun LoginCard(
     homeUiState: HomeUiState,
     onValueChange: (HomeUiState) -> Unit,
@@ -205,35 +229,43 @@ fun LoginCard(
                 value = homeUiState.userId,
                 readOnly = true,
                 onValueChange = { onValueChange(homeUiState.copy(userId = it)) },
-                label = { Text(
-                    "User",
-                    color = colorResource(id = R.color.light_gray)) },
+                label = {
+                    Text(
+                        "User",
+                        color = colorResource(id = R.color.light_gray)
+                    )
+                },
                 visualTransformation = VisualTransformation.None,
                 keyboardOptions = KeyboardOptions.Default,
                 keyboardActions = KeyboardActions(onDone = {}),
                 textStyle = TextStyle(
                     colorResource(id = R.color.white),
-                    fontSize = 14.sp),
+                    fontSize = 14.sp
+                ),
                 maxLines = 1,
                 modifier = Modifier
-                    .background( color = colorResource(id = R.color.black))
+                    .background(color = colorResource(id = R.color.black))
             )
             // userId
             OutlinedTextField(
                 value = homeUiState.password,
                 onValueChange = { onValueChange(homeUiState.copy(password = it)) },
-                label = { Text(
-                    "Passwort",
-                    color = colorResource(id = R.color.light_gray)) },
+                label = {
+                    Text(
+                        "Passwort",
+                        color = colorResource(id = R.color.light_gray)
+                    )
+                },
                 visualTransformation = VisualTransformation.None,
                 keyboardOptions = KeyboardOptions.Default,
                 keyboardActions = KeyboardActions(onDone = {}),
                 textStyle = TextStyle(
                     colorResource(id = R.color.white),
-                    fontSize = 18.sp),
+                    fontSize = 18.sp
+                ),
                 maxLines = 1,
                 modifier = Modifier
-                    .background( color = colorResource(id = R.color.black))
+                    .background(color = colorResource(id = R.color.black))
             )
         }
 
@@ -312,5 +344,4 @@ fun HorizontalScrollableOverview(
         }
     }
 }
-
 

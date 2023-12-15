@@ -3,19 +3,26 @@ package com.example.moneymoney_room.ui.details
 import android.annotation.SuppressLint
 import android.app.DatePickerDialog
 import android.widget.DatePicker
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -29,6 +36,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -167,6 +175,10 @@ fun DetailScreenBody(
     val maxDateInMillis = calendar.timeInMillis
     myDatePickerDialog.datePicker.maxDate = maxDateInMillis
 
+    var expanded by remember { mutableStateOf(false) }
+    var items =
+        itemUiState.entries
+
     Column {
 
         LazyColumn(
@@ -217,19 +229,47 @@ fun DetailScreenBody(
                             }
                         }
 
-                        OutlinedTextField(
-                            value = itemDetails.description,
-                            onValueChange = {
-                                if (it.length <= 20) {
-                                    onValueChange(itemDetails.copy(description = it))
+                        Box {
+                            Column {
+                                Text(
+                                    text = "Bezeichnung", // Your label text here
+                                    color = colorResource(id = R.color.gray), // Color for the label (optional)
+                                    fontSize = 14.sp, // Font size for the label (optional)
+                                    modifier = Modifier.padding(start = 16.dp, top = 16.dp)
+                                )
+
+                                Text(
+                                    text = itemDetails.description, // Display selected item
+                                    color = colorResource(id = R.color.black),
+                                    modifier = Modifier
+                                        .clickable { expanded = !expanded }
+                                        .padding(16.dp)
+                                )
+                            }
+
+                            if (expanded) {
+                                DropdownMenu(
+                                    expanded = expanded,
+                                    onDismissRequest = { expanded = false },
+                                    modifier = Modifier
+                                        .width(IntrinsicSize.Min)
+                                        .background(colorResource(id = R.color.light_gray))
+                                ) {
+                                    items.forEach { item ->
+                                        DropdownMenuItem(
+                                            onClick = {
+                                                onValueChange(itemDetails.copy(description = item))
+                                                expanded = false
+                                            },
+                                            text = {
+                                                Text(text = item)
+                                            }
+                                        )
+                                    }
                                 }
-                            },
-                            label = { Text(text = "Bezeichnung") },
-                            visualTransformation = VisualTransformation.None,
-                            keyboardOptions = KeyboardOptions.Default,
-                            keyboardActions = KeyboardActions(onDone = {}),
-                            maxLines = 1
-                        )
+                            }
+                        }
+
                         OutlinedTextField(
                             value = itemDetails.amount.toString(),
                             onValueChange = {

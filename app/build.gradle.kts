@@ -115,6 +115,22 @@ dependencies {
     // runtime - Live Data
     implementation("androidx.compose.runtime:runtime-livedata:1.5.4") // Use the appropriate version
 
+    // Video
+    val compose_version = "1.5.0"
+    implementation("androidx.compose.ui:ui:$compose_version")
+    implementation("androidx.compose.material:material:$compose_version")
+    implementation("androidx.compose.ui:ui-tooling:$compose_version")
+    implementation("androidx.compose.foundation:foundation:$compose_version")
+    implementation("androidx.compose.foundation:foundation-layout:$compose_version")
+    implementation("androidx.compose.runtime:runtime-livedata:$compose_version")
+    implementation("androidx.compose.runtime:runtime:$compose_version")
+    implementation("androidx.compose.material:material-icons-extended:$compose_version")
+    implementation("androidx.activity:activity-compose:1.4.0")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:1.0.0-alpha07")
+    implementation("com.google.android.exoplayer:exoplayer-core:2.19.1")
+    implementation("com.google.android.exoplayer:exoplayer-ui:2.19.1")
+
+
 
     // Testing
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")

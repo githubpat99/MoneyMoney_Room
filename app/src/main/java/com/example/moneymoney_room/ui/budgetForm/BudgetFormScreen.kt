@@ -630,25 +630,25 @@ fun MyLazyList(
 //                    .background(backgroundColor)
             ) {
                 Text(
-                    text = " Name",
+                    text = "Name",
                     style = TextStyle(
                         colorResource(id = R.color.white),
                         fontSize = fontSize,
                         fontWeight = fontWeight
                     ),
                     modifier = Modifier
-                        .padding(4.dp)
-                        .weight(1f)
+                        .padding(top = 4.dp, bottom = 4.dp, start = 8.dp)
+                        .weight(1.8f)
                 )
                 Text(
-                    text = " Betrag",
+                    text = "Betrag",
                     style = TextStyle(
                         colorResource(id = R.color.white),
                         fontSize = fontSize,
                         fontWeight = fontWeight
                     ),
                     modifier = Modifier
-                        .padding(4.dp)
+                        .padding(top = 4.dp, bottom = 4.dp)
                         .weight(1f)
                 )
                 Text(
@@ -659,8 +659,8 @@ fun MyLazyList(
                         fontWeight = fontWeight
                     ),
                     modifier = Modifier
-                        .padding(4.dp)
-                        .weight(1f)
+                        .padding(top = 4.dp, bottom = 4.dp)
+                        .weight(0.8f)
                 )
                 Text(
                     text = "Kadenz",
@@ -670,7 +670,7 @@ fun MyLazyList(
                         fontWeight = fontWeight
                     ),
                     modifier = Modifier
-                        .padding(4.dp)
+                        .padding(top = 4.dp, bottom = 4.dp)
                         .weight(1f)
                 )
             }
@@ -722,7 +722,7 @@ fun BudgetFormItemRow(
                 style = TextStyle(fontSize = 14.sp),
                 modifier = Modifier
                     .padding(0.dp)
-                    .weight(1f)
+                    .weight(2f)
             )
             Text(
                 text = budgetItem.amount.toString(),
@@ -737,7 +737,7 @@ fun BudgetFormItemRow(
                 style = TextStyle(fontSize = 14.sp),
                 modifier = Modifier
                     .padding(0.dp)
-                    .weight(1f)
+                    .weight(1.2f)
             )
             Text(
                 text = Utilities.getKadenz(budgetItem.type),
