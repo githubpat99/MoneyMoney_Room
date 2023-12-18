@@ -23,7 +23,7 @@ import java.time.ZoneOffset
  */
 class HomeViewModel(
     val itemsRepository: ItemsRepository,
-    application: MoneyMoneyApplication
+    application: MoneyMoneyApplication,
 ) : ViewModel() {
 
     val context = application.applicationContext
@@ -42,6 +42,9 @@ class HomeViewModel(
     var overviewUiState: MutableState<OverviewUiState> = mutableStateOf(
         OverviewUiState()
     )
+
+    val year = LocalDateTime.now().year
+    val ts = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
 
     init {
         viewModelScope.launch {
@@ -67,6 +70,24 @@ class HomeViewModel(
 
     suspend fun deleteItems() {
         itemsRepository.deleteAllItems()
+    }
+
+    fun initializeConfigForYear() {
+        // initialize Configuration for actual year
+
+        val configuration = Configuration(
+            budgetYear = year,
+            ts = ts,
+            status = 0,
+            startSaldo = 0.0,
+            endSaldo = 0.0,
+            approxStartSaldo = 0.0,
+            approxEndSaldo = 0.0
+        )
+
+        viewModelScope.launch {
+            moneyMoneyDatabase.configurationDao().insert(configuration)
+        }
     }
 }
 

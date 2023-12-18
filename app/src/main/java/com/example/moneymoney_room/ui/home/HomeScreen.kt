@@ -29,7 +29,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -77,7 +76,12 @@ fun HomeScreen(
     viewModel: HomeViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
 
-    val coroutineScope = rememberCoroutineScope()
+    val configItemsState = viewModel.configItems
+        .collectAsState(initial = emptyList())
+    var initSwitch = false
+    if (configItemsState.value.isEmpty()) {
+        initSwitch = true
+    }
     val appContext = LocalContext.current.applicationContext
     var switch: Boolean = false
     var playVideo: Boolean by remember { mutableStateOf(false) }
@@ -169,19 +173,54 @@ fun HomeScreen(
                     Column {
 
                         Row {
+                            Button(
+                                modifier = Modifier
+                                    .padding(8.dp)
+                                    .weight(1f),
+                                onClick = {
+                                playVideo = true
+                            }
+                            ) {
+                                Text("Why?")
+                            }
+
+                            // todo - PIN later: Erst ein neues Video aufzeichnen
+                            // Screen shots, etc...
+//                            Button(
+//                                modifier = Modifier
+//                                    .padding(8.dp)
+//                                    .weight(1f),
+//                                onClick = {
+//                                    playVideo = true
+//                                }
+//                            ) {
+//                                Text("How?")
+//                            }
+
+                            if (initSwitch == true) {
+                                Button(
+                                    modifier = Modifier
+                                        .padding(8.dp)
+                                        .weight(1f),
+                                    onClick = {
+                                        // create Base Config for actual year
+                                        viewModel.initializeConfigForYear()
+                                    }
+                                ) {
+                                    Text("Init")
+                                }
+                            }
+
                             ActionButton(
                                 modifier = Modifier
-                                    .padding(8.dp),
+                                    .padding(8.dp)
+                                    .weight(1f),
                                 active = switch,
                                 navigateToRegistration,
-                                text = "Budget - Mgmt"
+                                text = "Budget-Mgmt"
                             )
 
-                            Button(onClick = {
-                                playVideo = true
-                            }) {
-                                Text("Play Video")
-                            }
+
                         }
 
                     }
@@ -299,7 +338,7 @@ fun HorizontalScrollableOverview(
         modifier = Modifier
             .fillMaxWidth()
             .horizontalScroll(rememberScrollState())
-            .background(colorResource(id = R.color.light_gray))
+            .background(colorResource(id = R.color.primary_background))
     ) {
         configItemsState.value.forEach { item ->
             Box(
