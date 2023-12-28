@@ -28,7 +28,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -294,9 +293,6 @@ fun ConfigBudgetItem(config: Configuration, year: Int, viewModel: RegistrationVi
 
     val coroutineScope = rememberCoroutineScope()
 
-    // Observe the messageLiveData here - do not delete - warning because it's property delegate is used below
-    val message by viewModel.messageLiveData.observeAsState("")
-
     DisposableEffect(Unit) {
         val observer = Observer<String> { observedMessage ->
             if (observedMessage.isNotBlank()) {
@@ -486,7 +482,6 @@ fun ConfigBudgetItem(config: Configuration, year: Int, viewModel: RegistrationVi
 fun ConfigLiveDataItem(config: Configuration, year: Int) {
 
     val df = DecimalFormat("#,##0.00")
-    val context = LocalContext.current
 
     Row(
         modifier = Modifier
