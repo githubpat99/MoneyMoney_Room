@@ -122,8 +122,9 @@ fun BudgetFormScreen(
     val tzMillis = appTimeZone.rawOffset
     val timezoneLongSeconds: Long = tzMillis / 1000L
 
-    val budgetItemState = viewModel.budgetItemsRepository.getAllBudgetItemsStreamForYearTZ(year, timezoneLongSeconds)
-        .collectAsState(initial = BudgetItems().list)
+    val budgetItemState =
+        viewModel.budgetItemsRepository.getAllBudgetItemsStreamForYearTZ(year, timezoneLongSeconds)
+            .collectAsState(initial = BudgetItems().list)
     val budgetItems = budgetItemState.value
 
     var startSaldo = configUiState.value?.approxStartSaldo
@@ -434,7 +435,8 @@ fun BudgetFormScreen(
 
                 var budgetText = "Budget bereit - für Live Daten hier klicken"
                 if (budgetStatus == 1) {
-                    budgetText = "Budget wurde am $budgetDate erstellt - für Anpassungen hier klicken"
+                    budgetText =
+                        "Budget am $budgetDate geschlossen - für Wiedereröffnung hier klicken"
                 }
                 Text(
                     text = budgetText,
@@ -456,34 +458,15 @@ fun BudgetFormScreen(
         showDialog = showDialog,
         onDismiss = { showDialog = false },
         onYesClick = {
-            val yearInt = year.toInt()
-            // Handle "Yes" action
+
+            viewModel.handleYesClick(year, budgetStatus, budgetItems)
+            showDialog = false // Close the dialog
 
             if (budgetStatus == 0) {
-
-                // update Live Data based on Budget
-                coroutineScope.launch {
-
-                    viewModel.deleteItemsForYear(year)
-                    viewModel.insertItemsForYear(budgetItems, year)
-                }
-
-                // finally navigateBack to HomeScreen
-                onNavigateUp() // Navigate back to Home
-            } else {
-                coroutineScope.launch {
-
-                    viewModel.deleteItemsForYear(year)
-                    viewModel.reOpenBudgetStatus(
-                        yearInt,
-                        LocalDateTime.now().toEpochSecond(ZoneOffset.UTC),
-                        0.0, 0.0
-                    )
-                }
+                onNavigateUp()          // Navigate back to Home Screen
             }
-
-            showDialog = false // Close the dialog
         },
+
         onNoClick = {
             showDialog = false // Close the dialog if "No" is clicked
         }
@@ -523,7 +506,7 @@ fun BudgetFormScreenBodyAusgaben(
 ) {
     BudgetFormTabContent(
         onAddClicked,
-        budgetItems = budgetItems.toMutableList(),
+        budgetItems = budgetItems.sortedWith(compareBy({ it.timestamp }, { -it.type })).toMutableList(),
         navigateBack = navigateBack,
         navigateToDetails = navigateToDetails,
         backgroundColor = colorResource(id = R.color.light_red),
@@ -614,20 +597,23 @@ fun MyLazyList(
     backgroundColor: Color,
     budgetStatus: Int,
 ) {
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxWidth()
-    ) {
-        stickyHeader {
-            // Header row
 
-            val fontSize = 16.sp
-            val fontWeight = FontWeight.SemiBold
+    // Header row
+    val fontSize = 16.sp
+    val fontWeight = FontWeight.SemiBold
 
+    Box() {
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+//                .background(backgroundColor)
+                .padding(top = 4.dp, bottom = 4.dp)
+        ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-//                    .background(backgroundColor)
+                    .padding(start = 8.dp)
             ) {
                 Text(
                     text = "Name",
@@ -637,8 +623,8 @@ fun MyLazyList(
                         fontWeight = fontWeight
                     ),
                     modifier = Modifier
-                        .padding(top = 4.dp, bottom = 4.dp, start = 8.dp)
-                        .weight(1.8f)
+                        .padding(top = 4.dp, bottom = 4.dp, start = 4.dp)
+                        .weight(1.6f)
                 )
                 Text(
                     text = "Betrag",
@@ -676,13 +662,19 @@ fun MyLazyList(
             }
         }
 
-        items(budgetItems) { budgetItem ->
-            BudgetFormItemRow(
-                budgetItem,
-                navigateToDetails,
-                backgroundColor,
-                budgetStatus
-            )
+        LazyColumn(
+            modifier = Modifier
+//                .fillMaxWidth()
+                .padding(top = 36.dp)
+        ) {
+            items(budgetItems) { budgetItem ->
+                BudgetFormItemRow(
+                    budgetItem,
+                    navigateToDetails,
+                    backgroundColor,
+                    budgetStatus
+                )
+            }
         }
     }
 }
@@ -698,7 +690,7 @@ fun BudgetFormItemRow(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .background(backgroundColor)
+//            .background(backgroundColor)
             .padding(top = 2.dp, bottom = 2.dp)
     ) {
 
@@ -722,14 +714,14 @@ fun BudgetFormItemRow(
                 style = TextStyle(fontSize = 14.sp),
                 modifier = Modifier
                     .padding(0.dp)
-                    .weight(2f)
+                    .weight(1f)
             )
             Text(
                 text = budgetItem.amount.toString(),
                 style = TextStyle(fontSize = 14.sp),
                 modifier = Modifier
                     .padding(0.dp)
-                    .weight(1f)
+                    .weight(0.5f)
             )
 
             Text(
@@ -737,14 +729,14 @@ fun BudgetFormItemRow(
                 style = TextStyle(fontSize = 14.sp),
                 modifier = Modifier
                     .padding(0.dp)
-                    .weight(1.2f)
+                    .weight(0.6f)
             )
             Text(
                 text = Utilities.getKadenz(budgetItem.type),
                 style = TextStyle(fontSize = 14.sp),
                 modifier = Modifier
                     .padding(0.dp)
-                    .weight(1f)
+                    .weight(0.5f)
             )
         }
     }

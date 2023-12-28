@@ -23,7 +23,7 @@ fun VideoPlayerComponent(
     onTogglePlayback: (Boolean) -> Unit,
     onStopPlayback: () -> Unit,
 ) {
-    val videoRawResId = R.raw.money_money // Replace with your video file
+    val videoRawResId = R.raw.mm_intro // Replace with your video file
 
     val videoSource = remember {
         MediaItem.Builder()

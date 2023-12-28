@@ -78,7 +78,9 @@ dependencies {
     ksp("androidx.room:room-compiler:${rootProject.extra["room_version"]}")
     implementation("androidx.room:room-ktx:${rootProject.extra["room_version"]}")
 
-    //iO
+    //Json
+    implementation("com.google.code.gson:gson:2.10.1")
+
 
     //Csv Parser
     implementation("io.github.rybalkinsd:kohttp:0.12.0") // khttp for HTTP requests

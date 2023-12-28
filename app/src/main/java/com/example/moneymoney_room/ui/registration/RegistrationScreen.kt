@@ -2,6 +2,8 @@ package com.example.moneymoney_room.ui.registration
 
 import android.annotation.SuppressLint
 import android.app.AlertDialog
+import android.content.Intent
+import android.net.Uri
 import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.Toast
@@ -16,6 +18,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
@@ -104,6 +108,10 @@ fun RegistrationScreenBody(
     onSaveClick: (Configuration) -> Unit,
 ) {
 
+    var showInitDialog by remember {
+        mutableStateOf(false)
+    }
+    val context = LocalContext.current
     val year = LocalDateTime.now().year
     val configItemsState = viewModel.configItems.collectAsState(initial = emptyList())
     val configList = mutableListOf<Configuration>()
@@ -186,6 +194,70 @@ fun RegistrationScreenBody(
             )
             MyLazyLiveDataList(configList, year)
         }
+
+        Column(
+            modifier = Modifier
+                .padding(top = 600.dp, start = 4.dp)
+                .fillMaxWidth()
+        ) {
+            Row() {
+                Button(
+                    modifier = Modifier
+                        .padding(4.dp),
+                    onClick = {
+                        showInitDialog = true
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        contentColor = colorResource(id = R.color.white),
+                        disabledContentColor = colorResource(id = R.color.light_gray)
+                    )
+                ) {
+                    Text(
+                        text = "Initialisieren",
+                        style = TextStyle(color = colorResource(id = R.color.white))
+                    )
+
+                }
+                Button(
+                    modifier = Modifier
+                        .padding(4.dp),
+                    onClick = {
+                        val url = "https://moneymoney.it-pin.ch" // Replace with your URL
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                        context.startActivity(intent)
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        contentColor = colorResource(id = R.color.white),
+                        disabledContentColor = colorResource(id = R.color.light_gray)
+                    )
+                ) {
+                    Text(
+                        text = "Money-Money Homepage",
+                        style = TextStyle(color = colorResource(id = R.color.white))
+                    )
+
+                }
+            }
+        }
+    }
+
+    if (showInitDialog == true) {
+        showInitDialog = false
+        val builder = AlertDialog.Builder(context)
+        builder.setTitle("ACHTUNG")
+        builder.setMessage("Bist Du sicher, dass Du sämtliche Daten löschen willst?")
+
+        builder.setPositiveButton("OK") { _, _ ->
+
+            // All Data will be initialized (Items, BudgetItems and Configuration)
+            viewModel.initializeAllData()
+        }
+
+        builder.setNegativeButton("Cancel") { _, _ ->
+        }
+
+        val dialog = builder.create()
+        dialog.show()
     }
 }
 
@@ -217,6 +289,9 @@ fun ConfigBudgetItem(config: Configuration, year: Int, viewModel: RegistrationVi
     val context = LocalContext.current
     var selectedYear by remember { mutableStateOf(Calendar.getInstance().get(Calendar.YEAR)) }
     var showDialog by remember { mutableStateOf(false) }
+
+    var showJsonDialog by remember { mutableStateOf(false) }
+
     val coroutineScope = rememberCoroutineScope()
 
     // Observe the messageLiveData here - do not delete - warning because it's property delegate is used below
@@ -243,7 +318,23 @@ fun ConfigBudgetItem(config: Configuration, year: Int, viewModel: RegistrationVi
         Icon(
             modifier = Modifier
                 .padding(4.dp)
-                .weight(0.5f),
+                .weight(0.5f)
+                .clickable(
+                    enabled = true,
+                    onClick = {
+                        if (config.status == 0) {
+                            showJsonDialog = true
+                        } else {
+                            Toast
+                                .makeText(
+                                    context, "Diese Budget muss erst wiedereröffnet werden!",
+                                    Toast.LENGTH_SHORT
+                                )
+                                .show()
+                        }
+
+                    }
+                ),
             painter = if (config.budgetYear < year) {
                 painterResource(id = R.drawable.baseline_archive_24)
             } else if (config.status == 1) {
@@ -359,6 +450,35 @@ fun ConfigBudgetItem(config: Configuration, year: Int, viewModel: RegistrationVi
         alertDialog.show()
 
     }
+
+    if (showJsonDialog == true) {
+        showJsonDialog = false
+        val builder = AlertDialog.Builder(context)
+        builder.setTitle("Löschen oder Musterbudget generieren?")
+        builder.setMessage("Dein bestehendes Budget löschen oder ein neues generieren?")
+
+        builder.setPositiveButton("Single") { _, _ ->
+            // Handle save action here
+            // Implement the logic for saving data
+            viewModel.generateBudgetFromToJson(config.budgetYear, "single")
+        }
+
+        builder.setNegativeButton("Family") { _, _ ->
+            // Handle restore action here
+            // Implement the logic for restoring data
+            viewModel.generateBudgetFromToJson(config.budgetYear, "family")
+        }
+
+        builder.setNeutralButton("Delete") { _, _ ->
+            // Handle delete action here
+            // Implement the logic for deleting data
+            viewModel.deleteBudgetOfYear(config.budgetYear)
+        }
+
+        val dialog = builder.create()
+        dialog.show()
+    }
+
 
 }
 

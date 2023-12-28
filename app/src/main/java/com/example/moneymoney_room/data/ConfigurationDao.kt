@@ -47,6 +47,9 @@ interface ConfigurationDao {
         ts: Long, status: Int, budgetYear: Int, password: String, email: String,
         startSaldo: Double, endSaldo: Double, approxStartSaldo: Double, approxEndSaldo: Double
     )
+
+    @Query("DELETE from configuration")
+    suspend fun deleteAllConfigurations()
 }
 
 

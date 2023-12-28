@@ -178,24 +178,14 @@ fun HomeScreen(
                                     .padding(8.dp)
                                     .weight(1f),
                                 onClick = {
-                                playVideo = true
-                            }
+                                    playVideo = true
+                                }
                             ) {
-                                Text("Why?")
+                                Text(
+                                    text = "Why?",
+                                    style = TextStyle(color = colorResource(id = R.color.white))
+                                )
                             }
-
-                            // todo - PIN later: Erst ein neues Video aufzeichnen
-                            // Screen shots, etc...
-//                            Button(
-//                                modifier = Modifier
-//                                    .padding(8.dp)
-//                                    .weight(1f),
-//                                onClick = {
-//                                    playVideo = true
-//                                }
-//                            ) {
-//                                Text("How?")
-//                            }
 
                             if (initSwitch == true) {
                                 Button(
@@ -207,20 +197,23 @@ fun HomeScreen(
                                         viewModel.initializeConfigForYear()
                                     }
                                 ) {
-                                    Text("Init")
+                                    Text(
+                                        text = "Start Budget",
+                                        style = TextStyle(color = colorResource(id = R.color.white))
+                                    )
                                 }
+                            } else {
+
+                                ActionButton(
+                                    modifier = Modifier
+                                        .padding(8.dp)
+                                        .weight(1f),
+                                    active = switch,
+                                    navigateToRegistration,
+                                    text = "Budget-Mgmt"
+                                )
+
                             }
-
-                            ActionButton(
-                                modifier = Modifier
-                                    .padding(8.dp)
-                                    .weight(1f),
-                                active = switch,
-                                navigateToRegistration,
-                                text = "Budget-Mgmt"
-                            )
-
-
                         }
 
                     }
@@ -244,11 +237,14 @@ fun ActionButton(
         onClick = navigateToList,
         enabled = active,
         colors = ButtonDefaults.buttonColors(
-            contentColor = Color.LightGray,
-            disabledContentColor = Color.Gray
+            contentColor = colorResource(id = R.color.white),
+            disabledContentColor = colorResource(id = R.color.light_gray)
         )
     ) {
-        Text(text = text)
+        Text(
+            text = text,
+            style = TextStyle(color = colorResource(id = R.color.white))
+        )
 
     }
 }

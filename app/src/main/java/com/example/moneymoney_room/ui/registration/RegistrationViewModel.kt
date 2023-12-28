@@ -10,7 +10,12 @@ import com.example.moneymoney_room.MoneyMoneyApplication
 import com.example.moneymoney_room.data.BudgetItem
 import com.example.moneymoney_room.data.BudgetItemsRepository
 import com.example.moneymoney_room.data.Configuration
+import com.example.moneymoney_room.data.ItemsRepository
 import com.example.moneymoney_room.data.MoneyMoneyDatabase
+import com.example.moneymoney_room.util.Utilities
+import com.example.moneymoney_room.util.Utilities.Companion.readJsonFromAssets
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
@@ -26,6 +31,7 @@ import java.util.TimeZone
 
 class RegistrationViewModel(
     private val budgetItemsRepository: BudgetItemsRepository,
+    private val itemsRepository: ItemsRepository,
     application: MoneyMoneyApplication,
 ) : ViewModel() {
 
@@ -47,7 +53,6 @@ class RegistrationViewModel(
     private val _messageLiveData = MutableLiveData<String>()
     val messageLiveData: LiveData<String>
         get() = _messageLiveData
-
 
 
     init {
@@ -108,7 +113,15 @@ class RegistrationViewModel(
 
                 // todo - PIN - changeto updateConfigurationForYear with all the fields...
                 moneyMoneyDatabase.configurationDao().updateConfigurationForYear(
-                    ts, status, budgetYear, password, email, startSaldo, endSaldo, approxStartSaldo, approxEndSaldo
+                    ts,
+                    status,
+                    budgetYear,
+                    password,
+                    email,
+                    startSaldo,
+                    endSaldo,
+                    approxStartSaldo,
+                    approxEndSaldo
                 )
             } else {
                 // insert
@@ -221,11 +234,74 @@ class RegistrationViewModel(
 
                 if (!budgetClosed) {
                     // Only update the returnMsg if the budget is not closed
-                    _messageLiveData.value = "Budget $budgetYear erfolgreich auf $selectedYear übertragen..."
+                    _messageLiveData.value =
+                        "Budget $budgetYear erfolgreich auf $selectedYear übertragen..."
                 }
 
                 updateConfiguration(newConfig)
             }
         }
+    }
+
+    fun generateBudgetFromToJson(budgetYear: Int, budgetName: String) {
+
+        deleteBudgetOfYear(budgetYear)
+        val sourceBudgetItems = mutableListOf<BudgetItem>()
+
+        val flowListBudgetItem = budgetItemsRepository
+            .getAllBudgetItemsStreamForYearTZ(
+                budgetYear.toString(),
+                utcOffsetInSeconds.toLong()
+            )
+        viewModelScope.launch {
+            flowListBudgetItem.take(1).collect {
+                sourceBudgetItems.addAll(it)
+            }
+
+            val jsonData = readJsonFromAssets(context,  "$budgetName.json")
+
+            println ("RegistrationViewModel - copyBudgetFromToJson - jsonData: $jsonData")
+
+            val gson = Gson()
+            val itemsList: List<BudgetItem> = gson.fromJson(jsonData, object : TypeToken<List<BudgetItem>>() {}.type)
+
+            itemsList.forEach {
+
+                val budgetItem = it.copy( timestamp = Utilities.addYearToTimestamp(it.timestamp, budgetYear))
+                budgetItemsRepository.insertBudgetItem(budgetItem)
+            }
+
+            println ("RegistrationViewModel - copyBudgetFromToJson - itemsList: $itemsList")
+
+            val approxEndSaldo = Utilities.calculateApproxEndSaldo(0.0, itemsList, budgetYear.toString())
+
+            var config = Configuration(0,0,0,budgetYear,"","",0.0, 0.0, 0.0, approxEndSaldo)
+
+            // updates Config if available, otherwise insert
+            updateConfiguration(config)
+        }
+    }
+
+    fun deleteBudgetOfYear(budgetYear: Int) {
+        viewModelScope.launch {
+            budgetItemsRepository.deleteBudgetItemsForYear(budgetYear.toString(), utcOffsetInSeconds.toLong())
+
+            // Must also delete all existing Items for this year
+            itemsRepository.deleteAllItemsForYear(budgetYear.toString())
+
+            var config = Configuration(0,0,0,budgetYear,"","",0.0, 0.0, 0.0, 0.0)
+
+            // updates Config if available, otherwise insert
+            updateConfiguration(config)
+        }
+    }
+
+    fun initializeAllData() {
+        viewModelScope.launch {
+            itemsRepository.deleteAllItems()
+            budgetItemsRepository.deleteAllBudgetItems()
+            moneyMoneyDatabase.configurationDao().deleteAllConfigurations()
+        }
+
     }
 }

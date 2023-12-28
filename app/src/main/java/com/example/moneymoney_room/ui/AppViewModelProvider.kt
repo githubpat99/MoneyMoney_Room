@@ -90,6 +90,7 @@ object AppViewModelProvider {
         initializer {
             RegistrationViewModel(
                 moneymoneyApplication().container.budgetItemsRepository,
+                moneymoneyApplication().container.itemsRepository,
                 moneymoneyApplication())
         }
 

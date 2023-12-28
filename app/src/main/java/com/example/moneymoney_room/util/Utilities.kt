@@ -1,6 +1,13 @@
 package com.example.moneymoney_room.util
 
+import android.content.Context
 import androidx.compose.ui.text.input.OffsetMapping
+import com.example.moneymoney_room.data.BudgetItem
+import com.example.moneymoney_room.data.Item
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
+import java.io.InputStream
 import java.text.DateFormat
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
@@ -9,7 +16,9 @@ import java.text.SimpleDateFormat
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
 import java.time.ZoneId
+import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.Date
@@ -124,7 +133,108 @@ class Utilities {
             return formattedStartDate to formattedEndDate
         }
 
+        fun writeJsonToFile(context: Context, json: String, fileName: String): Boolean {
+            return try {
+                val file = File(context.filesDir, fileName)
+                val fileOutputStream = FileOutputStream(file)
+                fileOutputStream.write(json.toByteArray())
+                fileOutputStream.close()
+                true
+            } catch (e: Exception) {
+                e.printStackTrace()
+                false
+            }
+        }
+
+        fun readJsonFromFile(context: Context, fileName: String): String {
+            return try {
+                val inputStream: InputStream = context.assets.open(fileName)
+                val buffer = ByteArray(inputStream.available())
+                inputStream.read(buffer)
+                inputStream.close()
+                String(buffer)
+            } catch (e: IOException) {
+                e.printStackTrace()
+                ""
+            }
+        }
+
+        fun readJsonFromAssets(context: Context, fileName: String): String {
+            return context.assets.open(fileName).bufferedReader().use { it.readText() }
+        }
+
+        fun calculateApproxEndSaldo(
+            approxStartSaldo: Double,
+            budgetItems: List<BudgetItem>,
+            year: String,
+        ): Double {
+
+            val yearInt = year.toInt()
+
+            val endDate = LocalDate.of(yearInt, 12, 31)
+            val endOfDayTs = endDate.atTime(LocalTime.MAX).toEpochSecond(ZoneOffset.UTC)
+
+            val startDate = LocalDate.of(yearInt, 1, 1)
+            val startOfDayTs = startDate.atStartOfDay().toEpochSecond(ZoneOffset.UTC)
+
+            var totalAmount = approxStartSaldo
+            var newItemList = mutableListOf<Item>()
+//        var newItem: Item = Item(0, 0, "", "", 0, 0.0, 0.0, false)
+
+            for (item in budgetItems) {
+
+                var itemAmount = 0.0
+                var date = item.timestamp
+                while (date <= endOfDayTs) {
+                    if (date >= startOfDayTs) {
+                        if (item.debit) {
+                            itemAmount += item.amount
+                        } else {
+                            itemAmount -= item.amount
+                        }
+                        val newItem = Item(0, date, "", item.name, 0, item.amount, 0.0, item.debit)
+                        newItemList.add(newItem)
+
+
+                    }
+                    date = when (item.type) {
+                        12 -> LocalDateTime.ofEpochSecond(date, 0, ZoneOffset.UTC).plusMonths(1)
+                            .toEpochSecond(ZoneOffset.UTC)
+
+                        6 -> LocalDateTime.ofEpochSecond(date, 0, ZoneOffset.UTC).plusMonths(2)
+                            .toEpochSecond(ZoneOffset.UTC)
+
+                        4 -> LocalDateTime.ofEpochSecond(date, 0, ZoneOffset.UTC).plusMonths(3)
+                            .toEpochSecond(ZoneOffset.UTC)
+
+                        3 -> LocalDateTime.ofEpochSecond(date, 0, ZoneOffset.UTC).plusMonths(4)
+                            .toEpochSecond(ZoneOffset.UTC)
+
+                        2 -> LocalDateTime.ofEpochSecond(date, 0, ZoneOffset.UTC).plusMonths(6)
+                            .toEpochSecond(ZoneOffset.UTC)
+
+                        else -> LocalDateTime.ofEpochSecond(date, 0, ZoneOffset.UTC).plusMonths(12)
+                            .toEpochSecond(ZoneOffset.UTC)
+                    }
+                }
+                totalAmount += itemAmount
+            }
+
+            val df = DecimalFormat("#.##")
+            val approxEndSaldo = df.format(totalAmount).toDouble()
+
+            return approxEndSaldo
+        }
+
+        fun addYearToTimestamp(timestamp: Long, budgetYear: Int): Long {
+            val dateTime = LocalDateTime.ofInstant(Instant.ofEpochSecond(timestamp), ZoneOffset.UTC)
+            val tsYear = dateTime.year
+            val yearDiff = budgetYear - tsYear
+            return dateTime.plusYears(yearDiff.toLong()).toEpochSecond(ZoneOffset.UTC)
+        }
     }
+
+
 }
 class DecimalFormatter(
     symbols: DecimalFormatSymbols = DecimalFormatSymbols.getInstance()
