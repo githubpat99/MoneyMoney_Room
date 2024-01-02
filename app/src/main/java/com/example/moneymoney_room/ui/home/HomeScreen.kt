@@ -337,7 +337,7 @@ fun HorizontalScrollableOverview(
 
     val items = configItemsState.value.sortedBy { it?.budgetYear ?: 0 }
 
-    val visIndex = viewModel.getVisibleIdx(items) + 1
+    val visIndex = viewModel.getVisibleIdx(items)
     var scrollingDone by remember {
         mutableStateOf(false)
     }
