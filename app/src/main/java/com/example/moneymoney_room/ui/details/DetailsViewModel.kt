@@ -14,7 +14,7 @@ import com.example.moneymoney_room.ui.entry.ItemDetails
 import com.example.moneymoney_room.ui.entry.ItemUiState
 import com.example.moneymoney_room.ui.entry.toItem
 import com.example.moneymoney_room.ui.entry.toItemUiState
-import kotlinx.coroutines.Dispatchers
+import com.example.moneymoney_room.util.Utilities
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -43,7 +43,9 @@ class DetailsViewModel(
                 .first()
                 .toItemUiState(true)
 
-            configUiState = configurationRepository.getConfiguration()
+            val itemTimestamp = itemUiState.itemDetails.timestamp
+            val year = Utilities.getDateFromTimestamp(itemTimestamp).year
+            configUiState = configurationRepository.getConfigurationForYear(year.toString())
                 .filterNotNull()
                 .first()
         }
@@ -77,18 +79,10 @@ class DetailsViewModel(
         itemsRepository.deleteItem(itemUiState.itemDetails.toItem())
     }
 
-    suspend fun updateEndSaldoForYear(year: String, endSaldo: Double) {
-
-        println("DetailsScreen - updateEndSaldoForYear()")
-
-        // Inside your ViewModel function
-        viewModelScope.launch(Dispatchers.IO) {
-            configurationRepository.updateConfigurationEndSaldoForYear(year, endSaldo)
-        }
-
-        println("DetailsScreen - updateEndSaldoForYear2nd()")
-
-
+    suspend fun getConfigurationForYear(year: Int): Configuration {
+        return configurationRepository.getConfigurationForYear(year.toString())
+            .filterNotNull()
+            .first()
     }
 
     companion object {

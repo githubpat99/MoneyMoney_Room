@@ -12,6 +12,7 @@ import com.example.moneymoney_room.data.ItemsRepository
 import com.example.moneymoney_room.data.MoneyMoneyDatabase
 import com.example.moneymoney_room.ui.overview.OverviewUiState
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
@@ -38,6 +39,9 @@ class HomeViewModel(
     var homeUiState by mutableStateOf(HomeUiState())
         private set
 
+    // my new Approach
+    private val _configs = MutableStateFlow<List<Configuration?>>(emptyList())
+
     // Initialize overviewUiState with values from configuration
     var overviewUiState: MutableState<OverviewUiState> = mutableStateOf(
         OverviewUiState()
@@ -59,6 +63,9 @@ class HomeViewModel(
                 approxStartSaldo = configurationValue?.approxStartSaldo ?: 0.0,
                 approxEndSaldo = configurationValue?.approxEndSaldo ?: 0.0
             )
+            moneyMoneyDatabase.configurationDao().getConfigurations().collect {
+                _configs.value = it
+            }
         }
     }
 
@@ -66,10 +73,6 @@ class HomeViewModel(
     fun chgUserInfo(paramHomeUiState: HomeUiState) {
         homeUiState =
             HomeUiState(userId = paramHomeUiState.userId, password = paramHomeUiState.password)
-    }
-
-    suspend fun deleteItems() {
-        itemsRepository.deleteAllItems()
     }
 
     fun initializeConfigForYear() {
@@ -88,6 +91,32 @@ class HomeViewModel(
         viewModelScope.launch {
             moneyMoneyDatabase.configurationDao().insert(configuration)
         }
+    }
+
+    fun updateStatusToArchived(config: Configuration) {
+
+        val configuration = config.copy()
+        configuration.status = 2
+
+        viewModelScope.launch {
+            moneyMoneyDatabase.configurationDao().updateConfiguration(configuration)
+        }
+    }
+
+    fun getVisibleIdx(configItems: List<Configuration?>): Int {
+        var idx = 0
+        val currentConfigs = configItems
+
+        for (config in currentConfigs) {
+
+            if (config != null) {
+                if (config.budgetYear == year) {
+                    break
+                }
+            }
+            idx++
+        }
+        return idx
     }
 }
 
