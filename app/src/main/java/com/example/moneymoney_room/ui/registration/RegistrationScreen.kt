@@ -318,25 +318,30 @@ fun ConfigBudgetItem(config: Configuration, year: Int, viewModel: RegistrationVi
                 .clickable(
                     enabled = true,
                     onClick = {
-                        if (config.status == 0) {
-                            showJsonDialog = true
-                        } else {
-                            Toast
+                        when (config.status) {
+                            1 -> Toast
                                 .makeText(
-                                    context, "Diese Budget muss erst wiedereröffnet werden!",
+                                    context, "Dieses Budget muss erst wiedereröffnet werden!",
                                     Toast.LENGTH_SHORT
                                 )
                                 .show()
+
+                            2 -> Toast
+                                .makeText(
+                                    context, "Dieses Budget ist bereits archiviert!",
+                                    Toast.LENGTH_SHORT
+                                )
+                                .show()
+
+                            else -> showJsonDialog = true
                         }
 
                     }
                 ),
-            painter = if (config.budgetYear < year) {
-                painterResource(id = R.drawable.baseline_archive_24)
-            } else if (config.status == 1) {
-                painterResource(id = R.drawable.baseline_lock_24)
-            } else {
-                painterResource(id = R.drawable.baseline_lock_open_24)
+            painter = when (config.status) {
+                2 -> painterResource(id = R.drawable.baseline_archive_24)
+                1 -> painterResource(id = R.drawable.baseline_lock_24)
+                else -> painterResource(id = R.drawable.baseline_lock_open_24)
             },
             contentDescription = "Budget locked",
             tint = colorResource(id = R.color.white)
@@ -493,10 +498,11 @@ fun ConfigLiveDataItem(config: Configuration, year: Int) {
             modifier = Modifier
                 .padding(4.dp)
                 .weight(0.5f),
-            painter = if (config.budgetYear == year) {
-                painterResource(id = R.drawable.baseline_power_24)
-            } else {
-                painterResource(id = R.drawable.baseline_power_off_24)
+            painter = when (config.budgetYear == year) {
+                true -> painterResource(id = R.drawable.baseline_power_24)
+                else -> if (config.status > 1) {
+                    painterResource(id = R.drawable.baseline_archive_24)
+                } else painterResource(id = R.drawable.baseline_power_off_24)
             },
             contentDescription = "Live-Data active",
             tint = colorResource(id = R.color.white)

@@ -80,8 +80,6 @@ fun DetailsScreen(
     viewModel: DetailsViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
     val coroutineScope = rememberCoroutineScope()
-    val itemDetails2 = viewModel.itemUiState.itemDetails
-    val oldA = itemDetails2.amount
 
     Scaffold(
         modifier = modifier,
@@ -96,6 +94,7 @@ fun DetailsScreen(
 
         DetailScreenBody(
             itemUiState = viewModel.itemUiState,
+            configStatus = viewModel.configUiState.status,
             navigateBack,
             navigateToEntry,
             onValueChange = viewModel::updateUiState,
@@ -120,6 +119,7 @@ fun DetailsScreen(
 @Composable
 fun DetailScreenBody(
     itemUiState: ItemUiState,
+    configStatus: Int,
     navigateBack: () -> Unit,
     navigateToEntry: () -> Unit,
     onValueChange: (ItemDetails) -> Unit,
@@ -179,6 +179,12 @@ fun DetailScreenBody(
     var items =
         itemUiState.entries
 
+    var titleText = "Einnahmen & Ausgaben"
+    val archived = configStatus >= 2
+    if (archived) titleText = "$titleText (archiviert)"
+
+    println("DetailsScreen - archived: $archived")
+
     Column {
 
         LazyColumn(
@@ -190,7 +196,7 @@ fun DetailScreenBody(
         ) {
             item {
                 Text(
-                    text = "Einnahmen & Ausgaben",
+                    text = titleText,
                     style = TextStyle(fontSize = 24.sp, fontWeight = FontWeight.Bold),
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
@@ -222,7 +228,8 @@ fun DetailScreenBody(
                                     myDateString = ""
                                     myDatePickerDialog.show()
                                 },
-                                colors = ButtonDefaults.buttonColors()
+                                colors = ButtonDefaults.buttonColors(),
+                                enabled = !archived
                             ) {
                                 Text(text = "Erstes Mal")
 
@@ -242,7 +249,11 @@ fun DetailScreenBody(
                                     text = itemDetails.description, // Display selected item
                                     color = colorResource(id = R.color.black),
                                     modifier = Modifier
-                                        .clickable { expanded = !expanded }
+                                        .clickable(
+                                            enabled = !archived
+                                        ) {
+                                            expanded = !expanded
+                                        }
                                         .padding(16.dp)
                                 )
                             }
@@ -282,6 +293,7 @@ fun DetailScreenBody(
                                     )
                                 )
                             },
+                            enabled = !archived,
                             label = { Text(text = "Betrag") },
                             visualTransformation = VisualTransformation.None,
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
@@ -294,30 +306,32 @@ fun DetailScreenBody(
 
         }
 
-        Spacer(modifier = Modifier.size(16.dp))
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp), // Adjust padding as needed
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Button(
+        if (!archived) {
+            Spacer(modifier = Modifier.size(16.dp))
+            Row(
                 modifier = Modifier
-                    .padding(2.dp)
-                    .weight(1f),
-                onClick = onSaveClick,
-                enabled = itemUiState.isEntryValid
+                    .fillMaxWidth()
+                    .padding(16.dp), // Adjust padding as needed
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(text = "Save")
-            }
-            Button(
-                modifier = Modifier
-                    .padding(2.dp)
-                    .weight(1f),
-                onClick = onDeleteClick,
-                enabled = true
-            ) {
-                Text(text = "Del")
+                Button(
+                    modifier = Modifier
+                        .padding(2.dp)
+                        .weight(1f),
+                    onClick = onSaveClick,
+                    enabled = itemUiState.isEntryValid
+                ) {
+                    Text(text = "Save")
+                }
+                Button(
+                    modifier = Modifier
+                        .padding(2.dp)
+                        .weight(1f),
+                    onClick = onDeleteClick,
+                    enabled = true
+                ) {
+                    Text(text = "Del")
+                }
             }
         }
     }

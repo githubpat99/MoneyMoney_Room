@@ -56,7 +56,12 @@ fun LiveDataBox(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Icon(
-                    painter = painterResource(id = R.drawable.baseline_nightlife_24),
+                    painter =
+                    if (budgetYear < Utilities.getActualYear()) {
+                        painterResource(id = R.drawable.baseline_archive_24)
+                    } else {
+                        painterResource(id = R.drawable.baseline_nightlife_24)
+                    },
                     contentDescription = "Live",
                     tint = colorResource(id = R.color.white)
                 )

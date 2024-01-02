@@ -25,10 +25,12 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -51,6 +53,7 @@ import com.example.moneymoney_room.util.Utilities
 import com.example.moneymoney_room.util.VideoPlayerComponent
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.SimpleExoPlayer
+import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
@@ -81,7 +84,18 @@ fun HomeScreen(
     var initSwitch = false
     if (configItemsState.value.isEmpty()) {
         initSwitch = true
+    } else {
+        // Set Configuration to archive when Year changed
+        configItemsState.value.forEach {
+            if (it != null) {
+                if (it.status < 2 && it.budgetYear < Utilities.getActualYear().toInt()) {
+                    // set Status to archived - Status 2
+                    viewModel.updateStatusToArchived(it)
+                }
+            }
+        }
     }
+
     val appContext = LocalContext.current.applicationContext
     var switch: Boolean = false
     var playVideo: Boolean by remember { mutableStateOf(false) }
@@ -153,10 +167,9 @@ fun HomeScreen(
                         .padding(top = 12.dp),
                     color = Color.Gray, thickness = 1.dp
                 )
+
                 HorizontalScrollableOverview(
                     {
-                        println("HomeScreen - navigateToBudgetForm it: $it")
-
                         navigateToBudgetForm(it, "0")
                     },
                     { navigateToMonthly(it) },
@@ -313,46 +326,53 @@ fun HorizontalScrollableOverview(
     navigateToMonthly: (String) -> Unit,
     viewModel: HomeViewModel,
 ) {
+
+    val coroutineScope = rememberCoroutineScope()
     // Replace this list with your actual content
-    val myBudgets = viewModel.overviewUiState.value
-
-
+    viewModel.overviewUiState.value
     val configItemsState = viewModel.configItems.collectAsState(initial = emptyList())
-
-    val years = mutableListOf<String>()
-    var i = 0
-
-    configItemsState.value.forEach {
-        val appStart = it?.approxStartSaldo ?: 0.0
-        years.add(it?.budgetYear.toString() ?: "offen")
-    }
 
     val nowTs = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
     val nowString = Utilities.getStringDateFromTimestamp(nowTs)
 
+    val items = configItemsState.value.sortedBy { it?.budgetYear ?: 0 }
+
+    val visIndex = viewModel.getVisibleIdx(items) + 1
+    var scrollingDone by remember {
+        mutableStateOf(false)
+    }
+
+    val scrollState = rememberScrollState()
+    DisposableEffect(visIndex) {
+        coroutineScope.launch {
+            scrollState.animateScrollTo((660 * visIndex).toFloat().toInt())
+            scrollingDone = true
+        }
+        onDispose { }
+    }
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .horizontalScroll(rememberScrollState())
-            .background(colorResource(id = R.color.primary_background))
+            .horizontalScroll(scrollState)
+            .background(color = colorResource(id = R.color.primary_background))
     ) {
-        configItemsState.value.forEach { item ->
+
+        items.forEachIndexed { index, item ->
+
             Box(
                 modifier = Modifier
-                    .padding(horizontal = 0.dp)
                     .width(220.dp)
                     .height(320.dp)
                     .background(color = colorResource(id = R.color.primary_background))
             ) {
-
                 val budgetDate = Utilities.getStringDateFromTimestamp(item?.ts ?: 0)
 
                 Column(
-                    modifier = Modifier
-                        .padding(8.dp) // Add padding for better spacing
+                    modifier = Modifier.padding(8.dp)
                 ) {
                     Text(
-                        text = item?.budgetYear.toString() ?: "open",
+                        text = item?.budgetYear.toString(),
                         style = TextStyle(
                             color = colorResource(id = R.color.white),
                             fontWeight = FontWeight.Bold,
@@ -379,4 +399,5 @@ fun HorizontalScrollableOverview(
         }
     }
 }
+
 

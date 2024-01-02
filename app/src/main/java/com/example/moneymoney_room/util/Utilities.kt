@@ -8,7 +8,6 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStream
-import java.text.DateFormat
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
 import java.text.NumberFormat
@@ -20,10 +19,8 @@ import java.time.LocalTime
 import java.time.ZoneId
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
-import java.util.Calendar
 import java.util.Date
 import java.util.Locale
-import java.util.TimeZone
 
 class Utilities {
 
@@ -52,19 +49,9 @@ class Utilities {
 
 
     companion object {
-        fun dateFormat(s: String): DateFormat {
-            val dateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM)
-            return dateFormat
-        }
 
         fun getNowAsLong(): Long {
             return Date().time
-        }
-
-        fun getCurrentTimeInMillis(): Long {
-            val timeZone = TimeZone.getTimeZone("Europe/Paris") // CET is equivalent to Europe/Paris timezone
-            val calendar = Calendar.getInstance(timeZone)
-            return calendar.timeInMillis
         }
 
         fun getCurrentDateTimeAsString(): String {
@@ -231,6 +218,10 @@ class Utilities {
             val tsYear = dateTime.year
             val yearDiff = budgetYear - tsYear
             return dateTime.plusYears(yearDiff.toLong()).toEpochSecond(ZoneOffset.UTC)
+        }
+
+        fun getActualYear(): String {
+            return LocalDateTime.now().year.toString()
         }
     }
 

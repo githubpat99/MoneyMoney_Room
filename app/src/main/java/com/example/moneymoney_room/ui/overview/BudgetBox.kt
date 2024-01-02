@@ -21,17 +21,18 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.moneymoney_room.R
+import com.example.moneymoney_room.util.Utilities
 import com.example.moneymoney_room.util.Utilities.Companion.getFormattedStartAndEndDatesForYear
 import java.text.DecimalFormat
 
 @Composable
-fun BudgetBox (
+fun BudgetBox(
     navigateToBudget: (String) -> Unit,
     budgetYear: String,
     approxStart: Double,
     approxEnd: Double,
     budgetDatum: String,
-    budgetStatus: Int
+    budgetStatus: Int,
 ) {
 
 
@@ -39,6 +40,7 @@ fun BudgetBox (
     val decimalFormat = DecimalFormat("#,##0.00")
     val approxStartText = decimalFormat.format(approxStart)
     val approxEndText = decimalFormat.format(approxEnd)
+    val actualYear = Utilities.getActualYear()
 
     Box(
         modifier = Modifier
@@ -57,10 +59,10 @@ fun BudgetBox (
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Icon(
-                    painter = if (budgetStatus == 1) {
-                        painterResource(id = R.drawable.baseline_lock_24)
-                    } else {
-                        painterResource(id = R.drawable.baseline_lock_open_24)
+                    painter = when (budgetStatus) {
+                        2 -> painterResource(id = R.drawable.baseline_archive_24)
+                        1 -> painterResource(id = R.drawable.baseline_lock_24)
+                        else -> painterResource(id = R.drawable.baseline_lock_open_24)
                     },
                     contentDescription = "Budget locked",
                     tint = colorResource(id = R.color.white)

@@ -421,7 +421,8 @@ fun BudgetFormScreen(
                 }
             }
 
-            Box(
+            if (budgetStatus < 2) {
+                Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(0.1f)
@@ -449,7 +450,7 @@ fun BudgetFormScreen(
                         .padding(2.dp)
 
                 )
-            }
+            }}
         }
     }
 
