@@ -345,7 +345,7 @@ fun HorizontalScrollableOverview(
     val scrollState = rememberScrollState()
     DisposableEffect(visIndex) {
         coroutineScope.launch {
-            scrollState.animateScrollTo((660 * visIndex).toFloat().toInt())
+            scrollState.animateScrollTo((580 * visIndex).toFloat().toInt())
             scrollingDone = true
         }
         onDispose { }
