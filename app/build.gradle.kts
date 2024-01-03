@@ -6,11 +6,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.moneymoney_room"
+    namespace = "com.nickpatrick.swissmoneysaver"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.moneymoney_room"
+        applicationId = "com.nickpatrick.swissmoneysaver"
         minSdk = 26
         targetSdk = 34
         versionCode = 1
