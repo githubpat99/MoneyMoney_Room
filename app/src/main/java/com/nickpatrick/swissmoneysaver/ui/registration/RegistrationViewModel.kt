@@ -2,10 +2,13 @@ package com.nickpatrick.swissmoneysaver.ui.registration
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.text.intl.Locale
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import com.nickpatrick.swissmoneysaver.MoneyMoneyApplication
 import com.nickpatrick.swissmoneysaver.data.BudgetItem
 import com.nickpatrick.swissmoneysaver.data.BudgetItemsRepository
@@ -14,8 +17,6 @@ import com.nickpatrick.swissmoneysaver.data.ItemsRepository
 import com.nickpatrick.swissmoneysaver.data.MoneyMoneyDatabase
 import com.nickpatrick.swissmoneysaver.util.Utilities
 import com.nickpatrick.swissmoneysaver.util.Utilities.Companion.readJsonFromAssets
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
@@ -53,7 +54,6 @@ class RegistrationViewModel(
     private val _messageLiveData = MutableLiveData<String>()
     val messageLiveData: LiveData<String>
         get() = _messageLiveData
-
 
     init {
         viewModelScope.launch {
@@ -109,9 +109,6 @@ class RegistrationViewModel(
 
             if (config != null) {
                 // update
-                println("RegistrationViewModel - updateConfiguration - viewModelScope: config: $config - update")
-
-                // todo - PIN - changeto updateConfigurationForYear with all the fields...
                 moneyMoneyDatabase.configurationDao().updateConfigurationForYear(
                     ts,
                     status,
@@ -125,9 +122,6 @@ class RegistrationViewModel(
                 )
             } else {
                 // insert
-                println("RegistrationViewModel - updateConfiguration - viewModelScope: config: $config - insert")
-
-                // todo - PIN - changeto updateConfigurationForYear with all the fields...
                 moneyMoneyDatabase.configurationDao().insert(configuration)
             }
         }
@@ -135,8 +129,6 @@ class RegistrationViewModel(
 
 
     fun copyBudgetFromTo(budgetYear: Int, selectedYear: Int) {
-
-        println("RegistrationViewModel - copyBudgetFromTo: $budgetYear to: $selectedYear")
 
         var newConfig = Configuration()
 
@@ -212,9 +204,6 @@ class RegistrationViewModel(
                         // Get the updated timestamp after adding one year
                         val updatedTimestamp: Long = updatedInstant.epochSecond
 
-
-                        println("RegistrationViewModel - copyBudget it: $it ")
-
                         BudgetItem(
                             id = 0,
                             timestamp = updatedTimestamp,
@@ -228,14 +217,26 @@ class RegistrationViewModel(
                     }.forEach { budgetItem ->
                         budgetItemsRepository.insertBudgetItem(budgetItem)
 
-                        println("RegistrationViewModel - copyBudget it: $budgetItem ")
                     }
                 }
 
                 if (!budgetClosed) {
                     // Only update the returnMsg if the budget is not closed
-                    _messageLiveData.value =
-                        "Budget $budgetYear erfolgreich auf $selectedYear übertragen..."
+
+                    var msgTxt = ""
+
+                    println("RegistrationViewModel - Locale.current.language: ${Locale.current.language}")
+
+                    when (Locale.current.language) {
+                        "de" -> msgTxt = "Budget $budgetYear erfolgreich auf $selectedYear übertragen"
+                        "en" -> msgTxt = "Budget $budgetYear successfully transferred to $selectedYear"
+                        "fr" -> msgTxt = "Budget $budgetYear reporté avec succès sur $selectedYear"
+                        "it" -> msgTxt = "Bilancio $budgetYear trasferito con successo al $selectedYear"
+                        else -> msgTxt = "Budget $budgetYear -> $selectedYear ..."
+                    }
+
+                    _messageLiveData.value = msgTxt
+
                 }
 
                 updateConfiguration(newConfig)
@@ -258,9 +259,8 @@ class RegistrationViewModel(
                 sourceBudgetItems.addAll(it)
             }
 
-            val jsonData = readJsonFromAssets(context,  "$budgetName.json")
-
-            println ("RegistrationViewModel - copyBudgetFromToJson - jsonData: $jsonData")
+            val fileName = budgetName + "_" + Locale.current.language + ".json"
+            val jsonData = readJsonFromAssets(context,  fileName)
 
             val gson = Gson()
             val itemsList: List<BudgetItem> = gson.fromJson(jsonData, object : TypeToken<List<BudgetItem>>() {}.type)
@@ -270,8 +270,6 @@ class RegistrationViewModel(
                 val budgetItem = it.copy( timestamp = Utilities.addYearToTimestamp(it.timestamp, budgetYear))
                 budgetItemsRepository.insertBudgetItem(budgetItem)
             }
-
-            println ("RegistrationViewModel - copyBudgetFromToJson - itemsList: $itemsList")
 
             val approxEndSaldo = Utilities.calculateApproxEndSaldo(0.0, itemsList, budgetYear.toString())
 

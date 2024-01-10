@@ -395,6 +395,7 @@ fun ShowOnlyRelevantElements(
     navigateToEntry: () -> Unit,
     year: String,
 ) {
+    val context = LocalContext.current
     var showChart by remember { mutableStateOf(2) }
     val monthlyTotals = calculateMonthlyTotals(itemList)
     val sumMT = monthlyTotals.sumOf { it.totalAmount }
@@ -454,7 +455,7 @@ fun ShowOnlyRelevantElements(
                         val subTotal = df.format(subTotDouble)
 
                         val formattedBudgetTotal = df.format(budgetTotalForMonth)
-                        val monthText = Utilities.MonthUtils.getMonthName(month)
+                        val monthText = Utilities.MonthUtils.getMonthName(context, month)
 
                         // todo PIN - correct values for Float using the Calculation Factor
                         val color = if (chartSaldo > 0)
@@ -515,7 +516,7 @@ fun ShowOnlyRelevantElements(
 
                         val formattedTotalAmount = df.format(totalAmount)
 
-                        val monthText = Utilities.MonthUtils.getMonthName(month)
+                        val monthText = Utilities.MonthUtils.getMonthName(context, month)
 
                         // todo PIN - correct values for Float using the Calculation Factor
                         val color = if (chartSaldo > 0)
@@ -628,6 +629,7 @@ fun MonthlyCard(
     itemColor: Color,
     modifier: Modifier = Modifier,
 ) {
+    val context = LocalContext.current
     val myCardModifier = modifier
         .padding(start = 4.dp, top = 3.dp, end = 4.dp, bottom = 2.dp)
         .background(color = colorResource(id = R.color.light_blue))
@@ -643,7 +645,7 @@ fun MonthlyCard(
         Text(
             modifier = myCardModifier
                 .weight(1f),
-            text = Utilities.MonthUtils.getMonthName(month),
+            text = Utilities.MonthUtils.getMonthName(context, month),
             style = TextStyle(
                 color = colorResource(id = R.color.white),
                 textAlign = TextAlign.Left,

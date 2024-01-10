@@ -1,0 +1,282 @@
+[
+  {
+    "amount": 150,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Miscellaneous",
+    "timestamp": 1673348400,
+    "type": 12
+  },
+  {
+    "amount": 800,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Pocket Money",
+    "timestamp": 1673348400,
+    "type": 12
+  },
+  {
+    "amount": 735.3,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Health Insurance",
+    "timestamp": 1673348400,
+    "type": 12
+  },
+  {
+    "amount": 8500,
+    "balance": 0,
+    "debit": true,
+    "description": " ",
+    "id": 0,
+    "name": "Salary",
+    "timestamp": 1674644400,
+    "type": 12
+  },
+  {
+    "amount": 400,
+    "balance": 0,
+    "debit": true,
+    "description": " ",
+    "id": 0,
+    "name": "Expenses",
+    "timestamp": 1674644400,
+    "type": 12
+  },
+  {
+    "amount": 1500,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Household Money",
+    "timestamp": 1674817200,
+    "type": 12
+  },
+  {
+    "amount": 820,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Mortgage",
+    "timestamp": 1674817200,
+    "type": 12
+  },
+  {
+    "amount": 2074.85,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Car Insurance",
+    "timestamp": 1674817200,
+    "type": 1
+  },
+  {
+    "amount": 650,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Health Insurance",
+    "timestamp": 1674817200,
+    "type": 12
+  },
+  {
+    "amount": 163.8,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Landline",
+    "timestamp": 1674817200,
+    "type": 12
+  },
+  {
+    "amount": 80,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Mobile Phone",
+    "timestamp": 1674817200,
+    "type": 12
+  },
+  {
+    "amount": 4000,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Ski Holidays",
+    "timestamp": 1674817200,
+    "type": 1
+  },
+  {
+    "amount": 150,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Leisure / Sports",
+    "timestamp": 1674817200,
+    "type": 12
+  },
+  {
+    "amount": 68,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Transportation",
+    "timestamp": 1674817200,
+    "type": 12
+  },
+  {
+    "amount": 100,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Credit-Card",
+    "timestamp": 1674817200,
+    "type": 12
+  },
+  {
+    "amount": 748,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Electricity",
+    "timestamp": 1677495600,
+    "type": 6
+  },
+  {
+    "amount": 964.15,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Road Traffic",
+    "timestamp": 1677495600,
+    "type": 1
+  },
+  {
+    "amount": 662.5,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Insurance",
+    "timestamp": 1677495600,
+    "type": 1
+  },
+  {
+    "amount": 285,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Car Insurance",
+    "timestamp": 1677495600,
+    "type": 1
+  },
+  {
+    "amount": 970,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Leisure / Sports",
+    "timestamp": 1677495600,
+    "type": 4
+  },
+  {
+    "amount": 4500,
+    "balance": 0,
+    "debit": true,
+    "description": " ",
+    "id": 0,
+    "name": "Bonus",
+    "timestamp": 1682416800,
+    "type": 1
+  },
+  {
+    "amount": 1500,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Easter Holidays",
+    "timestamp": 1682589600,
+    "type": 1
+  },
+  {
+    "amount": 7500,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Provisional Taxes",
+    "timestamp": 1685181600,
+    "type": 1
+  },
+  {
+    "amount": 800,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Water",
+    "timestamp": 1687860000,
+    "type": 2
+  },
+  {
+    "amount": 4000,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Summer Holidays",
+    "timestamp": 1690452000,
+    "type": 1
+  },
+  {
+    "amount": 2000,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Deferred Taxes",
+    "timestamp": 1693130400,
+    "type": 1
+  },
+  {
+    "amount": 3000,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Autumn Holidays",
+    "timestamp": 1698082800,
+    "type": 1
+  },
+  {
+    "amount": 7000,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Provisions",
+    "timestamp": 1701082800,
+    "type": 1
+  }
+]

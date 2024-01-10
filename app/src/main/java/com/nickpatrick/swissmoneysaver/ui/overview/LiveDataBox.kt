@@ -42,7 +42,7 @@ fun LiveDataBox(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 24.dp)
+            .padding(top = 18.dp)
             .background(colorResource(id = R.color.semi_gray))
             .clickable { navigateToMonthly(budgetYear) }
     ) {
@@ -140,9 +140,9 @@ fun LiveDataBox(
                     .padding(top = 8.dp)
             ) {
                 Text(
-                    text = "Datum $nowString",
+                    text = nowString,
                     style = TextStyle(
-                        color = colorResource(id = R.color.white),
+                        color = colorResource(id = R.color.light_gray),
                         fontWeight = FontWeight.Normal,
                         textAlign = TextAlign.Right
                     ),

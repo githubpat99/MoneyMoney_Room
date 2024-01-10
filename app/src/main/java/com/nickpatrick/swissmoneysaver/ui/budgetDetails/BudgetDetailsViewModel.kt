@@ -121,22 +121,7 @@ fun BudgetItemDetails.toBudgetItem(): BudgetItem = BudgetItem(
  */
 data class BudgetItemUiState(
     val budgetItemDetails: BudgetItemDetails = BudgetItemDetails(),
-    val isEntryValid: Boolean = false,
-    val ausgaben: List<String> = listOf(
-        "Haushalt",
-         "Versicherung ",
-         "Krankenkasse ",
-         "Miete ",
-         "Ausgang ",
-         "Geschenke ",
-         "Steuern ",
-         "Nebenkosten ",
-         "Diverses"
-    ),
-    val einnahmen: List<String> = listOf(
-         "Einkommen ",
-         "Boni"
-    )
+    val isEntryValid: Boolean = false
 )
 
 data class BudgetItemDetails(

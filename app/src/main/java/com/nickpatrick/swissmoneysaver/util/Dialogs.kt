@@ -4,6 +4,8 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.nickpatrick.swissmoneysaver.R
 
 
 @Composable
@@ -16,16 +18,16 @@ fun YesNoDialog(
     if (showDialog) {
         AlertDialog(
             onDismissRequest = onDismiss,
-            title = { Text(text = "Warnung") },
-            text = { Text(text = "Daten werden neu erstellt. Einverstanden?") },
+            title = { Text(text = stringResource(id = R.string.warning)) },
+            text = { Text(text = stringResource(id = R.string.genLive)) },
             confirmButton = {
                 Button(onClick = onYesClick) {
-                    Text(text = "Ja")
+                    Text(stringResource(id = R.string.yes))
                 }
             },
             dismissButton = {
                 Button(onClick = onNoClick) {
-                    Text(text = "Nein")
+                    Text(stringResource(id = R.string.no))
                 }
             }
         )

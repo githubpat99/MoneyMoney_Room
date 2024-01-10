@@ -1,0 +1,132 @@
+[
+  {
+    "amount": 150,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Divers",
+    "timestamp": 1673348400,
+    "type": 12
+  },
+  {
+    "amount": 500,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Argent de poche",
+    "timestamp": 1673348400,
+    "type": 12
+  },
+  {
+    "amount": 250,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Santé",
+    "timestamp": 1673348400,
+    "type": 12
+  },
+  {
+    "amount": 4500,
+    "balance": 0,
+    "debit": true,
+    "description": " ",
+    "id": 0,
+    "name": "Salaire",
+    "timestamp": 1674644400,
+    "type": 12
+  },
+  {
+    "amount": 500,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Courses",
+    "timestamp": 1674817200,
+    "type": 12
+  },
+  {
+    "amount": 750,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Loyer",
+    "timestamp": 1674817200,
+    "type": 12
+  },
+  {
+    "amount": 80,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Mobile",
+    "timestamp": 1674817200,
+    "type": 12
+  },
+  {
+    "amount": 1000,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Vacances de ski",
+    "timestamp": 1674817200,
+    "type": 1
+  },
+  {
+    "amount": 450,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Loisirs / Sports",
+    "timestamp": 1674817200,
+    "type": 12
+  },
+  {
+    "amount": 68,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Transport public",
+    "timestamp": 1674817200,
+    "type": 12
+  },
+  {
+    "amount": 970,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Loisirs / Sports",
+    "timestamp": 1677495600,
+    "type": 4
+  },
+  {
+    "amount": 2500,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Impôts",
+    "timestamp": 1685181600,
+    "type": 1
+  },
+  {
+    "amount": 2000,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Vacances d'été",
+    "timestamp": 1690452000,
+    "type": 1
+  }
+]

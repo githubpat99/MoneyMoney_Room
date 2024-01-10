@@ -35,9 +35,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.VisualTransformation
@@ -50,9 +50,6 @@ import com.nickpatrick.swissmoneysaver.ui.navigation.NavigationDestination
 import com.nickpatrick.swissmoneysaver.ui.overview.BudgetBox
 import com.nickpatrick.swissmoneysaver.ui.overview.LiveDataBox
 import com.nickpatrick.swissmoneysaver.util.Utilities
-import com.nickpatrick.swissmoneysaver.util.VideoPlayerComponent
-import com.google.android.exoplayer2.Player
-import com.google.android.exoplayer2.SimpleExoPlayer
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import java.time.ZoneOffset
@@ -79,6 +76,9 @@ fun HomeScreen(
     viewModel: HomeViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
 
+
+    val budgetMgmtText = stringResource(id = R.string.budgetmgmt)
+
     val configItemsState = viewModel.configItems
         .collectAsState(initial = emptyList())
     var initSwitch = false
@@ -96,27 +96,8 @@ fun HomeScreen(
         }
     }
 
-    val appContext = LocalContext.current.applicationContext
+
     var switch: Boolean = false
-    var playVideo: Boolean by remember { mutableStateOf(false) }
-    var stopPlayback: () -> Unit = {
-        // Stop video playback
-        playVideo = false
-    }
-
-    val player = remember {
-        val exoPlayer = SimpleExoPlayer.Builder(appContext).build()
-        exoPlayer.addListener(object : Player.Listener {
-            override fun onPlaybackStateChanged(state: Int) {
-                if (state == Player.STATE_ENDED) {
-                    playVideo = false // Update playVideo state to hide the video
-                }
-            }
-
-            // Implement other required methods here if needed
-        })
-        exoPlayer
-    }
 
     Box(
         modifier = Modifier
@@ -143,97 +124,59 @@ fun HomeScreen(
 
             )
 
-            if (viewModel.homeUiState.password.isNotBlank()) {
-                if (viewModel.homeUiState.password == "Viel Spass...") {
-                    switch = true
-                }
-            }
+            Divider(
+                modifier = Modifier
+                    .padding(top = 8.dp),
+                color = Color.Gray, thickness = 1.dp
+            )
 
-            if (playVideo) {
+            HorizontalScrollableOverview(
+                {
+                    navigateToBudgetForm(it, "0")
+                },
+                { navigateToMonthly(it) },
+                viewModel
+            )
 
-                VideoPlayerComponent(
-                    player = player,
-                    context = appContext,
-                    playVideo = playVideo,
-                    onTogglePlayback = { newPlayState ->
-                        playVideo = newPlayState
-                    },
-                    onStopPlayback = stopPlayback
-                )
-            } else {
+            Divider(
+                
+                color = Color.Gray, thickness = 1.dp
+            )
 
-                Divider(
-                    modifier = Modifier
-                        .padding(top = 12.dp),
-                    color = Color.Gray, thickness = 1.dp
-                )
+            Column {
+                Row {
 
-                HorizontalScrollableOverview(
-                    {
-                        navigateToBudgetForm(it, "0")
-                    },
-                    { navigateToMonthly(it) },
-                    viewModel
-                )
-
-                Divider(
-                    modifier = Modifier
-                        .padding(top = 4.dp),
-                    color = Color.Gray, thickness = 1.dp
-                )
-
-                if (switch == true) {
-                    Column {
-
-                        Row {
-                            Button(
-                                modifier = Modifier
-                                    .padding(8.dp)
-                                    .weight(1f),
-                                onClick = {
-                                    playVideo = true
-                                }
-                            ) {
-                                Text(
-                                    text = "Why?",
-                                    style = TextStyle(color = colorResource(id = R.color.white))
-                                )
+                    if (initSwitch == true) {
+                        Button(
+                            modifier = Modifier
+                                .padding(8.dp)
+                                .weight(1f),
+                            onClick = {
+                                // create Base Config for actual year
+                                viewModel.initializeConfigForYear()
                             }
-
-                            if (initSwitch == true) {
-                                Button(
-                                    modifier = Modifier
-                                        .padding(8.dp)
-                                        .weight(1f),
-                                    onClick = {
-                                        // create Base Config for actual year
-                                        viewModel.initializeConfigForYear()
-                                    }
-                                ) {
-                                    Text(
-                                        text = "Start Budget",
-                                        style = TextStyle(color = colorResource(id = R.color.white))
-                                    )
-                                }
-                            } else {
-
-                                ActionButton(
-                                    modifier = Modifier
-                                        .padding(8.dp)
-                                        .weight(1f),
-                                    active = switch,
-                                    navigateToRegistration,
-                                    text = "Budget-Mgmt"
-                                )
-
-                            }
+                        ) {
+                            Text(
+                                text = "Start Budget",
+                                style = TextStyle(color = colorResource(id = R.color.white))
+                            )
                         }
+                    } else {
 
+                        ActionButton(
+                            modifier = Modifier
+                                .padding(8.dp)
+                                .weight(1f),
+                            active = true,
+                            navigateToRegistration,
+                            text = budgetMgmtText
+                        )
                     }
                 }
 
             }
         }
+
     }
 }
 
@@ -271,7 +214,9 @@ fun LoginCard(
     ElevatedCard(
         modifier = modifier
     ) {
-        Column {
+        Column (
+            modifier = Modifier.background(colorResource(id = R.color.primary_background))
+        ){
             // userId
             OutlinedTextField(
                 value = homeUiState.userId,
@@ -288,33 +233,38 @@ fun LoginCard(
                 keyboardActions = KeyboardActions(onDone = {}),
                 textStyle = TextStyle(
                     colorResource(id = R.color.white),
-                    fontSize = 14.sp
+                    fontSize = 16.sp
                 ),
                 maxLines = 1,
                 modifier = Modifier
                     .background(color = colorResource(id = R.color.black))
             )
-            // userId
-            OutlinedTextField(
-                value = homeUiState.password,
-                onValueChange = { onValueChange(homeUiState.copy(password = it)) },
-                label = {
-                    Text(
-                        "Passwort",
-                        color = colorResource(id = R.color.light_gray)
-                    )
-                },
-                visualTransformation = VisualTransformation.None,
-                keyboardOptions = KeyboardOptions.Default,
-                keyboardActions = KeyboardActions(onDone = {}),
-                textStyle = TextStyle(
-                    colorResource(id = R.color.white),
-                    fontSize = 18.sp
-                ),
-                maxLines = 1,
-                modifier = Modifier
-                    .background(color = colorResource(id = R.color.black))
+            // password and language selection
+            Row(
+                modifier = Modifier.fillMaxWidth()
             )
+            {
+                OutlinedTextField(
+                    value = homeUiState.password,
+                    onValueChange = { onValueChange(homeUiState.copy(password = it)) },
+                    label = {
+                        Text(
+                            "Password",
+                            color = colorResource(id = R.color.light_gray)
+                        )
+                    },
+                    visualTransformation = VisualTransformation.None,
+                    keyboardOptions = KeyboardOptions.Default,
+                    keyboardActions = KeyboardActions(onDone = {}),
+                    textStyle = TextStyle(
+                        colorResource(id = R.color.white),
+                        fontSize = 16.sp
+                    ),
+                    maxLines = 1,
+                    modifier = Modifier
+                        .background(color = colorResource(id = R.color.black))
+                )
+            }
         }
 
     }
@@ -399,5 +349,4 @@ fun HorizontalScrollableOverview(
         }
     }
 }
-
 

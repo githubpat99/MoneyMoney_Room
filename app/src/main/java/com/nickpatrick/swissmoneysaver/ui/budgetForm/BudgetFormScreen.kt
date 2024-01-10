@@ -52,6 +52,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.OffsetMapping
 import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -101,7 +102,8 @@ fun BudgetFormScreen(
     val paramYear = viewModel.year
     val paramTab = viewModel.tab
     val coroutineScope = rememberCoroutineScope()
-    val tabs = listOf("Einnahmen", "Ausgaben")
+    val tabs = listOf(stringResource(id = R.string.einnahmen),
+        stringResource(id = R.string.ausgaben))
     var tabState = remember { mutableStateOf("0") }
     if (paramTab == "1") {
         tabState = remember { mutableStateOf("1") }
@@ -138,8 +140,6 @@ fun BudgetFormScreen(
     val einnahmen = budgetItems.filter { it.debit == true }
     val ausgaben = budgetItems.filter { it.debit == false }
 
-    println("BudgetFormScreen - ausgaben: $ausgaben")
-
     budgetStatus = configUiState.value?.status ?: 0
     budgetDate =
         Utilities.getStringDateFromTimestamp(configUiState.value?.ts ?: 1672531200) // 1.1.2023
@@ -166,7 +166,7 @@ fun BudgetFormScreen(
                     .fillMaxWidth()
             ) {
                 Text(
-                    text = "Budget",
+                    text = stringResource(id = R.string.budgetFormScreen),
                     style = TextStyle(
                         colorResource(id = R.color.white),
                         fontSize = 16.sp
@@ -221,7 +221,6 @@ fun BudgetFormScreen(
 
                         if (doubleValue != null) {
                             startSaldo = doubleValue
-                            println("BudgetformScreen - startSaldo 1: $startSaldo")
                         }
 
                         if (pattern.matches(doubleValue.toString())) {
@@ -241,8 +240,9 @@ fun BudgetFormScreen(
                     },
                     textStyle = TextStyle(
                         color = Color.Black,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.SemiBold
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        textAlign = TextAlign.Center
                     ),
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Decimal,
@@ -251,7 +251,7 @@ fun BudgetFormScreen(
                     // pin
                     //visualTransformation = DecimalInputVisualTransformation(decimalFormatter),
                     modifier = Modifier
-                        .padding(2.dp)
+                        .padding(start = 8.dp)
                         .weight(0.4f)
                         .then(modifierFlexible)
                 )
@@ -361,7 +361,7 @@ fun BudgetFormScreen(
                         .fillMaxWidth()
                 ) {
                     Text(
-                        text = "Budget",
+                        text = stringResource(id = R.string.budgetFormScreen),
                         style = TextStyle(
                             colorResource(id = R.color.white),
                             fontSize = 16.sp
@@ -407,8 +407,9 @@ fun BudgetFormScreen(
                         text = formattedEndSaldo,
                         style = TextStyle(
                             colorResource(id = R.color.white),
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center
                         ),
                         modifier = Modifier
                             .padding(2.dp)
@@ -430,15 +431,15 @@ fun BudgetFormScreen(
                     }
             ) {
 
-                var budgetText = "Budget bereit - für Live Daten hier klicken"
+                var budgetText = stringResource(id = R.string.budgetDone)
                 if (budgetStatus == 1) {
                     budgetText =
-                        "Budget am $budgetDate geschlossen - für Wiedereröffnung hier klicken"
+                        "Budget Closed $budgetDate - Click for Re-Open"
                 }
                 Text(
                     text = budgetText,
                     style = TextStyle(
-                        colorResource(id = R.color.primary_background),
+                        colorResource(id = R.color.white),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold
                     ),
@@ -525,6 +526,8 @@ fun BudgetFormTabContent(
     year: String,
 ) {
 
+    val newItem = stringResource(id = R.string.newItem)
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -564,7 +567,7 @@ fun BudgetFormTabContent(
                         val zoneOffset = zoneId.rules.getOffset(java.time.Instant.now())
                         val ts = startOfYear.toEpochSecond(zoneOffset)
                         val budgetItem: BudgetItem =
-                            BudgetItem(0, ts, "Neu", "", 12, 0.0, 0.0, debit)
+                            BudgetItem(0, ts, newItem, "", 12, 0.0, 0.0, debit)
                         onAddClicked(budgetItem)
                     },
                     enabled = budgetStatus == 0,
@@ -578,7 +581,7 @@ fun BudgetFormTabContent(
                     Icon(
                         painterResource(id = R.drawable.add_24), // Use your custom "+" icon
                         contentDescription = null, // Provide a content description if needed
-                        modifier = Modifier.size(24.dp)
+                        modifier = Modifier.size(48.dp)
                     )
                 }
             }
@@ -604,7 +607,6 @@ fun MyLazyList(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-//                .background(backgroundColor)
                 .padding(top = 4.dp, bottom = 4.dp)
         ) {
             Row(
@@ -612,8 +614,10 @@ fun MyLazyList(
                     .fillMaxWidth()
                     .padding(start = 8.dp)
             ) {
+
+                // todo - pin: Test Language settings here -------
                 Text(
-                    text = "Name",
+                    text = stringResource(id = R.string.name),
                     style = TextStyle(
                         colorResource(id = R.color.white),
                         fontSize = fontSize,
@@ -624,7 +628,7 @@ fun MyLazyList(
                         .weight(1.6f)
                 )
                 Text(
-                    text = "Betrag",
+                    text = stringResource(id = R.string.betrag),
                     style = TextStyle(
                         colorResource(id = R.color.white),
                         fontSize = fontSize,
@@ -635,7 +639,7 @@ fun MyLazyList(
                         .weight(1f)
                 )
                 Text(
-                    text = "Valuta",
+                    text = stringResource(id = R.string.valuta),
                     style = TextStyle(
                         colorResource(id = R.color.white),
                         fontSize = fontSize,
@@ -646,7 +650,7 @@ fun MyLazyList(
                         .weight(0.8f)
                 )
                 Text(
-                    text = "Kadenz",
+                    text = stringResource(id = R.string.kadenz),
                     style = TextStyle(
                         colorResource(id = R.color.white),
                         fontSize = fontSize,
@@ -791,8 +795,6 @@ class DecimalInputVisualTransformation(
 
     override fun filter(text: AnnotatedString): TransformedText {
 
-        println("pin - AnnotatedString text: $text")
-
         val inputText = text.text
         val formattedNumber = decimalFormatter.formatForVisual(inputText)
 
@@ -806,10 +808,7 @@ class DecimalInputVisualTransformation(
             contentLength = inputText.length,
             formattedContentLength = formattedNumber.length
         )
-
-        println("pin - inputText.length: ${inputText.length}")
-        println("pin - formattedNumber.length: ${formattedNumber.length}")
-
+        
         return TransformedText(newText, offsetMapping)
     }
 }

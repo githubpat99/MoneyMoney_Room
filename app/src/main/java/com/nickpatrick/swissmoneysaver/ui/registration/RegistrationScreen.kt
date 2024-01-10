@@ -38,6 +38,7 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -48,6 +49,7 @@ import com.nickpatrick.swissmoneysaver.R
 import com.nickpatrick.swissmoneysaver.data.Configuration
 import com.nickpatrick.swissmoneysaver.ui.AppViewModelProvider
 import com.nickpatrick.swissmoneysaver.ui.navigation.NavigationDestination
+import com.nickpatrick.swissmoneysaver.util.FlagForLocale
 import kotlinx.coroutines.launch
 import java.text.DecimalFormat
 import java.time.LocalDateTime
@@ -72,6 +74,7 @@ fun RegistrationScreen(
     modifier: Modifier = Modifier,
     viewModel: RegistrationViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
+
     val coroutineScope = rememberCoroutineScope()
 
     Scaffold(
@@ -115,6 +118,8 @@ fun RegistrationScreenBody(
     val configItemsState = viewModel.configItems.collectAsState(initial = emptyList())
     val configList = mutableListOf<Configuration>()
 
+    val myLanguageSettings = stringResource(id = R.string.languageSettings)
+
     configItemsState.value.forEach { item ->
         if (item != null) {
             val config = Configuration(
@@ -142,18 +147,45 @@ fun RegistrationScreenBody(
             modifier = Modifier
                 .padding(top = 72.dp)
         ) {
-            Text(
-                modifier = Modifier
-                    .padding(8.dp),
-                text = "Aktives Jahr - $year",
-                style = TextStyle(
-                    color = colorResource(id = R.color.white),
-                    textAlign = TextAlign.Left,
-                    fontSize = 24.sp
+            Row {
+                Text(
+                    modifier = Modifier
+                        .padding(8.dp),
+                    text = stringResource(id = R.string.activeYear) + " - $year",
+                    style = TextStyle(
+                        color = colorResource(id = R.color.white),
+                        textAlign = TextAlign.Left,
+                        fontSize = 24.sp
+                    )
                 )
-            )
-        }
+                // Language Support
+                val languageFlagList = listOf<Pair<String, Int>>(
+                    "de" to R.drawable.flag_de,
+                    "en" to R.drawable.flag_us,
+                    "fr" to R.drawable.flag_fr,
+                    "it" to R.drawable.flag_it,
+                )
 
+                // LanguageInfo()
+                println("RegistrationScreen - Locale.current.language: ${Locale.current.language}")
+                println("RegistrationScreen - Locale.current: ${Locale.current}")
+                val currentLang = Locale.current.language
+                Box(modifier = Modifier
+                    .padding(12.dp)
+                    .clickable {
+                        Toast
+                            .makeText(context, myLanguageSettings, Toast.LENGTH_SHORT)
+                            .show()
+                    }
+                ) {
+
+                    println("RegistrationScreen - currentLang: ${currentLang}")
+                    println("RegistrationScreen - languageFlagList: ${languageFlagList}")
+
+                    FlagForLocale(currentLang, languageFlagList)
+                }
+            }
+        }
         Column(
             modifier = Modifier
                 .padding(top = 124.dp)
@@ -212,7 +244,7 @@ fun RegistrationScreenBody(
                     )
                 ) {
                     Text(
-                        text = "Initialisieren",
+                        text = stringResource(id = R.string.initialize),
                         style = TextStyle(color = colorResource(id = R.color.white))
                     )
 
@@ -293,17 +325,24 @@ fun ConfigBudgetItem(config: Configuration, year: Int, viewModel: RegistrationVi
 
     val coroutineScope = rememberCoroutineScope()
 
+    val reOpenFirst = stringResource(id = R.string.reopenFirst)
+    val archivedAlready = stringResource(id = R.string.archivedAlready)
+    val sourceNTargetIdentical = stringResource(id = R.string.sourceNTargetidentical)
+
     DisposableEffect(Unit) {
         val observer = Observer<String> { observedMessage ->
             if (observedMessage.isNotBlank()) {
                 Toast.makeText(context, observedMessage, Toast.LENGTH_SHORT).show()
             }
         }
+
         viewModel.messageLiveData.observeForever(observer)
+
         onDispose {
             viewModel.messageLiveData.removeObserver(observer)
         }
     }
+
 
     Row(
         modifier = Modifier
@@ -321,14 +360,13 @@ fun ConfigBudgetItem(config: Configuration, year: Int, viewModel: RegistrationVi
                         when (config.status) {
                             1 -> Toast
                                 .makeText(
-                                    context, "Dieses Budget muss erst wiedereröffnet werden!",
-                                    Toast.LENGTH_SHORT
+                                    context, reOpenFirst, Toast.LENGTH_SHORT
                                 )
                                 .show()
 
                             2 -> Toast
                                 .makeText(
-                                    context, "Dieses Budget ist bereits archiviert!",
+                                    context, archivedAlready,
                                     Toast.LENGTH_SHORT
                                 )
                                 .show()
@@ -391,7 +429,7 @@ fun ConfigBudgetItem(config: Configuration, year: Int, viewModel: RegistrationVi
                 )
                 .weight(0.5f),
             painter = painterResource(id = R.drawable.baseline_copy_all_24),
-            contentDescription = "Budget locked",
+            contentDescription = "Budget copy",
             tint = colorResource(id = R.color.white)
         )
     }
@@ -403,7 +441,7 @@ fun ConfigBudgetItem(config: Configuration, year: Int, viewModel: RegistrationVi
 
         // Radio Button
         val builder = AlertDialog.Builder(context)
-        builder.setTitle("Kopiere Budget für das Jahr\nDaten werden überschrieben!")
+        builder.setTitle(stringResource(id = R.string.yearCopy))
 
 // Create a view to hold the radio buttons
         val radioGroup = RadioGroup(context)
@@ -423,12 +461,10 @@ fun ConfigBudgetItem(config: Configuration, year: Int, viewModel: RegistrationVi
                 selectedYear = years[selectedRadioButtonId].toInt()
 
                 // Handle the selected year here
-                println("RegistrationScreen - showDialog - Selected Year: $selectedYear")
-
                 if (config.budgetYear == selectedYear) {
                     Toast.makeText(
                         context,
-                        "Quell- und Zieljahr sind identisch",
+                        sourceNTargetIdentical,
                         Toast.LENGTH_SHORT
                     ).show()
                 } else {
@@ -455,22 +491,21 @@ fun ConfigBudgetItem(config: Configuration, year: Int, viewModel: RegistrationVi
     if (showJsonDialog == true) {
         showJsonDialog = false
         val builder = AlertDialog.Builder(context)
-        builder.setTitle("Löschen oder Musterbudget generieren?")
-        builder.setMessage("Dein bestehendes Budget löschen oder ein neues generieren?")
+        builder.setMessage(stringResource(id = R.string.deleteOrTemplate))
 
-        builder.setPositiveButton("Single") { _, _ ->
+        builder.setPositiveButton(stringResource(id = R.string.single)) { _, _ ->
             // Handle save action here
             // Implement the logic for saving data
             viewModel.generateBudgetFromToJson(config.budgetYear, "single")
         }
 
-        builder.setNegativeButton("Family") { _, _ ->
+        builder.setNegativeButton(stringResource(id = R.string.family)) { _, _ ->
             // Handle restore action here
             // Implement the logic for restoring data
             viewModel.generateBudgetFromToJson(config.budgetYear, "family")
         }
 
-        builder.setNeutralButton("Delete") { _, _ ->
+        builder.setNeutralButton(stringResource(id = R.string.delete)) { _, _ ->
             // Handle delete action here
             // Implement the logic for deleting data
             viewModel.deleteBudgetOfYear(config.budgetYear)

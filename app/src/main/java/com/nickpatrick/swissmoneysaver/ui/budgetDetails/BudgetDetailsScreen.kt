@@ -2,6 +2,7 @@ package com.nickpatrick.swissmoneysaver.ui.budgetDetails
 
 import android.annotation.SuppressLint
 import android.app.DatePickerDialog
+import android.content.Context
 import android.widget.DatePicker
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -89,7 +90,7 @@ fun BudgetDetailsScreen(
         modifier = modifier,
         topBar = {
             MoneyMoneyTopAppBar(
-                title = stringResource(id = R.string.details),
+                title = stringResource(id = R.string.budgetDetails),
                 canNavigateBack = true,
                 navigateUp = {
                     navigateToBudgetForm(dateTime.year.toString(), navRoute.toString())
@@ -106,16 +107,12 @@ fun BudgetDetailsScreen(
                 coroutineScope.launch {
                     viewModel.saveItem()
                     navigateToBudgetForm(dateTime.year.toString(), navRoute.toString())
-
-                    println("BudgetDetailsScreen - navigateTo...  onSave - ${dateTime.year.toString()} / ${navRoute.toString()}")
                 }
             },
             onDeleteClick = {
                 coroutineScope.launch {
                     viewModel.deleteItem()
                     navigateToBudgetForm(dateTime.year.toString(), navRoute.toString())
-
-                    println("BudgetDetailsScreen - navigateTo... onDelete - ${dateTime.year.toString()} / ${navRoute.toString()}")
                 }
             }
         )
@@ -131,7 +128,6 @@ fun BudgetDetailScreenBody(
     onSaveClick: () -> Unit,
     onDeleteClick: () -> Unit,
 ) {
-
 
 
     val context = LocalContext.current
@@ -177,18 +173,17 @@ fun BudgetDetailScreenBody(
     myDatePickerDialog.datePicker.maxDate = maxDateInMillis
 
     var myBackgroundColor = colorResource(id = R.color.light_red)
-    var myTitel = "Ausgabe"
+    var myTitel = stringResource(id = R.string.ausgabe)
 
 
     var expanded by remember { mutableStateOf(false) }
     var selectedItem by remember { mutableStateOf(budgetItemDetails.name) }
-    var items =
-        budgetItemUiState.ausgaben
+    var items = getAusgabenList(context)
 
     if (budgetItemDetails.debit == true) {
         myBackgroundColor = colorResource(id = R.color.light_blue)
-        myTitel = "Einnahme"
-        items = budgetItemUiState.einnahmen
+        myTitel = stringResource(id = R.string.einnahme)
+        items = getEinnahmenList(context)
     }
     Column {
 
@@ -240,7 +235,7 @@ fun BudgetDetailScreenBody(
                                 },
                                 colors = ButtonDefaults.buttonColors()
                             ) {
-                                Text(text = "Erstes Mal")
+                                Text(text = stringResource(id = R.string.firstTime))
 
                             }
                         }
@@ -248,7 +243,7 @@ fun BudgetDetailScreenBody(
                         Box {
                             Column {
                                 Text(
-                                    text = "Bezeichnung", // Your label text here
+                                    text = stringResource(id = R.string.name), // Your label text here
                                     color = colorResource(id = R.color.gray), // Color for the label (optional)
                                     fontSize = 14.sp, // Font size for the label (optional)
                                     modifier = Modifier.padding(start = 16.dp, top = 16.dp)
@@ -298,7 +293,7 @@ fun BudgetDetailScreenBody(
                                     )
                                 )
                             },
-                            label = { Text(text = "Betrag") },
+                            label = { Text(text = stringResource(id = R.string.betrag)) },
                             visualTransformation = VisualTransformation.None,
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                             keyboardActions = KeyboardActions(onDone = {}),
@@ -332,12 +327,12 @@ fun BudgetDetailScreenBody(
                 }
 
                 val buttonTextMap = mapOf(
-                    0 to "monatlich",
-                    1 to "2 monatlich",
-                    2 to "pro Quartal",
-                    3 to "pro Trimester",
-                    4 to "halbjährlich",
-                    5 to "jährlich"
+                    0 to stringResource(id = R.string.monthly),
+                    1 to stringResource(id = R.string.twoMonthly),
+                    2 to stringResource(id = R.string.quarterly),
+                    3 to stringResource(id = R.string.trimester),
+                    4 to stringResource(id = R.string.halfyearly),
+                    5 to stringResource(id = R.string.once),
                     // Add more buttons as needed
                 )
 
@@ -435,7 +430,7 @@ fun BudgetDetailScreenBody(
                 onClick = onSaveClick,
                 enabled = budgetItemUiState.isEntryValid
             ) {
-                Text(text = "Save")
+                Text(text = stringResource(id = R.string.save))
             }
             Button(
                 modifier = Modifier
@@ -444,10 +439,31 @@ fun BudgetDetailScreenBody(
                 onClick = onDeleteClick,
                 enabled = true
             ) {
-                Text(text = "Delete")
+                Text(text = stringResource(id = R.string.delete))
             }
         }
     }
+}
+
+private fun getEinnahmenList(context: Context): List<String> {
+    return listOf(
+        context.getString(R.string.einkommen),
+        context.getString(R.string.boni),
+    )
+}
+
+private fun getAusgabenList(context: Context): List<String> {
+    return listOf(
+        context.getString(R.string.haushalt),
+        context.getString(R.string.versicherung),
+        context.getString(R.string.krankenkasse),
+        context.getString(R.string.miete),
+        context.getString(R.string.ausgang),
+        context.getString(R.string.geschenke),
+        context.getString(R.string.steuern),
+        context.getString(R.string.nebenkosten),
+        context.getString(R.string.diverses),
+    )
 }
 
 @Composable

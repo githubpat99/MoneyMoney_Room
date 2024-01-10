@@ -45,7 +45,7 @@ fun BudgetBox(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 24.dp)
+            .padding(top = 18.dp)
             .background(colorResource(id = R.color.gray))
             .clickable { navigateToBudget(budgetYear) }
     ) {
@@ -144,9 +144,9 @@ fun BudgetBox(
                     .padding(top = 8.dp)
             ) {
                 Text(
-                    text = "Erstellt am $budgetDatum",
+                    text = budgetDatum,
                     style = TextStyle(
-                        color = colorResource(id = R.color.white),
+                        color = colorResource(id = R.color.light_gray),
                         fontWeight = FontWeight.Normal,
                         textAlign = TextAlign.Right
                     ),

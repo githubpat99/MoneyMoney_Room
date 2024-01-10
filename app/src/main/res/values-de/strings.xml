@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name" translatable="false">MoneyMoney</string>
     <string name="back_button">Back</string>
@@ -78,4 +79,5 @@
     <string name="october">Oktober</string>
     <string name="november">November</string>
     <string name="december">Dezember</string>
+
 </resources>

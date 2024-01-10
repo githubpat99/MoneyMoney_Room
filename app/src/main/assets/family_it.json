@@ -1,0 +1,282 @@
+[
+  {
+    "amount": 150,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Diverse",
+    "timestamp": 1673348400,
+    "type": 12
+  },
+  {
+    "amount": 800,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Paghetta",
+    "timestamp": 1673348400,
+    "type": 12
+  },
+  {
+    "amount": 735.3,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Swica",
+    "timestamp": 1673348400,
+    "type": 12
+  },
+  {
+    "amount": 8500,
+    "balance": 0,
+    "debit": true,
+    "description": " ",
+    "id": 0,
+    "name": "Salari",
+    "timestamp": 1674644400,
+    "type": 12
+  },
+  {
+    "amount": 400,
+    "balance": 0,
+    "debit": true,
+    "description": " ",
+    "id": 0,
+    "name": "Spese",
+    "timestamp": 1674644400,
+    "type": 12
+  },
+  {
+    "amount": 1500,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Casa e Alimentari",
+    "timestamp": 1674817200,
+    "type": 12
+  },
+  {
+    "amount": 820,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Ipoteca",
+    "timestamp": 1674817200,
+    "type": 12
+  },
+  {
+    "amount": 2074.85,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Assicurazione Auto",
+    "timestamp": 1674817200,
+    "type": 1
+  },
+  {
+    "amount": 650,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Salute AXA",
+    "timestamp": 1674817200,
+    "type": 12
+  },
+  {
+    "amount": 163.8,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Telefono fisso",
+    "timestamp": 1674817200,
+    "type": 12
+  },
+  {
+    "amount": 80,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Telefono Mobile",
+    "timestamp": 1674817200,
+    "type": 12
+  },
+  {
+    "amount": 4000,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Vacanze sulla Neve",
+    "timestamp": 1674817200,
+    "type": 1
+  },
+  {
+    "amount": 150,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Tempo Libero / Sport",
+    "timestamp": 1674817200,
+    "type": 12
+  },
+  {
+    "amount": 68,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Trasporto pubblico",
+    "timestamp": 1674817200,
+    "type": 12
+  },
+  {
+    "amount": 100,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Carta di credito",
+    "timestamp": 1674817200,
+    "type": 12
+  },
+  {
+    "amount": 748,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Elettricità",
+    "timestamp": 1677495600,
+    "type": 6
+  },
+  {
+    "amount": 964.15,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Traffico Stradale",
+    "timestamp": 1677495600,
+    "type": 1
+  },
+  {
+    "amount": 662.5,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Assicurazione",
+    "timestamp": 1677495600,
+    "type": 1
+  },
+  {
+    "amount": 285,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Assicurazione AXA",
+    "timestamp": 1677495600,
+    "type": 1
+  },
+  {
+    "amount": 970,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Tempo Libero / Sport",
+    "timestamp": 1677495600,
+    "type": 4
+  },
+  {
+    "amount": 4500,
+    "balance": 0,
+    "debit": true,
+    "description": " ",
+    "id": 0,
+    "name": "Bonus",
+    "timestamp": 1682416800,
+    "type": 1
+  },
+  {
+    "amount": 1500,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Vacanze di Pasqua",
+    "timestamp": 1682589600,
+    "type": 1
+  },
+  {
+    "amount": 7500,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Tasse Prov.",
+    "timestamp": 1685181600,
+    "type": 1
+  },
+  {
+    "amount": 800,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Acqua",
+    "timestamp": 1687860000,
+    "type": 2
+  },
+  {
+    "amount": 4000,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Vacanze Estive",
+    "timestamp": 1690452000,
+    "type": 1
+  },
+  {
+    "amount": 2000,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Tasse Def.",
+    "timestamp": 1693130400,
+    "type": 1
+  },
+  {
+    "amount": 3000,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Vacanze Autunnali",
+    "timestamp": 1698082800,
+    "type": 1
+  },
+  {
+    "amount": 7000,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Previdenza",
+    "timestamp": 1701082800,
+    "type": 1
+  }
+]

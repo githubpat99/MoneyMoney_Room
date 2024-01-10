@@ -31,6 +31,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -80,10 +81,11 @@ fun MonthlyDetailsScreen(
     viewModel: MonthlyDetailsViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
 
+    val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val configurationState = viewModel.configuration.collectAsState(initial = null)
     var startSaldo = 0.0
-    val monthTxt = Utilities.MonthUtils.getMonthName(viewModel.month.toString())
+    val monthTxt = Utilities.MonthUtils.getMonthName(context, viewModel.month.toString())
 
     if (configurationState.value != null) {
         startSaldo = configurationState.value!!.startSaldo

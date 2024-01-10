@@ -2,6 +2,7 @@ package com.nickpatrick.swissmoneysaver.util
 
 import android.content.Context
 import androidx.compose.ui.text.input.OffsetMapping
+import com.nickpatrick.swissmoneysaver.R
 import com.nickpatrick.swissmoneysaver.data.BudgetItem
 import com.nickpatrick.swissmoneysaver.data.Item
 import java.io.File
@@ -26,22 +27,23 @@ class Utilities {
 
     object MonthUtils {
         val monthlyText = mapOf(
-            "01" to "Januar",
-            "02" to "Februar",
-            "03" to "März",
-            "04" to "April",
-            "05" to "Mai",
-            "06" to "Juni",
-            "07" to "Juli",
-            "08" to "August",
-            "09" to "September",
-            "10" to "Oktober",
-            "11" to "November",
-            "12" to "Dezember"
+            "01" to R.string.january,
+            "02" to R.string.february,
+            "03" to R.string.march,
+            "04" to R.string.april,
+            "05" to R.string.may,
+            "06" to R.string.june,
+            "07" to R.string.july,
+            "08" to R.string.august,
+            "09" to R.string.september,
+            "10" to R.string.october,
+            "11" to R.string.november,
+            "12" to R.string.december
         )
 
-        fun getMonthName(month: String): String {
-            return monthlyText[month] ?: ""
+        fun getMonthName(context: Context, month: String): String {
+            val resId = monthlyText[month] ?: return ""
+            return context.getString(resId)
         }
     }
 
@@ -180,6 +182,9 @@ class Utilities {
                             itemAmount -= item.amount
                         }
                         val newItem = Item(0, date, "", item.name, 0, item.amount, 0.0, item.debit)
+
+                        println ("Utilities - newItem: ${newItem.description} - ${newItem.amount}")
+
                         newItemList.add(newItem)
 
 
@@ -204,13 +209,14 @@ class Utilities {
                             .toEpochSecond(ZoneOffset.UTC)
                     }
                 }
+
                 totalAmount += itemAmount
             }
 
             val df = DecimalFormat("#.##")
-            val approxEndSaldo = df.format(totalAmount).toDouble()
+            val approxEndSaldo = df.format(totalAmount).replace(",",".")
 
-            return approxEndSaldo
+            return approxEndSaldo.toDoubleOrNull() ?: 0.0
         }
 
         fun addYearToTimestamp(timestamp: Long, budgetYear: Int): Long {

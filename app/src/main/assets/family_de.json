@@ -1,0 +1,282 @@
+[
+  {
+    "amount": 150,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Diverses",
+    "timestamp": 1673348400,
+    "type": 12
+  },
+  {
+    "amount": 800,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Taschengeld",
+    "timestamp": 1673348400,
+    "type": 12
+  },
+  {
+    "amount": 735.3,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Swica",
+    "timestamp": 1673348400,
+    "type": 12
+  },
+  {
+    "amount": 8500,
+    "balance": 0,
+    "debit": true,
+    "description": " ",
+    "id": 0,
+    "name": "Gehalt",
+    "timestamp": 1674644400,
+    "type": 12
+  },
+  {
+    "amount": 400,
+    "balance": 0,
+    "debit": true,
+    "description": " ",
+    "id": 0,
+    "name": "Spesen",
+    "timestamp": 1674644400,
+    "type": 12
+  },
+  {
+    "amount": 1500,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "HH-Geld",
+    "timestamp": 1674817200,
+    "type": 12
+  },
+  {
+    "amount": 820,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Hypo RB",
+    "timestamp": 1674817200,
+    "type": 12
+  },
+  {
+    "amount": 2074.85,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Fz-Vers. AXA",
+    "timestamp": 1674817200,
+    "type": 1
+  },
+  {
+    "amount": 650,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "AXA Gesundheit",
+    "timestamp": 1674817200,
+    "type": 12
+  },
+  {
+    "amount": 163.8,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Swisscom Home",
+    "timestamp": 1674817200,
+    "type": 12
+  },
+  {
+    "amount": 80,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Swisscom Mobile",
+    "timestamp": 1674817200,
+    "type": 12
+  },
+  {
+    "amount": 4000,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Skiferien",
+    "timestamp": 1674817200,
+    "type": 1
+  },
+  {
+    "amount": 150,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Freizeit / Sport",
+    "timestamp": 1674817200,
+    "type": 12
+  },
+  {
+    "amount": 68,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "SBB Halbtax",
+    "timestamp": 1674817200,
+    "type": 12
+  },
+  {
+    "amount": 100,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Viseca",
+    "timestamp": 1674817200,
+    "type": 12
+  },
+  {
+    "amount": 748,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "SAK",
+    "timestamp": 1677495600,
+    "type": 6
+  },
+  {
+    "amount": 964.15,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Strassenverkehr",
+    "timestamp": 1677495600,
+    "type": 1
+  },
+  {
+    "amount": 662.5,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Assekuranz",
+    "timestamp": 1677495600,
+    "type": 1
+  },
+  {
+    "amount": 285,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Vers. AXA",
+    "timestamp": 1677495600,
+    "type": 1
+  },
+  {
+    "amount": 970,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Freizeit / Sport",
+    "timestamp": 1677495600,
+    "type": 4
+  },
+  {
+    "amount": 4500,
+    "balance": 0,
+    "debit": true,
+    "description": " ",
+    "id": 0,
+    "name": "Bonus",
+    "timestamp": 1682416800,
+    "type": 1
+  },
+  {
+    "amount": 1500,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Osterferien",
+    "timestamp": 1682589600,
+    "type": 1
+  },
+  {
+    "amount": 7500,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Steuern prov.",
+    "timestamp": 1685181600,
+    "type": 1
+  },
+  {
+    "amount": 800,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Wasser",
+    "timestamp": 1687860000,
+    "type": 2
+  },
+  {
+    "amount": 4000,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Sommerferien",
+    "timestamp": 1690452000,
+    "type": 1
+  },
+  {
+    "amount": 2000,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Steuern def.",
+    "timestamp": 1693130400,
+    "type": 1
+  },
+  {
+    "amount": 3000,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Herbstferien",
+    "timestamp": 1698082800,
+    "type": 1
+  },
+  {
+    "amount": 7000,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Vorsorge",
+    "timestamp": 1701082800,
+    "type": 1
+  }
+]

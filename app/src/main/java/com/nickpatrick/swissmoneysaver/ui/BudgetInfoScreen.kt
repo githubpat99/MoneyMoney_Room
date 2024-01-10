@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -33,7 +34,7 @@ fun BudgetInfoScreen(
     ) {
         // First Text
         Text(
-            text = "Bitte den Budgetprozess erst abschliessen",
+            text = stringResource(id = R.string.budgetClose),
             color = Color.White,
             fontSize = 20.sp,
             textAlign = TextAlign.Center,
@@ -44,8 +45,7 @@ fun BudgetInfoScreen(
 
         // Second Text below the Image
         Text(
-            text = "Gehe dazu bitte auf's entsprechende Budget und lass' Dir Deine Live Daten auf " +
-                    "Knopfdruck erzeugen",
+            text = stringResource(id = R.string.genBudgetInfo),
             color = Color.White,
             fontSize = 14.sp,
             textAlign = TextAlign.Center,

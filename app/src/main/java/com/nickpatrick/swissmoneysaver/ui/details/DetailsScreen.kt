@@ -179,11 +179,10 @@ fun DetailScreenBody(
     var items =
         itemUiState.entries
 
-    var titleText = "Einnahmen & Ausgaben"
+    var titleText = stringResource(id = R.string.inAndOut)
     val archived = configStatus >= 2
-    if (archived) titleText = "$titleText (archiviert)"
-
-    println("DetailsScreen - archived: $archived")
+    if (archived) titleText = titleText + " (" + stringResource(id = R.string.archived) +")"
+    
 
     Column {
 
@@ -231,7 +230,7 @@ fun DetailScreenBody(
                                 colors = ButtonDefaults.buttonColors(),
                                 enabled = !archived
                             ) {
-                                Text(text = "Erstes Mal")
+                                Text(text = stringResource(id = R.string.firstTime))
 
                             }
                         }
@@ -239,7 +238,7 @@ fun DetailScreenBody(
                         Box {
                             Column {
                                 Text(
-                                    text = "Bezeichnung", // Your label text here
+                                    text = stringResource(id = R.string.name), // Your label text here
                                     color = colorResource(id = R.color.gray), // Color for the label (optional)
                                     fontSize = 14.sp, // Font size for the label (optional)
                                     modifier = Modifier.padding(start = 16.dp, top = 16.dp)
@@ -294,7 +293,7 @@ fun DetailScreenBody(
                                 )
                             },
                             enabled = !archived,
-                            label = { Text(text = "Betrag") },
+                            label = { Text(text = stringResource(id = R.string.betrag)) },
                             visualTransformation = VisualTransformation.None,
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                             keyboardActions = KeyboardActions(onDone = {}),
@@ -321,7 +320,7 @@ fun DetailScreenBody(
                     onClick = onSaveClick,
                     enabled = itemUiState.isEntryValid
                 ) {
-                    Text(text = "Save")
+                    Text(text = stringResource(id = R.string.save))
                 }
                 Button(
                     modifier = Modifier
@@ -330,7 +329,7 @@ fun DetailScreenBody(
                     onClick = onDeleteClick,
                     enabled = true
                 ) {
-                    Text(text = "Del")
+                    Text(text = stringResource(id = R.string.delete))
                 }
             }
         }

@@ -1,0 +1,282 @@
+[
+  {
+    "amount": 150,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Divers",
+    "timestamp": 1673348400,
+    "type": 12
+  },
+  {
+    "amount": 800,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Argent de Poche",
+    "timestamp": 1673348400,
+    "type": 12
+  },
+  {
+    "amount": 735.3,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Santé",
+    "timestamp": 1673348400,
+    "type": 12
+  },
+  {
+    "amount": 8500,
+    "balance": 0,
+    "debit": true,
+    "description": " ",
+    "id": 0,
+    "name": "Salaire",
+    "timestamp": 1674644400,
+    "type": 12
+  },
+  {
+    "amount": 400,
+    "balance": 0,
+    "debit": true,
+    "description": " ",
+    "id": 0,
+    "name": "Frais",
+    "timestamp": 1674644400,
+    "type": 12
+  },
+  {
+    "amount": 1500,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Argent Ménage",
+    "timestamp": 1674817200,
+    "type": 12
+  },
+  {
+    "amount": 820,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Hypothèque",
+    "timestamp": 1674817200,
+    "type": 12
+  },
+  {
+    "amount": 2074.85,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Assurance Auto AXA",
+    "timestamp": 1674817200,
+    "type": 1
+  },
+  {
+    "amount": 650,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Santé AXA",
+    "timestamp": 1674817200,
+    "type": 12
+  },
+  {
+    "amount": 163.8,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Téléphone Domicile",
+    "timestamp": 1674817200,
+    "type": 12
+  },
+  {
+    "amount": 80,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Téléphone Mobile",
+    "timestamp": 1674817200,
+    "type": 12
+  },
+  {
+    "amount": 4000,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Vacances Ski",
+    "timestamp": 1674817200,
+    "type": 1
+  },
+  {
+    "amount": 150,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Loisirs / Sport",
+    "timestamp": 1674817200,
+    "type": 12
+  },
+  {
+    "amount": 68,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Demi-tarif CFF",
+    "timestamp": 1674817200,
+    "type": 12
+  },
+  {
+    "amount": 100,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Carte de crédit",
+    "timestamp": 1674817200,
+    "type": 12
+  },
+  {
+    "amount": 748,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Eletricité",
+    "timestamp": 1677495600,
+    "type": 6
+  },
+  {
+    "amount": 964.15,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Circulation Routière",
+    "timestamp": 1677495600,
+    "type": 1
+  },
+  {
+    "amount": 662.5,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Assurance",
+    "timestamp": 1677495600,
+    "type": 1
+  },
+  {
+    "amount": 285,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Assurance AXA",
+    "timestamp": 1677495600,
+    "type": 1
+  },
+  {
+    "amount": 970,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Loisirs / Sport",
+    "timestamp": 1677495600,
+    "type": 4
+  },
+  {
+    "amount": 4500,
+    "balance": 0,
+    "debit": true,
+    "description": " ",
+    "id": 0,
+    "name": "Bonus",
+    "timestamp": 1682416800,
+    "type": 1
+  },
+  {
+    "amount": 1500,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Vacances de Pâques",
+    "timestamp": 1682589600,
+    "type": 1
+  },
+  {
+    "amount": 7500,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Impôts prov.",
+    "timestamp": 1685181600,
+    "type": 1
+  },
+  {
+    "amount": 800,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Eau",
+    "timestamp": 1687860000,
+    "type": 2
+  },
+  {
+    "amount": 4000,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Vacances d'été",
+    "timestamp": 1690452000,
+    "type": 1
+  },
+  {
+    "amount": 2000,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Impôts différés",
+    "timestamp": 1693130400,
+    "type": 1
+  },
+  {
+    "amount": 3000,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Vacances d'automne",
+    "timestamp": 1698082800,
+    "type": 1
+  },
+  {
+    "amount": 7000,
+    "balance": 0,
+    "debit": false,
+    "description": " ",
+    "id": 0,
+    "name": "Provisions",
+    "timestamp": 1701082800,
+    "type": 1
+  }
+]
