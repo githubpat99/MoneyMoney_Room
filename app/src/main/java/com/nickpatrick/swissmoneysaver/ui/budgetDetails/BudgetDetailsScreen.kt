@@ -2,28 +2,21 @@ package com.nickpatrick.swissmoneysaver.ui.budgetDetails
 
 import android.annotation.SuppressLint
 import android.app.DatePickerDialog
-import android.content.Context
 import android.widget.DatePicker
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -51,7 +44,10 @@ import com.nickpatrick.swissmoneysaver.MoneyMoneyTopAppBar
 import com.nickpatrick.swissmoneysaver.R
 import com.nickpatrick.swissmoneysaver.ui.AppViewModelProvider
 import com.nickpatrick.swissmoneysaver.ui.navigation.NavigationDestination
+import com.nickpatrick.swissmoneysaver.util.DropDownWithArrowAndEntryField4BudgetItems
 import com.nickpatrick.swissmoneysaver.util.Utilities
+import com.nickpatrick.swissmoneysaver.util.getAusgabenList
+import com.nickpatrick.swissmoneysaver.util.getEinnahmenList
 import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.LocalDateTime
@@ -131,7 +127,7 @@ fun BudgetDetailScreenBody(
 
 
     val context = LocalContext.current
-    val budgetItemDetails = budgetItemUiState.budgetItemDetails
+    var budgetItemDetails = budgetItemUiState.budgetItemDetails
     var myLocalDateTime = Utilities.getDateFromTimestamp(budgetItemDetails.timestamp * 1000)
 
     val myYear = myLocalDateTime.year
@@ -240,72 +236,47 @@ fun BudgetDetailScreenBody(
                             }
                         }
 
-                        Box {
-                            Column {
-                                Text(
-                                    text = stringResource(id = R.string.name), // Your label text here
-                                    color = colorResource(id = R.color.gray), // Color for the label (optional)
-                                    fontSize = 14.sp, // Font size for the label (optional)
-                                    modifier = Modifier.padding(start = 16.dp, top = 16.dp)
-                                )
+                        DropDownWithArrowAndEntryField4BudgetItems(
+                            items,
+                            onValueChange,
+                            budgetItemDetails)
 
-                                Text(
-                                    text = budgetItemDetails.name, // Display selected item
-                                    color = colorResource(id = R.color.white),
-                                    modifier = Modifier
-                                        .clickable { expanded = !expanded }
-                                        .padding(16.dp)
-                                )
-                            }
-
-                            if (expanded) {
-                                DropdownMenu(
-                                    expanded = expanded,
-                                    onDismissRequest = { expanded = false },
-                                    modifier = Modifier
-                                        .width(IntrinsicSize.Min)
-                                        .background(colorResource(id = R.color.light_gray))
-                                ) {
-                                    items.forEach { item ->
-                                        DropdownMenuItem(
-                                            onClick = {
-                                                onValueChange(budgetItemDetails.copy(name = item))
-                                                expanded = false
-                                            },
-                                            text = {
-                                                Text(text = item)
-                                            }
+                        Row {
+                            OutlinedTextField( modifier = Modifier
+                                .padding(top = 8.dp),
+                                value = budgetItemDetails.amount.toString(),
+                                onValueChange = {
+                                    val parsedValue = it.toDoubleOrNull() ?: 0.0
+                                    val validatedValue =
+                                        if (parsedValue > 999999.9) 999999.9 else parsedValue
+                                    onValueChange(
+                                        budgetItemDetails.copy(
+                                            amount = validatedValue
                                         )
-                                    }
-                                }
-                            }
-                        }
-
-                        OutlinedTextField(
-                            value = budgetItemDetails.amount.toString(),
-                            onValueChange = {
-                                val parsedValue = it.toDoubleOrNull() ?: 0.0
-                                val validatedValue =
-                                    if (parsedValue > 999999.9) 999999.9 else parsedValue
-                                onValueChange(
-                                    budgetItemDetails.copy(
-                                        amount = validatedValue
                                     )
+                                },
+                                label = {
+                                    Text(
+                                        text = stringResource(id = R.string.betrag),
+                                        style = TextStyle(
+                                            color = colorResource(id = R.color.gray), // Color for the label (optional)
+                                            fontSize = 14.sp, // Font size for the label (optional)
+                                        )
+                                    )
+                                },
+                                visualTransformation = VisualTransformation.None,
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                keyboardActions = KeyboardActions(onDone = {}),
+                                maxLines = 1,
+                                textStyle = TextStyle(
+                                    color = colorResource(id = R.color.white),
+                                    fontSize = 16.sp,
                                 )
-                            },
-                            label = { Text(text = stringResource(id = R.string.betrag)) },
-                            visualTransformation = VisualTransformation.None,
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                            keyboardActions = KeyboardActions(onDone = {}),
-                            maxLines = 1,
-                            textStyle = TextStyle(
-                                color = colorResource(id = R.color.white),
-                                fontSize = 16.sp,
                             )
-                        )
-
+                        }
                     }
                 }
+
 
                 val typeIdxMap = mapOf(
                     0 to 12,
@@ -445,26 +416,6 @@ fun BudgetDetailScreenBody(
     }
 }
 
-private fun getEinnahmenList(context: Context): List<String> {
-    return listOf(
-        context.getString(R.string.einkommen),
-        context.getString(R.string.boni),
-    )
-}
-
-private fun getAusgabenList(context: Context): List<String> {
-    return listOf(
-        context.getString(R.string.haushalt),
-        context.getString(R.string.versicherung),
-        context.getString(R.string.krankenkasse),
-        context.getString(R.string.miete),
-        context.getString(R.string.ausgang),
-        context.getString(R.string.geschenke),
-        context.getString(R.string.steuern),
-        context.getString(R.string.nebenkosten),
-        context.getString(R.string.diverses),
-    )
-}
 
 @Composable
 fun PressIconButton(

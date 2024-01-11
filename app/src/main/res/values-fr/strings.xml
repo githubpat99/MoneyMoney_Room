@@ -79,5 +79,7 @@
     <string name="october">octobre</string>
     <string name="november">novembre</string>
     <string name="december">décembre</string>
+    <string name="ferien">Vacances</string>
+    <string name="more">...</string>
 
 </resources>

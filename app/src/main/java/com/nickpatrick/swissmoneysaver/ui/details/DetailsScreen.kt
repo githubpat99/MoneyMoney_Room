@@ -3,26 +3,19 @@ package com.nickpatrick.swissmoneysaver.ui.details
 import android.annotation.SuppressLint
 import android.app.DatePickerDialog
 import android.widget.DatePicker
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -36,7 +29,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -51,7 +43,10 @@ import com.nickpatrick.swissmoneysaver.ui.AppViewModelProvider
 import com.nickpatrick.swissmoneysaver.ui.entry.ItemDetails
 import com.nickpatrick.swissmoneysaver.ui.entry.ItemUiState
 import com.nickpatrick.swissmoneysaver.ui.navigation.NavigationDestination
+import com.nickpatrick.swissmoneysaver.util.DropDownWithArrowAndEntryField4Items
 import com.nickpatrick.swissmoneysaver.util.Utilities
+import com.nickpatrick.swissmoneysaver.util.getAusgabenList
+import com.nickpatrick.swissmoneysaver.util.getEinnahmenList
 import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.LocalDateTime
@@ -176,13 +171,15 @@ fun DetailScreenBody(
     myDatePickerDialog.datePicker.maxDate = maxDateInMillis
 
     var expanded by remember { mutableStateOf(false) }
-    var items =
-        itemUiState.entries
+
+    val items = mutableListOf<String>()
+    items.addAll(getAusgabenList(context))
+    items.addAll(getEinnahmenList(context))
 
     var titleText = stringResource(id = R.string.inAndOut)
     val archived = configStatus >= 2
-    if (archived) titleText = titleText + " (" + stringResource(id = R.string.archived) +")"
-    
+    if (archived) titleText = titleText + " (" + stringResource(id = R.string.archived) + ")"
+
 
     Column {
 
@@ -221,7 +218,6 @@ fun DetailScreenBody(
                                 text = mDate,
                                 modifier = Modifier.weight(1f)
                             )
-
                             Button(
                                 onClick = {
                                     myDateString = ""
@@ -231,78 +227,47 @@ fun DetailScreenBody(
                                 enabled = !archived
                             ) {
                                 Text(text = stringResource(id = R.string.firstTime))
-
                             }
                         }
 
-                        Box {
-                            Column {
+                        if (!archived) {
+                            DropDownWithArrowAndEntryField4Items(
+                                items,
+                                onValueChange,
+                                itemDetails
+                            )
+                        } else {
+                            Row {
                                 Text(
-                                    text = stringResource(id = R.string.name), // Your label text here
-                                    color = colorResource(id = R.color.gray), // Color for the label (optional)
-                                    fontSize = 14.sp, // Font size for the label (optional)
-                                    modifier = Modifier.padding(start = 16.dp, top = 16.dp)
-                                )
-
-                                Text(
-                                    text = itemDetails.description, // Display selected item
-                                    color = colorResource(id = R.color.black),
-                                    modifier = Modifier
-                                        .clickable(
-                                            enabled = !archived
-                                        ) {
-                                            expanded = !expanded
-                                        }
-                                        .padding(16.dp)
+                                    text = itemDetails.description
                                 )
                             }
+                        }
 
-                            if (expanded) {
-                                DropdownMenu(
-                                    expanded = expanded,
-                                    onDismissRequest = { expanded = false },
-                                    modifier = Modifier
-                                        .width(IntrinsicSize.Min)
-                                        .background(colorResource(id = R.color.light_gray))
-                                ) {
-                                    items.forEach { item ->
-                                        DropdownMenuItem(
-                                            onClick = {
-                                                onValueChange(itemDetails.copy(description = item))
-                                                expanded = false
-                                            },
-                                            text = {
-                                                Text(text = item)
-                                            }
+                        Row {
+                            OutlinedTextField(
+                                value = itemDetails.amount.toString(),
+                                onValueChange = {
+                                    val parsedValue = it.toDoubleOrNull() ?: 0.0
+                                    val validatedValue =
+                                        if (parsedValue > 999999.9) 999999.9 else parsedValue
+                                    onValueChange(
+                                        itemDetails.copy(
+                                            amount = validatedValue
                                         )
-                                    }
-                                }
-                            }
-                        }
-
-                        OutlinedTextField(
-                            value = itemDetails.amount.toString(),
-                            onValueChange = {
-                                val parsedValue = it.toDoubleOrNull() ?: 0.0
-                                val validatedValue =
-                                    if (parsedValue > 999999.9) 999999.9 else parsedValue
-                                onValueChange(
-                                    itemDetails.copy(
-                                        amount = validatedValue
                                     )
-                                )
-                            },
-                            enabled = !archived,
-                            label = { Text(text = stringResource(id = R.string.betrag)) },
-                            visualTransformation = VisualTransformation.None,
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                            keyboardActions = KeyboardActions(onDone = {}),
-                            maxLines = 1
-                        )
+                                },
+                                enabled = !archived,
+                                label = { Text(text = stringResource(id = R.string.betrag)) },
+                                visualTransformation = VisualTransformation.None,
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                keyboardActions = KeyboardActions(onDone = {}),
+                                maxLines = 1
+                            )
+                        }
                     }
                 }
             }
-
         }
 
         if (!archived) {
